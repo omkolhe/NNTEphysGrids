@@ -1,0 +1,18 @@
+function [Encoder] = detectVelTrig(Encoder,velThreshold,tol,nSlope,nRejectWindow)
+ 
+disp('Thresholding for vel = '+)
+Encoder.velTrig = find(Encoder.vel < velThreshold+tol & Encoder.vel >velThreshold-tol);
+padfordiff = nSlope;
+for i=1:size(Encoder.velTrig,2)
+    if (Encoder.velTrig(i)<padfordiff) || (Encoder.velTrig(i)>size(Encoder.vel,2)-padfordiff), Encoder.velTrig = NaN; end
+    slope = mean(Encoder.vel(Encoder.velTrig(i):Encoder.velTrig(i)+padfordiff))-mean(Encoder.vel(Encoder.velTrig(i)-padfordiff:Encoder.velTrig(i)));
+    if slope<0, Encoder.velTrig(i)=NaN; end
+end
+Encoder.velTrig = Encoder.velTrig(~isnan(Encoder.velTrig));
+Encoder.goodInd = find(diff(Encoder.velTrig)>nRejectWindow);
+Encoder.velTrig = Encoder.velTrig(Encoder.goodInd);
+
+disp('Number of velocity trigers found: '+ string(size(Encoder.velTrig)))
+
+end
+
