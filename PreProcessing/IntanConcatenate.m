@@ -24,7 +24,6 @@ disp('Compressing...')
 Intan.allIntan = single(Intan.allIntan);
 % Adjust electrode order by depth
 % UCLA_probe_map %legacy file call
-load Widegrids9_chanmap.mat
 Intan.allIntan  = Intan.allIntan(electrode_map,:);
 % Fix recording offset
 Intan.offset = 1; % second

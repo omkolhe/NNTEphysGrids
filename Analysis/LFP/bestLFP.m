@@ -5,7 +5,7 @@ pow = rms(LFP.LFP,2);
 disp(['Best LFP: ' num2str(loc)])
 count = 1;
 for chan = 1:size(LFP.LFP,1)
-    rho = corr(LFP.LFP(loc,:)',LFP.LFP(chan,:)');
+    rho = corr2(LFP.LFP(loc,:)',LFP.LFP(chan,:)');
     if rho>0.7
         medianLFP(count,:) = LFP.LFP(chan,:);
         count = count+1;

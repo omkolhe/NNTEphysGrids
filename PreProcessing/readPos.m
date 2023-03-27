@@ -1,5 +1,5 @@
 function [pos,vel,time] = readPos(tLFP)
-
+tic
 tLFP = tLFP*1000;
 
 [enfile,enpath] = uigetfile('*.csv');
@@ -26,7 +26,7 @@ for i=1:size(posAr,1)
         pos(preInd:ind) = posAr(i);
     end
     preInd = ind+1;
-    if mod(i,100)==0 i, end
+    if mod(i,1000)==0 i, end
 end
 vel(2:end) = movmean(diff(pos)*1000/(tLFP(2)-tLFP(1)),500);
-
+toc

@@ -1,4 +1,4 @@
-function [Z,badCh] = readImp(electrode_map,cutoff)
+function [Z,goodChMap,badCh] = readImp(electrode_map,cutoff)
 
 [impfile,imppath] = uigetfile('*.csv');
 if isequal(impfile,0)
@@ -13,5 +13,9 @@ Z = Z(electrode_map,1);
 
 badCh = find(Z>cutoff);
 
+chMap = linspace(1,32,32);
+[X,Y] = ismember(badCh,chMap);
+chMap(Y(X)) = [];
+goodChMap = chMap';
 end
 

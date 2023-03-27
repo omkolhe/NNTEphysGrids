@@ -13,7 +13,7 @@ function [xo] = bandpass_filter(x, f1, f2, filter_order, Fs)
 % OUTPUT
 % xo - output datacube
 %
-
+tic
 assert( ndims(x) == 3, 'datacube input required' );
 xo = nan( size(x) );
 
@@ -30,3 +30,5 @@ for rr = 1:size(x,1)
         end
     end
 end
+
+toc

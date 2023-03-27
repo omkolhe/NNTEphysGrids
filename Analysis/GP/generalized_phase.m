@@ -16,7 +16,7 @@ function [xgp,wt] = generalized_phase( x, Fs, lp )
 
 % parameters
 nwin = 3;
-
+tic
 % handle input
 assert( ndims(x) == 3, 'datacube input required' );
 [rows,cols,npts] = size(x);
@@ -74,3 +74,4 @@ end
 
 % save output datacube
 xgp = md .* exp( 1i .* ph );
+toc
