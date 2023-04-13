@@ -17,5 +17,8 @@ chMap = linspace(1,32,32);
 [X,Y] = ismember(badCh,chMap);
 chMap(Y(X)) = [];
 goodChMap = chMap';
+
+disp(['Number of bad channels based of impedance : ', num2str(numel(badCh))]);
+
 end
 

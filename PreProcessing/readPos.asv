@@ -1,4 +1,4 @@
-function [pos,vel,time,fsAr] = readPos()
+function [pos,vel,time,fs] = readPos()
 tic
 
 [enfile,enpath] = uigetfile('*.csv');

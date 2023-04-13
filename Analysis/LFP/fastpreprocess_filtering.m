@@ -6,8 +6,9 @@ if nargin < 2 || strcmp(Fs,'')
     disp(['Sampling rate set at ' num2str(Fs) ' Hz for filtering']);
 end
 
-LFP.Fs = Fs;
-downSampleFreq = 1024;
+
+downSampleFreq = 1000;
+LFP.Fs = downSampleFreq;
 
 % Notch Filtering
 channel_num = size(intanData,1);

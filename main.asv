@@ -1,6 +1,7 @@
 % clear; clc; 
 % close all;
 format compact;
+set(0,'DefaultFigureWindowStyle','normal')
 addpath(genpath('main'));
 addpath(genpath('chronux'));
 addpath(genpath('Kilosort'));
@@ -16,6 +17,8 @@ addpath(genpath('Dependancies'));
 
 %%  PreProcessing
 load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
+rows = 8;  % Number of rows of electrodes on the Grid
+cols = 4;  % Numevbr of colums of electrodes on the Grid
 IntanConcatenate
 fpath    = Intan.path; % where on disk do you want the analysis? ideally and SSD...
 
@@ -31,40 +34,88 @@ figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size
 
 %% LFP
 set(0,'DefaultFigureWindowStyle','normal')
-% LFP = fastpreprocess_filtering(flip(Intan.allIntan,1),8192); %Only run for PFF data
-LFP = fastpreprocess_filtering(Intan.allIntan,8192);
+% LFP = fastpreprocess_filtering(flip(Intan.allIntan,1),8192) ; %Only run for PFF data
+LFP = fastpreprocess_filtering(Intan.allIntan,8000);
 LFP = bestLFP(LFP);
 LFP = bandFilter(LFP,'depth'); % Extract LFPs based on 'depth' or 'single'
 LFPplot(LFP);
-rows = 8;
-cols = 4;
 LFP = createDataCube(LFP,rows,cols,Intan.goodChMap); % Creating datacube
 
 %% Loading Encoder Data
 
-[Encoder.pos, Encoder.vel, Encoder.time] = readPos(LFP.times);
+[Encoder.pos, Encoder.vel, Encoder.time, Encoder.fs] = readPos();
 figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
 
-Encoder.vel = abs(Encoder.vel);
+% Encoder.vel = abs(Encoder.vel);
 Encoder.vel(Encoder.vel<0) = 0;
-Encoder.vel(end-10000:end) = 0;
 
-%% Find velocity triggers before velovity reaches 2cm/s
-Encoder = detectVelTrig(Encoder,2,0.05,100,300);
+%% Find velocity triggers before velocity reaches 4cm/s
+Encoder = detectVelTrig(Encoder,2,0.05,50,100,LFP.times);
 figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
-hold on;xline(Encoder.velTrig/1024);
+hold on;xline(Encoder.velTrig(1,:)/Encoder.fs);
+%% Segementing trial windows
+windowBeforeTrig = 0.8; % in seconds
+windowAfterTrig = 0.2; % in seconds
+Encoder = getVelTrigTrials(Encoder,windowBeforeTrig,windowAfterTrig,LFP.Fs);
+
+Encoder.timeWindow1 = -1*windowBeforeTrig:1/Encoder.fs:windowAfterTrig-1/Encoder.fs; % Time series for plotting
+Encoder.timeWindow2 = -1*windowBeforeTrig:1/LFP.Fs:windowAfterTrig-1/LFP.Fs; % Time series for plotting
+figure('Name','Velocity Triggers trials');
+for i=1:1 %Encoder.nTrig
+    plot(Encoder.timeWindow1,Encoder.vel(Encoder.trialTime(i,1):Encoder.trialTime(i,2)),'LineWidth',1.5)
+    ylim([0 20]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
+    hold on;xline(0);
+end
 
 %% Generalized Phase 
-LFP.xf = bandpass_filter(LFP.LFPdatacube,10,45,8,1024);
-LFP.xgp = generalized_phase(LFP.xf,1024,0);
+LFP.xf = bandpass_filter(LFP.LFPdatacube,5,40,4,1000);
+LFP.xgp = generalized_phase(LFP.xf,1000,0);
 [X,Y] = meshgrid( 1:cols, 1:rows );
+
+%% Wavelet spectrogram
+trialno = 2;
+goodTrial.xf = LFP.xf(:,:,Encoder.trialTime(trialno,3):Encoder.trialTime(trialno,4));
+goodTrial.xgp = LFP.xgp(:,:,Encoder.trialTime(trialno,3):Encoder.trialTime(trialno,4));
+goodTrial.time = LFP.times(Encoder.trialTime(trialno,3):Encoder.trialTime(trialno,4));
+goodTrial.relTime = Encoder.timeWindow2;
+figure();
+for i=1:32
+    subplot(rows,cols,i);
+    if ismember(i,Intan.badChMap), continue; end
+    calCWTSpectogram(squeeze(goodTrial.xf(floor((i-1)/cols)+1,mod(i-1,cols)+1,:)),goodTrial.relTime,1024,20,[1 45],1);
+%     [s,f,t,ps,fc,tc] = spectrogram(squeeze(goodTrial.xf(floor((i-1)/cols)+1,mod(i-1,cols)+1,:)),25,16,1024,1024,'yaxis','onesided');
+%     imagesc(t,f(10:45),abs(ps(10:45,:)));hold on; xline(301/1024,'-r', 'LineWidth',2);set(gca,'YDir','normal') 
+end
+
+% Average spectrogram across all channels
+for i=1:rows
+    for j=1:cols
+        [spectrogramCh((i-1)*cols + j,:,:) ,fwt] = calCWTSpectogram(squeeze(goodTrial.xf(rows,cols,:)),goodTrial.relTime,1024,20,[1 45],0);
+    end
+end
+avgSpectrogramCWT = mean(spectrogramCh,1);
+figure();
+subplot(2,1,1);
+imagesc(goodTrial.relTime,fwt,squeeze(avgSpectrogramCWT(1,:,:)));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram');ylabel('Frequency (Hz)');xlabel('Time (s)');
+c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
+subplot(2,1,2);
+plot(Encoder.timeWindow1,Encoder.vel(Encoder.trialTime(trialno,1):Encoder.trialTime(trialno,2)),'-r','LineWidth',2);
+ylabel('Velocity (cm/s)');xlabel('Time (ms)');
+
+%% PLotting LFP 
+figure();
+for i=1:32
+    subplot(rows,cols,i);
+    if ismember(i,Intan.badChMap), continue; end
+    plot(goodTrial.relTime,squeeze(goodTrial.xf(floor((i-1)/cols)+1,mod(i-1,cols)+1,:))');xline(0,'-r');
+end
 %% Velocity triggered windowing
 
 options.subject = 'W'; % this can be 'W' or 'T' (two marmoset subjects)
 options.plot = true; % this option turns plots ON or OFF
 options.plot_shuffled_examples = false; % example plots w/channels shuffled in space
 
-LFP.windowSize = 600;
+% LFP.windowSize = 600;
 for ii=1:size(Encoder.velTrig,2)
     if Encoder.velTrig(ii) < LFP.windowSize+1 continue; end
     LFP.velTrigTrials(ii,1) = Encoder.velTrig(ii)-LFP.windowSize; % start time 
@@ -94,69 +145,70 @@ for ii=1:size(Encoder.velTrig,2)
    
 end
 
-%% Spectogram
-
-goodTrial.xf = LFP.xf(:,:,Encoder.velTrig(137)-300:Encoder.velTrig(137)+200);
-goodTrial.xgp = LFP.xgp(:,:,Encoder.velTrig(137)-300:Encoder.velTrig(137)+200);
-goodTrial.time = LFP.times(Encoder.velTrig(137)-300:Encoder.velTrig(137)+200);
-goodTrial.relTime = 1:1:501;
-figure();
-for i=1:32
-    subplot(rows,cols,i);
-    if ismember(i,Intan.badChMap), continue; end
-    [s,f,t,ps,fc,tc] = spectrogram(squeeze(goodTrial.xf(floor((i-1)/cols)+1,mod(i-1,cols)+1,:)),25,16,1024,1024,'yaxis','onesided');
-    imagesc(t,f(11:45),abs(ps(11:45,:)));hold on; xline(301/1024,'-r', 'LineWidth',2);set(gca,'YDir','normal') 
-end
-
-%% PLotting LFP 
-figure();
-for i=1:32
-    subplot(rows,cols,i);
-    if ismember(i,Intan.badChMap), continue; end
-    plot(goodTrial.relTime(200:end),squeeze(goodTrial.xf(floor((i-1)/cols)+1,mod(i-1,cols)+1,200:end))');xline(301,'-r');
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 %% Plotting video of phase 
 figure(); hold on;
-map = colorcet( 'C2' ); colormap( circshift( map, [ 28, 0 ] ) );axis off;
+% map = colorcet( 'C2' ); colormap( circshift( map, [ 28, 0 ] ) );axis off;
 x = repmat(1:cols,rows,1); % generate x-coordinates
 y = repmat(1:rows,cols,1)'; % generate y-coordinates
 Ts = 1/1024;
-tvel = (Ts:Ts:300*Ts)
-for i=1:300
-    ang = inpaint_nans(angle(squeeze(LFP.xgp(:,:,i+Encoder.velTrig(137)-250))));
-%     ang = angle(squeeze(LFP.xgp(:,:,i+500)));
-%     ang = inpaint_nans(squeeze(LFP.xf(:,:,i+Encoder.velTrig(137)-150)));
+tvel = ((Ts:Ts:300*Ts))*1000;
+for i=1:numel(goodTrial.xgp)
+%     ang = inpaint_nans(angle(goodTrial.xgp(:,:,i)));
+    ang = inpaint_nans(goodTrial.xf(:,:,i));    
     pause(0.1);
-    title('n = ' + string(i));
-    t= num2cell(rad2deg(ang));
-    t = cellfun(@num2str, t, 'UniformOutput',false);
-    subplot(2,1,1);
-    imagesc(ang);
-    text(x(:),y(:),t,'HorizontalAlignment','Center');
-    subplot(2,1,2)
-    plot(Encoder.vel(1+Encoder.velTrig(137)-250:i+Encoder.velTrig(137)-250),'-b','LineWidth',2);
+%     t= num2cell(rad2deg(ang));
+%     t = cellfun(@num2str, t, 'UniformOutput',false);
+%     subplot(2,1,1);
+    imagesc(ang); title('Phase map for Electrode Map');
+%     ax2 = axes; set( ax2, 'position', [0.02116    0.80976    0.0484    0.1000] ); axis image
+%     [x1,y1] = pol2cart( angle( exp(1i.*linspace(-pi,pi,100)) ), ones( 1, 100 ) );
+%     h3 = cline( x1, y1, linspace(-pi,pi,100) ); axis off; set( h3, 'linewidth', 6 )
+%     t1 = text( 0, 0, 'GP' );
+%     set( t1, 'fontname', 'arial', 'fontsize', 20, 'fontweight', 'bold', 'horizontalalignment', 'center' )
+%     text(x(:),y(:),t,'HorizontalAlignment','Center');
+%     subplot(2,1,2)
+%     plot(Encoder.vel(1+Encoder.velTrig(137)-350:i+Encoder.velTrig(137)-350),'-b','LineWidth',2);xlim([tvel(1) tvel(end)]); ylim([-1 4]);ylabel('Velocity (in cm/s)');xlabel('Time (in ms)');
 end
-%%
+
+%% Plotting video of LFP amplitude
+figure(); hold on; 
+x = repmat(1:cols,rows,1); % generate x-coordinates
+y = repmat(1:rows,cols,1)'; % generate y-coordinates
+tvel = Encoder.timeWindow1;
+for i=1:numel(goodTrial.xgp)
+    ang = inpaint_nans(goodTrial.xf(:,:,i));    
+    pause(0.1);
+    subplot(2,1,1);
+    imagesc(ang); title('Phase map for Electrode Map');
+    if mod(i,2)==0, continue; end
+    subplot(2,1,2)
+    plot(tvel(),Encoder.vel(Encoder.trialTime(trialno,1):Encoder.trialTime(trialno,1)+i),'-b','LineWidth',2);xlim([tvel(1) tvel(end)]); ylim([-1 4]);ylabel('Velocity (in cm/s)');xlabel('Time (in s)');
+end
+%% Finding source points 
+
+evaluationPoints = find_evaluation_points(goodTrial.xgp,pi,0.2);
+plot_evaluation_points(goodTrial.xgp, evaluationPoints);
+[X,Y] = meshgrid( 1:cols, 1:rows ); 
+[pm,pd,dx,dy] = phase_gradient_complex_multiplication(goodTrial.xgp,0.1);
+source = find_source_points(evaluationPoints,X,Y,dx,dy);
+
+rho = zeros( 1, length(evaluationPoints) );
+for jj = 1:length(evaluationPoints)
+    
+    ph = angle( goodTrial.xgp(:,:,evaluationPoints(jj)) );
+    rho(jj) = phase_correlation_distance( ph, source(:,jj), 0.1 );
+end
+plot_wave_examples( goodTrial.xf, options, ii, evaluationPoints, source, rho );
+
+figure();
+for i=1:numel(goodTrial.relTime)
+    quiver(dx(:,:,i),dy(:,:,i));
+    pause(0.1);
+    ylim([0 9]);xlim([0 5]);
+end
+
+%% 
 
 % dt = 1 / 1024; T = size(LFP.LFP,2) / Fs; time = dt:dt:T;
 time = LFP.times(500:6000);

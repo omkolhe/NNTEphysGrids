@@ -1,4 +1,4 @@
-function [Encoder] = detectVelTrig(Encoder,velThreshold,tol,nSlope,nRejectWindow)
+function [Encoder] = detectVelTrig(Encoder,velThreshold,tol,nSlope,nRejectWindow,LFPTimes)
  
 disp('Thresholding for vel = '+ string(velThreshold) + ' with tolerance =' + string(tol));
 Encoder.velTrig = find(Encoder.vel < velThreshold+tol & Encoder.vel >velThreshold-tol); % finding the points in time where velocity crosses the set threshold
@@ -12,7 +12,12 @@ Encoder.velTrig = Encoder.velTrig(~isnan(Encoder.velTrig)); % rejecting all NaNs
 Encoder.goodInd = find(diff(Encoder.velTrig)>nRejectWindow); % rejecting points that are very close to each other (consequetive points within tolerance).
 Encoder.velTrig = Encoder.velTrig(Encoder.goodInd);
 
-disp('Number of velocity trigers found: '+ string(size(Encoder.velTrig,2)))
+Encoder.nTrig = numel(Encoder.velTrig);
+for i=1:Encoder.nTrig
+    Encoder.velTrig(2,i) = max(find(LFPTimes<=Encoder.time(Encoder.velTrig(1,i))));
+end
+
+disp('Number of velocity trigers found: '+ string(Encoder.nTrig))
 
 end
 
