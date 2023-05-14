@@ -5,7 +5,6 @@ if nargin<2
     beta_signal = LFP.beta_band';
     timestamps(:,1) = (1:length(beta_signal))/Fs; % Timepoint for each sample
     window = [];
-    trialFlag = 0;
 else
     beta_signal = squeeze(betaTrials);
     trialFlag = 1;

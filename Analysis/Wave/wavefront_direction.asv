@@ -1,0 +1,22 @@
+function [dirx, diry] = wavefront_direction(pd,s)
+% *WAVE*
+%
+% WAVEFRONT DIRECTION    calcu
+%
+% INPUT
+% pd - phase gradient direction
+% s -  instantaneous speed 
+%
+% OUTPUT
+% dirx - the x component of the vector pointing in velocity direction
+% diry - the y component of the vector pointing in velocity direction
+%
+
+assert( ( ndims(dx) == 3 ) & ( ndims(dy) == 3 ), 'datacube inputs required' );
+assert( isequal( size(dx), size(dy) ), 'datacube sizes must be equal' );
+
+mag = abs(s);
+dirx = -1*cos()
+
+end
+

@@ -1,4 +1,4 @@
-function plot_wave_examples( x, options, trial, evaluation_points, source, rho )
+function plot_wave_examples( x, options, trial, evaluation_points, source, rho,vx,vy )
 % *SPONTANEOUS WAVES DEMO*
 %
 % PLOT WAVE EXAMPLES     plot specific examples of spontaneous waves based
@@ -17,7 +17,7 @@ function plot_wave_examples( x, options, trial, evaluation_points, source, rho )
 %
 
 % parameters
-plot_rho_value = 0.5; plot_time = 20; pause_length = 0.2; 
+plot_rho_value = 0.5; plot_time = 30; pause_length = 0.2; 
 
 % init
 M = load( 'myMap.mat' );
@@ -34,6 +34,8 @@ for jj = 1:length(evaluation_points)
         
         % get data to plot, shuffle if option is chosen
         x_plot = x(:,:,st:sp); 
+        vx_plot = vx(1,st:sp);
+        vy_plot = vy(1,st:sp);
         if ( options.plot_shuffled_examples == true ), x_plot = shuffle_channels( x_plot ); end        
         
         % create plot
@@ -41,6 +43,9 @@ for jj = 1:length(evaluation_points)
         color_range = [ min(reshape(x_plot,[],1)) max(reshape(x_plot,[],1)) ];
         h = imagesc( x_plot(:,:,1) ); hold on; axis image; 
         plot( source(1,jj), source(2,jj), '.', 'markersize', 35, 'color', [.7 .7 .7] );
+        h2 = quiver(source(1,jj), source(2,jj),vx_plot(1),vy_plot(1));
+        h2.Color = 'White';
+        h2.LineWidth = 2;
         set( gca, 'linewidth', 3, 'xtick', [], 'ytick', [], 'fontname', 'arial', 'fontsize', 16, 'ydir', 'reverse' ); 
         colormap( M.myMap ); box on; xlabel( 'electrodes' ); ylabel( 'electrodes' ); caxis( color_range )
         
@@ -57,6 +62,7 @@ for jj = 1:length(evaluation_points)
         % animate plot
         for kk = 1:size(x_plot,3)
             set( h, 'cdata', x_plot(:,:,kk) ); 
+            set(h2, 'udata',vx_plot(1,kk),'vdata',vy_plot(1,kk));
             set( get(gca,'title'), 'string', ...
                 sprintf( 'trial %d, wave example %d, %d of %d ms', trial, ctr, kk, size(x_plot,3) ) )
             pause(pause_length); 

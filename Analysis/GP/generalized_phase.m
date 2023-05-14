@@ -52,7 +52,7 @@ end
 
 for ii = 1:rows
 	for jj = 1:cols
-
+        disp('Calculating GP for Ch '+ string(cols*(ii-1)+jj) + '/' + string(rows*cols))
 		% check if nan channel
 		if all( isnan(ph(ii,jj,:)) ), continue; end
 
@@ -68,7 +68,7 @@ for ii = 1:rows
 		if all( isnan(p) ), continue; end % check if all NaNs
 		p = unwrap(p); p(isnan(p)) = naninterp( p ); p = rewrap( p );
 		ph(ii,jj,:) = p(1:size(ph,3));
-
+        toc
 	end
 end
 
