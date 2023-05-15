@@ -1,4 +1,4 @@
-function plot_wave_examples( x, options, trial, evaluation_points, source, rho,vx,vy )
+function plot_wave_examples( x, options, trial, Waves,rhoThres)
 % *SPONTANEOUS WAVES DEMO*
 %
 % PLOT WAVE EXAMPLES     plot specific examples of spontaneous waves based
@@ -16,8 +16,14 @@ function plot_wave_examples( x, options, trial, evaluation_points, source, rho,v
 % animated spatiotemporal plot
 %
 
+evaluation_points = Waves(trial).evaluationPoints;
+source = Waves(trial).source;
+rho = Waves(trial).rho;
+vx = Waves(trial).vx;
+vy = Waves(trial).vy;
+
 % parameters
-plot_rho_value = 0.5; plot_time = 30; pause_length = 0.2; 
+plot_rho_value = rhoThres; plot_time = 30; pause_length = 0.2; 
 
 % init
 M = load( 'myMap.mat' );

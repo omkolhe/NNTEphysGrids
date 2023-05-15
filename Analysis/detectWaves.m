@@ -1,12 +1,12 @@
-function [Waves] = detectWaves(LFP,Encoder,paramerters)
+function [Waves] = detectWaves(xgp,wt,Encoder,paramerters)
 
 spacing = paramerters.spacing;
 rhoThres = paramerters.rhoThres;
 X = paramerters.X;
 Y = paramerters.Y;
 for ii=1:size(Encoder.velTrig,2)
-    Waves(ii).p = LFP.xgp(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4));
-    Waves(ii).wt = LFP.wt(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4));
+    Waves(ii).p = xgp(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4));
+    Waves(ii).wt = wt(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4));
     %p = arrayfun(@(jj) inpaint_nans(p(:,:,jj)),1:size(p,3));
     Waves(ii).evaluationPoints = find_evaluation_points(Waves(ii).p,pi,0.2);
     %plot_evaluation_points( p, evaluationPoints );
@@ -26,8 +26,8 @@ for ii=1:size(Encoder.velTrig,2)
     % phase correlation with distance (\rho_{\phi,d} measure)
     Waves(ii).rho = zeros( 1, length(Waves(ii).evaluationPoints) );
     for jj = 1:length(Waves(ii).evaluationPoints)
-        Waves(ii).ph = angle( Waves(ii).p(:,:,Waves(ii).evaluationPoints(jj)) );
-        [Waves(ii).rho(jj),~,Waves(ii).D] = phase_correlation_distance( Waves(ii).ph, Waves(ii).source(:,jj), spacing );
+        ph = angle( Waves(ii).p(:,:,Waves(ii).evaluationPoints(jj)) );
+        [Waves(ii).rho(jj),~,Waves(ii).D] = phase_correlation_distance( ph, Waves(ii).source(:,jj), spacing );
     end
     % Thresholding using rhoThres. Reject all waves with rho less than
     % rhoThres
@@ -35,7 +35,6 @@ for ii=1:size(Encoder.velTrig,2)
     Waves(ii).evaluationPoints(indxBadWave) = [];
     Waves(ii).source(:,indxBadWave) = [];
     Waves(ii).rho(indxBadWave) = [];
-    Waves(ii).D(indxBadWave) = [];
     Waves(ii).nWaves = size(Waves(ii).evaluationPoints,2);
 
     % Calculating the speed and wave direction of the detected waves in

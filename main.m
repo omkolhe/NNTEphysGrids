@@ -61,6 +61,8 @@ LFP.xfbeta = bandpass_filter(LFP.LFPdatacube,10,30,4,1000);
 [LFP.xgpbeta, LFP.wtbeta] = generalized_phase(LFP.xfbeta,1000,0);
 LFP.xftheta = bandpass_filter(LFP.LFPdatacube,4,10,4,1000);
 [LFP.xgptheta, LFP.wttheta]  = generalized_phase(LFP.xftheta,1000,0);
+LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,80,4,1000);
+[LFP.xgpgamma, LFP.wtgamma]  = generalized_phase(LFP.xfgamma,1000,0);
 [X,Y] = meshgrid( 1:cols, 1:rows );
 
 %% Segementing trial windows
@@ -125,35 +127,6 @@ for i=1:32
     if ismember(i,Intan.badChMap), continue; end
     plot(goodTrial.relTime,squeeze(goodTrial.xf(floor((i-1)/cols)+1,mod(i-1,cols)+1,:))');xline(0,'-r');
 end
-
-%% rho for shuffled data
-nShuffle = 10000;
-for ii=1:1%size(Encoder.velTrig,2)
-    p = LFP.xgp(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4));
-    evaluationPoints = find_evaluation_points(p,pi,spacing);
-    rho = zeros( nShuffle, length(evaluationPoints) );
-    for kk=1:nShuffle
-        if kk==1
-            pShuffle = p;
-        else
-            pShuffle = shuffle_channels(p);
-        end
-        [pm,pd,dx,dy] = phase_gradient_complex_multiplication( pShuffle, spacing );
-        source = find_source_points( evaluationPoints, X, Y, dx, dy );
-        for jj = 1:length(evaluationPoints)
-            ph = angle( pShuffle(:,:,evaluationPoints(jj)) );
-            rho(kk,jj) = phase_correlation_distance( ph, source(:,jj), spacing );
-        end
-    end
-end
-
-% Plotting rho distribution
-nEvalPoints = size(rho,2);
-rho1 = reshape(rho',[1,nShuffle*nEvalPoints]);
-rhoThres = prctile(rho1,99.9);
-figure();histogram(rho1(1:nEvalPoints),'FaceColor','r'); hold on;
-histogram(rho1(nEvalPoints+1:end),'FaceColor','b'); 
-xline(rhoThres,'-r',{'99.9 Percentile'});
 %% Calculating waves without windowing
 p = LFP.xgp(:,:,:);
 wt = LFP.wt(:,:,:);
@@ -165,7 +138,7 @@ evaluationPoints = find_evaluation_points(p,pi,0.2);
 PGD = phase_gradient_directionality(pm,dx,dy);
 % Wavelength
 wl = 1./abs(pm);
-% Instantaneous speed
+% Instantaneous speed   
 s = instantaneous_speed(wt,pm);
 % divergence calculation
 source = find_source_points(evaluationPoints, X, Y, dx, dy );
@@ -188,24 +161,65 @@ options.subject = 'W'; % this can be 'W' or 'T' (two marmoset subjects)
 options.plot = true; % this option turns plots ON or OFF
 options.plot_shuffled_examples = false; % example plots w/channels shuffled in space
 
-%% Velocity triggered windowing
+%% Wave detection in velocity triggered windows
 parameters.spacing = 0.1; % Grid spacing in mm
 parameters.rhoThres = rhoThres; 
 parameters.X = X;
 parameters.Y = Y;
+nShuffle = 10000;
+threshold = 99;
+trialno = 1;
 
-Waves = detectWaves(LFP,Encoder,parameters);
+% Wave detection for wide band
+disp('Wave Detection for wide band ...')
+rhoThres = getRhoThreshold(LFP.xgp,Encoder,parameters,nShuffle,trialno,threshold);
+parameters.rhoThres= rhoThres;
+Waves = detectWaves(LFP.xgp,LFP.wt,Encoder,parameters);
+
+% Wave detection for beta band
+disp('Wave Detection for beta band ...')
+threshold = 99.9;
+betarhoThres = getRhoThreshold(LFP.xgpbeta,Encoder,parameters,nShuffle,trialno,threshold);
+parameters.rhoThres = betarhoThres;
+betaWaves = detectWaves(LFP.xgpbeta,LFP.wtbeta,Encoder,parameters);
+
+% Wave detection for theta band
+disp('Wave Detection for theta band ...')
+threshold = 99;
+thetarhoThres = getRhoThreshold(LFP.xgptheta,Encoder,parameters,nShuffle,trialno,threshold);
+parameters.rhoThres = thetarhoThres;
+thetaWaves = detectWaves(LFP.xgptheta,LFP.wttheta,Encoder,parameters);
+
+% Wave detection for gamma band
+disp('Wave Detection for gamma band ...')
+threshold = 99.9;
+gammarhoThres = getRhoThreshold(LFP.xgpgamma,Encoder,parameters,nShuffle,trialno,threshold);
+parameters.rhoThres = gammarhoThres;    
+gammaWaves = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder,parameters);
 %% PLotting to check visually
 trialPlot = 5;
 plot_wave_examples( LFP.xf(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(trialPlot,4)), ...
-    options, trialPlot, Waves(trialPlot).evaluationPoints, Waves(trialPlot).source, Waves(trialPlot).rho,Waves(trialPlot).vx,Waves(trialPlot).vy );
+    options, trialPlot, Waves,rhoThres);
+
+plot_wave_examples( LFP.xfbeta(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(trialPlot,4)), ...
+    options, trialPlot, betaWaves,betarhoThres);
+
 %% Waves accross trials 
+
+
+
 speedComb = horzcat(Waves(1:end).speed);
 figure();histogram(speedComb,100);
 avgSpeed = mean(speedComb);
+xline(avgSpeed,'-r',{'Mean speed = ' num2str(avgSpeed) ' cm/s'});
+xlabel('Wave speed in cm/s');
+ylabel('Frequency');
+title('Histogram of wave speeds');
+
 
 dirComb = horzcat(Waves(1:end).waveDir);
 figure();polarhistogram(dirComb,30);
+title('Polar Histogram of wave direction');
 
 sourceComb = horzcat(Waves(1:end).source);
 sourceDen = zeros(rows,cols);
@@ -214,112 +228,114 @@ for j=1:size(sourceComb,2)
 end
 figure(); imagesc(sourceDen);set(gca,'YDir','normal');
 
-%% Plotting video of phase 
-figure(); hold on;
-map = colorcet( 'C2' ); colormap( circshift( map, [ 28, 0 ] ) );axis off;
-x = repmat(1:cols,rows,1); % generate x-coordinates
-y = repmat(1:rows,cols,1)'; % generate y-coordinates
-Ts = 1/1024;
-tvel = ((Ts:Ts:300*Ts))*1000;
-for i=1:numel(goodTrial.xgp)
-    ang = inpaint_nans(angle(goodTrial.xgp(:,:,i)));
-%     ang = inpaint_nans(goodTrial.xf(:,:,i));    
-    pause(0.1);
-    t= num2cell(rad2deg(ang));
-    t = cellfun(@num2str, t, 'UniformOutput',false);
-%     subplot(2,1,1);
-    imagesc(ang); title('Phase map for Electrode Map');
-    text(x(:),y(:),t,'HorizontalAlignment','Center');
-%     ax2 = axes; set( ax2, 'position', [0.02116    0.80976    0.0484    0.1000] ); axis image
-%     [x1,y1] = pol2cart( angle( exp(1i.*linspace(-pi,pi,100)) ), ones( 1, 100 ) );
-%     h3 = cline( x1, y1, linspace(-pi,pi,100) ); axis off; set( h3, 'linewidth', 6 )
-%     t1 = text( 0, 0, 'GP' );
-%     set( t1, 'fontname', 'arial', 'fontsize', 20, 'fontweight', 'bold', 'horizontalalignment', 'center' )
-    
-%     subplot(2,1,2)
-%     plot(Encoder.vel(1+Encoder.velTrig(137)-350:i+Encoder.velTrig(137)-350),'-b','LineWidth',2);xlim([tvel(1) tvel(end)]); ylim([-1 4]);ylabel('Velocity (in cm/s)');xlabel('Time (in ms)');
-end
 
-%% Plotting video of LFP amplitude
-figure();
-x = repmat(1:cols,rows,1); % generate x-coordinates
-y = repmat(1:rows,cols,1)'; % generate y-coordinates
-tvel = Encoder.timeWindow1;
-for i=1:numel(goodTrial.xgp)
-    amp = inpaint_nans(goodTrial.xf(:,:,i));    
-    pause(0.1);
-%     subplot(2,1,1);
-    imagesc(amp); title('Phase map for Electrode Map');colorbar;
-%     if mod(i,2)==0, continue; end
-%     subplot(2,1,2)
-%     plot(tvel(1:floor(i/2)),Encoder.vel(1,Encoder.trialTime(trialno,1):Encoder.trialTime(trialno,1)+floor(i/2)),'-b','LineWidth',2)
-%     plot(tvel(1:floor(i/2)),'-b','LineWidth',2);
-%     xlim([tvel(1) tvel(end)]); ylim([-1 4]);ylabel('Velocity (in cm/s)');xlabel('Time (in s)');
-end
-%% Finding source points 
-% plot_wave_examples( goodTrial.xf, options, jj, evaluationPoints, source, rho );
-
-figure();
-for i=1:numel(goodTrial.relTime)
-    quiver(dx(:,:,i),dy(:,:,i));
-    pause(0.1);
-    ylim([0 9]);xlim([0 5]);
-end
-
-%% 
-
-% dt = 1 / 1024; T = size(LFP.LFP,2) / Fs; time = dt:dt:T;
-time = LFP.times(500:6000);
-xw = squeeze(LFP.xf(4,3,500:6000));
-xwRaw = squeeze(LFP.LFPdatacube(4,3,500:6000));
-xgp1 = squeeze(LFP.xgp(4,3,500:6000));
-% main figure
-fg1 = figure; hold on; ax1 = gca; 
-plot( time, xw, 'linewidth', 2, 'color', 'k' ); h4 = cline( time, xw, [], angle(xgp1) );
-xlim([1 2])
-set( h4, 'linestyle', '-', 'linewidth', 2  ), axis off
-l1 = line( [.1 .2], [-125 -125] ); set( l1, 'linewidth', 4, 'color', 'k' )
-l2 = line( [.1 .1], [-125 -75] ); set( l2, 'linewidth', 4, 'color', 'k' )
-
-% inset
-map = colorcet( 'C2' ); colormap( circshift( map, [ 28, 0 ] ) )
-ax2 = axes; set( ax2, 'position', [0.2116    0.6976    0.0884    0.2000] ); axis image
-[x1,y1] = pol2cart( angle( exp(1i.*linspace(-pi,pi,100)) ), ones( 1, 100 ) );
-h3 = cline( x1, y1, linspace(-pi,pi,100) ); axis off; set( h3, 'linewidth', 6 )
-%%
-% text labels
-t1 = text( 0, 0, 'GP' );
-set( t1, 'fontname', 'arial', 'fontsize', 28, 'fontweight', 'bold', 'horizontalalignment', 'center' )
-set( gcf, 'currentaxes', ax1 )
-t2 = text( 0.1260, -146.8832, '100 ms' );
-set( t2, 'fontname', 'arial', 'fontsize', 24, 'fontweight', 'bold' )
-t2 = text( 0.0852, -130.2651, '50 \muV' );
-set( t2, 'fontname', 'arial', 'fontsize', 24, 'fontweight', 'bold', 'rotation', 90 )
-
-%% 
-
-waveden = zeros(1,size(LFP.LFP,2));
-waveden(evaluationPoints) = 1;
-waveden1 = downsample(waveden,2);
-figure(),plot(waveden1);
-
-
-figure();
-plot(Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
-hold on;
-plot(waveden1);
-
-
-
-%meanPhase is the mean phase map over a 5ms window starting at the wave
-%initiaion time
-[rho(jj),~,D,pl] = phase_correlation_distance(meanPhase,source(:,jj), parameters.pixel_spacing);
-%fit the phase (p1) vs distance (D) to a line
-pfit = polyfit(D,pl,1);
-%use phase vs distance to calculate wave speed
-k = abs(pfit(1));%rad/mm, WAVE NUMBER, slope of the lin fit (spatial derivative k=dPhase/dx)
-IF = nanmean(IF,3);%Hz, INSTANTANEOUS FREQUENCY for each electrode in the small time window. f = dPhase/dt
-IF = nanmean(IF(:));%Hz, AVG INSTANTANEOUS FREQUENCY across the grid
-w = IF*2*pi;%(1/s)*(rad) = rad/s, AVG INSTANTANEOUS ANGULAR FREQUENCY across the grid. w = 2pi*f
-speed(jj) = (w/k).*(1/1000); %(rad/s)/(rad/mm) = (mm/s)*(1m/1000mm) = m/s, speed
-
+%% Random code
+% %% Plotting video of phase 
+% figure(); hold on;
+% map = colorcet( 'C2' ); colormap( circshift( map, [ 28, 0 ] ) );axis off;
+% x = repmat(1:cols,rows,1); % generate x-coordinates
+% y = repmat(1:rows,cols,1)'; % generate y-coordinates
+% Ts = 1/1024;
+% tvel = ((Ts:Ts:300*Ts))*1000;
+% for i=1:numel(goodTrial.xgp)
+%     ang = inpaint_nans(angle(goodTrial.xgp(:,:,i)));
+% %     ang = inpaint_nans(goodTrial.xf(:,:,i));    
+%     pause(0.1);
+%     t= num2cell(rad2deg(ang));
+%     t = cellfun(@num2str, t, 'UniformOutput',false);
+% %     subplot(2,1,1);
+%     imagesc(ang); title('Phase map for Electrode Map');
+%     text(x(:),y(:),t,'HorizontalAlignment','Center');
+% %     ax2 = axes; set( ax2, 'position', [0.02116    0.80976    0.0484    0.1000] ); axis image
+% %     [x1,y1] = pol2cart( angle( exp(1i.*linspace(-pi,pi,100)) ), ones( 1, 100 ) );
+% %     h3 = cline( x1, y1, linspace(-pi,pi,100) ); axis off; set( h3, 'linewidth', 6 )
+% %     t1 = text( 0, 0, 'GP' );
+% %     set( t1, 'fontname', 'arial', 'fontsize', 20, 'fontweight', 'bold', 'horizontalalignment', 'center' )
+%     
+% %     subplot(2,1,2)
+% %     plot(Encoder.vel(1+Encoder.velTrig(137)-350:i+Encoder.velTrig(137)-350),'-b','LineWidth',2);xlim([tvel(1) tvel(end)]); ylim([-1 4]);ylabel('Velocity (in cm/s)');xlabel('Time (in ms)');
+% end
+% 
+% %% Plotting video of LFP amplitude
+% figure();
+% x = repmat(1:cols,rows,1); % generate x-coordinates
+% y = repmat(1:rows,cols,1)'; % generate y-coordinates
+% tvel = Encoder.timeWindow1;
+% for i=1:numel(goodTrial.xgp)
+%     amp = inpaint_nans(goodTrial.xf(:,:,i));    
+%     pause(0.1);
+% %     subplot(2,1,1);
+%     imagesc(amp); title('Phase map for Electrode Map');colorbar;
+% %     if mod(i,2)==0, continue; end
+% %     subplot(2,1,2)
+% %     plot(tvel(1:floor(i/2)),Encoder.vel(1,Encoder.trialTime(trialno,1):Encoder.trialTime(trialno,1)+floor(i/2)),'-b','LineWidth',2)
+% %     plot(tvel(1:floor(i/2)),'-b','LineWidth',2);
+% %     xlim([tvel(1) tvel(end)]); ylim([-1 4]);ylabel('Velocity (in cm/s)');xlabel('Time (in s)');
+% end
+% %% Finding source points 
+% % plot_wave_examples( goodTrial.xf, options, jj, evaluationPoints, source, rho );
+% 
+% figure();
+% for i=1:numel(goodTrial.relTime)
+%     quiver(dx(:,:,i),dy(:,:,i));
+%     pause(0.1);
+%     ylim([0 9]);xlim([0 5]);
+% end
+% 
+% %% 
+% 
+% % dt = 1 / 1024; T = size(LFP.LFP,2) / Fs; time = dt:dt:T;
+% time = LFP.times(500:6000);
+% xw = squeeze(LFP.xf(4,3,500:6000));
+% xwRaw = squeeze(LFP.LFPdatacube(4,3,500:6000));
+% xgp1 = squeeze(LFP.xgp(4,3,500:6000));
+% % main figure
+% fg1 = figure; hold on; ax1 = gca; 
+% plot( time, xw, 'linewidth', 2, 'color', 'k' ); h4 = cline( time, xw, [], angle(xgp1) );
+% xlim([1 2])
+% set( h4, 'linestyle', '-', 'linewidth', 2  ), axis off
+% l1 = line( [.1 .2], [-125 -125] ); set( l1, 'linewidth', 4, 'color', 'k' )
+% l2 = line( [.1 .1], [-125 -75] ); set( l2, 'linewidth', 4, 'color', 'k' )
+% 
+% % inset
+% map = colorcet( 'C2' ); colormap( circshift( map, [ 28, 0 ] ) )
+% ax2 = axes; set( ax2, 'position', [0.2116    0.6976    0.0884    0.2000] ); axis image
+% [x1,y1] = pol2cart( angle( exp(1i.*linspace(-pi,pi,100)) ), ones( 1, 100 ) );
+% h3 = cline( x1, y1, linspace(-pi,pi,100) ); axis off; set( h3, 'linewidth', 6 )
+% %%
+% % text labels
+% t1 = text( 0, 0, 'GP' );
+% set( t1, 'fontname', 'arial', 'fontsize', 28, 'fontweight', 'bold', 'horizontalalignment', 'center' )
+% set( gcf, 'currentaxes', ax1 )
+% t2 = text( 0.1260, -146.8832, '100 ms' );
+% set( t2, 'fontname', 'arial', 'fontsize', 24, 'fontweight', 'bold' )
+% t2 = text( 0.0852, -130.2651, '50 \muV' );
+% set( t2, 'fontname', 'arial', 'fontsize', 24, 'fontweight', 'bold', 'rotation', 90 )
+% 
+% %% 
+% 
+% waveden = zeros(1,size(LFP.LFP,2));
+% waveden(evaluationPoints) = 1;
+% waveden1 = downsample(waveden,2);
+% figure(),plot(waveden1);
+% 
+% 
+% figure();
+% plot(Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
+% hold on;
+% plot(waveden1);
+% 
+% 
+% 
+% %meanPhase is the mean phase map over a 5ms window starting at the wave
+% %initiaion time
+% [rho(jj),~,D,pl] = phase_correlation_distance(meanPhase,source(:,jj), parameters.pixel_spacing);
+% %fit the phase (p1) vs distance (D) to a line
+% pfit = polyfit(D,pl,1);
+% %use phase vs distance to calculate wave speed
+% k = abs(pfit(1));%rad/mm, WAVE NUMBER, slope of the lin fit (spatial derivative k=dPhase/dx)
+% IF = nanmean(IF,3);%Hz, INSTANTANEOUS FREQUENCY for each electrode in the small time window. f = dPhase/dt
+% IF = nanmean(IF(:));%Hz, AVG INSTANTANEOUS FREQUENCY across the grid
+% w = IF*2*pi;%(1/s)*(rad) = rad/s, AVG INSTANTANEOUS ANGULAR FREQUENCY across the grid. w = 2pi*f
+% speed(jj) = (w/k).*(1/1000); %(rad/s)/(rad/mm) = (mm/s)*(1m/1000mm) = m/s, speed
+% 
