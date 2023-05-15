@@ -17,7 +17,6 @@ addpath(genpath('Dependancies'));
 
 %%  PreProcessing
 load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
-spacing = 0.1; % Grid spacing in mm
 rows = 8;  % Number of rows of electrodes on the Grid
 cols = 4;  % Numevbr of colums of electrodes on the Grid
 IntanConcatenate
@@ -184,13 +183,18 @@ nWaves = size(evaluationPoints,2);
 
 figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
 hold on;xline(evaluationPoints/LFP.Fs);
-%% Pre allocating and initializing plotting options
+%% Pre allocating and initializing plotting options and parameters for wave detection
 options.subject = 'W'; % this can be 'W' or 'T' (two marmoset subjects)
 options.plot = true; % this option turns plots ON or OFF
 options.plot_shuffled_examples = false; % example plots w/channels shuffled in space
-% Waves = struct(size(Encoder.velTrig,2),1);
+
+
+parameters.spacing = 0.1; % Grid spacing in mm
+parameters.rhoThres = rhoThres; 
 
 %% Velocity triggered windowing
+
+Waves = detectWaves()
 
 for ii=1:size(Encoder.velTrig,2)
     Waves(ii).p = LFP.xgp(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4));
@@ -224,11 +228,16 @@ for ii=1:size(Encoder.velTrig,2)
     Waves(ii).D(indxBadWave) = [];
     Waves(ii).nWaves = size(Waves(ii).evaluationPoints,2);
     for kk = 1:Waves(ii).nWaves
-        Waves(ii).speed(kk) = mean(abs(insts(:,:,Waves(ii).evaluationPoints(kk)-2:Waves(ii).evaluationPoints(kk)+2)),[1 2 3])/10; % speed in cm/s
-        Waves(ii).speed2(kk) = mean(abs(s(Waves(ii).evaluationPoints(kk)-2:Waves(ii).evaluationPoints(kk)+2)),'all')/10; % speed in cm/s
+        st = Waves(ii).evaluationPoints(kk)-2;
+        if st<0, st = 0; end  % adjusting is waves is detected at the start of window
+        sp = Waves(ii).evaluationPoints(kk)+2;
+        if sp>size(Waves(ii).p,3), sp = Waves(ii).evaluationPoints(kk); end % adjusting is waves is detected at the end of window
+        Waves(ii).speed(kk) = mean(abs(Waves(ii).insts(:,:,st:sp)),[1 2 3]); % speed in cm/s
+        Waves(ii).speed2(kk) = mean(abs(Waves(ii).s(st:sp)),'all'); % speed in cm/s
+        Waves(ii).waveDir(kk) = mean(Waves(ii).velDir(st:sp),'all'); 
     end
-    Waves(ii).speedpdg = pgdMean(Waves(ii).PGD,Waves.s,0.51);
-    Waves(ii).dirpdg = pgdMean(Waves(ii).PGD,mean(Waves(ii).s,[1 2]),0.51);
+    %Waves(ii).speedpdg = pgdMean(Waves(ii).PGD,Waves(ii).s,0.51);
+    %Waves(ii).dirpdg = pgdMean(Waves(ii).PGD,Waves(ii).velDir,0.51);
     %plot_vector_field( exp( 1i .* Waves(ii).pd(:,:,100) ), 0 );
     %plot_wave_examples( LFP.xf(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4)), options, ii, Waves(ii).evaluationPoints, Waves(ii).source, Waves(ii).rho );
 end
@@ -238,8 +247,18 @@ plot_wave_examples( LFP.xf(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(
     options, trialPlot, Waves(trialPlot).evaluationPoints, Waves(trialPlot).source, Waves(trialPlot).rho,Waves(trialPlot).vx,Waves(trialPlot).vy );
 %% Waves accross trials 
 speedComb = horzcat(Waves(1:end).speed);
-histogram(speedComb,100);
+figure();histogram(speedComb,100);
 avgSpeed = mean(speedComb);
+
+dirComb = horzcat(Waves(1:end).waveDir);
+figure();polarhistogram(dirComb,30);
+
+sourceComb = horzcat(Waves(1:end).source);
+sourceDen = zeros(rows,cols);
+for j=1:size(sourceComb,2)
+    sourceDen(sourceComb(2,j),sourceComb(1,j)) = sourceDen(sourceComb(2,j),sourceComb(1,j)) + 1;
+end
+figure(); imagesc(sourceDen);set(gca,'YDir','normal');
 
 %% Plotting video of phase 
 figure(); hold on;

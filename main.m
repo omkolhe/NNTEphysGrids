@@ -17,7 +17,6 @@ addpath(genpath('Dependancies'));
 
 %%  PreProcessing
 load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
-spacing = 0.1; % Grid spacing in mm
 rows = 8;  % Number of rows of electrodes on the Grid
 cols = 4;  % Numevbr of colums of electrodes on the Grid
 IntanConcatenate
@@ -184,59 +183,19 @@ nWaves = size(evaluationPoints,2);
 
 figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
 hold on;xline(evaluationPoints/LFP.Fs);
-%% Pre allocating and initializing plotting options
+%% Initializing plotting options
 options.subject = 'W'; % this can be 'W' or 'T' (two marmoset subjects)
 options.plot = true; % this option turns plots ON or OFF
 options.plot_shuffled_examples = false; % example plots w/channels shuffled in space
-% Waves = struct(size(Encoder.velTrig,2),1);
 
 %% Velocity triggered windowing
+parameters.spacing = 0.1; % Grid spacing in mm
+parameters.rhoThres = rhoThres; 
+parameters.X = X;
+parameters.Y = Y;
 
-for ii=1:size(Encoder.velTrig,2)
-    Waves(ii).p = LFP.xgp(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4));
-    Waves(ii).wt = LFP.wt(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4));
-    %p = arrayfun(@(jj) inpaint_nans(p(:,:,jj)),1:size(p,3));
-    Waves(ii).evaluationPoints = find_evaluation_points(Waves(ii).p,pi,0.2);
-    %plot_evaluation_points( p, evaluationPoints );
-    [Waves(ii).pm,Waves(ii).pd,Waves(ii).dx,Waves(ii).dy] = phase_gradient_complex_multiplication( Waves(ii).p, spacing );
-    % Phase gradient directionality 
-    [Waves(ii).PGD] = phase_gradient_directionality(Waves(ii).pm,Waves(ii).dx,Waves(ii).dy);
-    % Wavelength
-    Waves(ii).wl = 1./abs(Waves(ii).pm);
-    % Instantaneous speed
-    Waves(ii).insts = instantaneous_speed(Waves(ii).wt,Waves(ii).pm);
-    Waves(ii).s = speedSpatial(Waves(ii).wt,Waves(ii).pm);
-    % Velcity direction unit vector
-    [Waves(ii).vx, Waves(ii).vy] = wavefront_direction(Waves(ii).pd,Waves(ii).insts);
-    Waves(ii).velDir = atan2(Waves(ii).vy,Waves(ii).vx);
-    % divergence calculation
-    Waves(ii).source = find_source_points( Waves(ii).evaluationPoints, X, Y, Waves(ii).dx, Waves(ii).dy );
-    % phase correlation with distance (\rho_{\phi,d} measure)
-    Waves(ii).rho = zeros( 1, length(Waves(ii).evaluationPoints) );
-    for jj = 1:length(Waves(ii).evaluationPoints)
-        Waves(ii).ph = angle( Waves(ii).p(:,:,Waves(ii).evaluationPoints(jj)) );
-        [Waves(ii).rho(jj),~,Waves(ii).D] = phase_correlation_distance( Waves(ii).ph, Waves(ii).source(:,jj), spacing );
-    end
-    indxBadWave = find(Waves(ii).rho<rhoThres);
-    Waves(ii).evaluationPoints(indxBadWave) = [];
-    Waves(ii).source(:,indxBadWave) = [];
-    Waves(ii).rho(indxBadWave) = [];
-    Waves(ii).D(indxBadWave) = [];
-    Waves(ii).nWaves = size(Waves(ii).evaluationPoints,2);
-    for kk = 1:Waves(ii).nWaves
-        st = Waves(ii).evaluationPoints(kk)-2;
-        if st<0, st = 0; end
-        sp = Waves(ii).evaluationPoints(kk)+2;
-        if sp>size(Waves(ii).p,3), sp = Waves(ii).evaluationPoints(kk); end
-        Waves(ii).speed(kk) = mean(abs(Waves(ii).insts(:,:,st:sp)),[1 2 3]); % speed in cm/s
-        Waves(ii).speed2(kk) = mean(abs(Waves(ii).s(st:sp)),'all'); % speed in cm/s
-    end
-    Waves(ii).speedpdg = pgdMean(Waves(ii).PGD,Waves(ii).s,0.51);
-    Waves(ii).dirpdg = pgdMean(Waves(ii).PGD,Waves(ii).velDir,0.51);
-    %plot_vector_field( exp( 1i .* Waves(ii).pd(:,:,100) ), 0 );
-    %plot_wave_examples( LFP.xf(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4)), options, ii, Waves(ii).evaluationPoints, Waves(ii).source, Waves(ii).rho );
-end
-%%
+Waves = detectWaves(LFP,Encoder,parameters);
+%% PLotting to check visually
 trialPlot = 5;
 plot_wave_examples( LFP.xf(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(trialPlot,4)), ...
     options, trialPlot, Waves(trialPlot).evaluationPoints, Waves(trialPlot).source, Waves(trialPlot).rho,Waves(trialPlot).vx,Waves(trialPlot).vy );
@@ -245,9 +204,15 @@ speedComb = horzcat(Waves(1:end).speed);
 figure();histogram(speedComb,100);
 avgSpeed = mean(speedComb);
 
-speedComb2 = horzcat(Waves(1:end).speed2);
-figure();histogram(speedComb2,100);
-avgSpeed2 = mean(speedComb2);
+dirComb = horzcat(Waves(1:end).waveDir);
+figure();polarhistogram(dirComb,30);
+
+sourceComb = horzcat(Waves(1:end).source);
+sourceDen = zeros(rows,cols);
+for j=1:size(sourceComb,2)
+    sourceDen(sourceComb(2,j),sourceComb(1,j)) = sourceDen(sourceComb(2,j),sourceComb(1,j)) + 1;
+end
+figure(); imagesc(sourceDen);set(gca,'YDir','normal');
 
 %% Plotting video of phase 
 figure(); hold on;

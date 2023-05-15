@@ -6,6 +6,8 @@ function [vx, vy] = wavefront_direction(pd,s)
 % INPUT
 % pd - phase gradient direction
 % s -  instantaneous speed 
+% 
+%  direction of velocity = - spaitalmean(phase gradient)
 %
 % OUTPUT
 % vx - the x component of the vector pointing in velocity direction
@@ -17,7 +19,7 @@ assert( isequal( size(pd), size(s) ), 'datacube sizes must be equal' );
 
 mag = -1;
 % mag = -abs(s)/10; %in cm/s
-vx = squeeze(mean((cos(pd).*mag),[1 2]))' ;
-vy = squeeze(mean((sin(pd).*mag),[1 2]))';
+vx = squeeze(mean(cos(pd),[1 2]).*mag)' ;
+vy = squeeze(mean(sin(pd),[1 2]).*mag)';
 end
 
