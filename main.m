@@ -127,10 +127,10 @@ plot_wave_examples( LFP.xfbeta(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialT
 
 %% Waves accross trials 
 
-[WaveStats(1)] = getWaveStats(Waves,parameters);
-[WaveStats(2)] = getWaveStats(thetaWaves,parameters);
-[WaveStats(3)] = getWaveStats(betaWaves,parameters);
-[WaveStats(4)] = getWaveStats(gammaWaves,parameters);
+[WaveStats(1)] = getWaveStats(Waves,parameters,0);
+[WaveStats(2)] = getWaveStats(thetaWaves,parameters,0);
+[WaveStats(3)] = getWaveStats(betaWaves,parameters,0);
+[WaveStats(4)] = getWaveStats(gammaWaves,parameters,0);
 
 %% Wavelet spectrogram
 for trialno = 1:size(Encoder.velTrig,2)
