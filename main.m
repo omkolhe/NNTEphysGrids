@@ -36,7 +36,7 @@ figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size
 set(0,'DefaultFigureWindowStyle','normal')
 LFP = fastpreprocess_filtering(Intan.allIntan,8000);
 LFP = bestLFP(LFP);
-LFP = bandFilter(LFP,'depth'); % Extract LFPs based on 'depth' or 'single'
+%LFP = bandFilter(LFP,'depth'); % Extract LFPs based on 'depth' or 'single'
 LFPplot(LFP);
 LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.goodChMap); % Creating datacube
 
@@ -84,7 +84,6 @@ options.plot_shuffled_examples = false; % example plots w/channels shuffled in s
 
 %% Wave detection in velocity triggered windows
 parameters.spacing = 0.1; % Grid spacing in mm
-parameters.rhoThres = rhoThres; 
 parameters.X = X;
 parameters.Y = Y;
 nShuffle = 10000;
@@ -127,9 +126,9 @@ plot_wave_examples( LFP.xfbeta(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialT
 
 %% Waves accross trials 
 
-[WaveStats(1)] = getWaveStats(Waves,parameters,0);
+[WaveStats(1)] = getWaveStats(Waves,parameters,1);
 [WaveStats(2)] = getWaveStats(thetaWaves,parameters,0);
-[WaveStats(3)] = getWaveStats(betaWaves,parameters,0);
+[WaveStats(3)] = getWaveStats(betaWaves,parameters,1);
 [WaveStats(4)] = getWaveStats(gammaWaves,parameters,0);
 
 %% Wavelet spectrogram

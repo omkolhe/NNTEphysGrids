@@ -4,7 +4,7 @@ spacing = paramerters.spacing;
 rhoThres = paramerters.rhoThres;
 X = paramerters.X;
 Y = paramerters.Y;
-for ii=1:size(Encoder.velTrig,2)
+for ii=1:Encoder.nTrig
     Waves(ii).p = xgp(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4));
     Waves(ii).wt = wt(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4));
     %p = arrayfun(@(jj) inpaint_nans(p(:,:,jj)),1:size(p,3));
@@ -41,7 +41,7 @@ for ii=1:size(Encoder.velTrig,2)
     % that trial window
     for kk = 1:Waves(ii).nWaves
         st = Waves(ii).evaluationPoints(kk)-2;
-        if st<0, st = 0; end  % adjusting is waves is detected at the start of window
+        if st<=0, st = 1; end  % adjusting is waves is detected at the start of window
         sp = Waves(ii).evaluationPoints(kk)+2;
         if sp>size(Waves(ii).p,3), sp = Waves(ii).evaluationPoints(kk); end % adjusting is waves is detected at the end of window
         %Waves(ii).speed(kk) = mean(abs(Waves(ii).insts(:,:,st:sp)),[1 2 3]); % speed in cm/s
