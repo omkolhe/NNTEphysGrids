@@ -1,5 +1,8 @@
-function [pos,vel,time,fsAr] = readPos()
+function [Encoder] = readPos(parameters)
 tic
+
+reward = parameters.rewardTrials;
+timecorrection = 50e-3; 
 
 [enfile,enpath] = uigetfile('*.csv');
 if isequal(enfile,0)
@@ -9,14 +12,34 @@ else
 end
 
 A = readmatrix([enpath,'/',enfile]);
-pos = A(:,2);
-time = A(:,3)/1e3;       % time from arduino converted to seconds
-fsAr = 1/(time(2)-time(1));
 
-vel = zeros(1,numel(time));
+if reward == 0
+    pos = A(:,2);
+    time = A(:,3)/1e3;       % time from arduino converted to seconds
+    fsAr = 1/(time(2)-time(1));
+    vel = zeros(1,numel(time));
+    vel(2:end) = movmean(diff(pos)*fsAr,fsAr);
+else
+    pos = A(:,2);
+    time1 = A(:,3)/1e3;       % time from arduino converted to seconds
+    fsAr = 1/(time1(2)-time1(1));
+    rewardIndX = find(time1 == max(time1));
+    time = time1;
+    for i=1:numel(rewardIndX)
+        time(rewardIndX(i)) = time(rewardIndX(i)-1) + timecorrection;
+        time(rewardIndX(i)+1:end) = time1(rewardIndX(i)+1:end) + time(rewardIndX(i)); 
+    end
+    Encoder.rewardIndx = rewardIndX-1;
+    vel = zeros(1,numel(time));
+    vel(2:end) = movmean(diff(pos)*fsAr,fsAr);
+end
+Encoder.pos = pos;
+Encoder.vel = vel;
+Encoder.time = time;
+Encoder.fs = fsAr;
 
-vel(2:end) = movmean(diff(pos)*fsAr,fsAr);
 toc
+end
 
 
 %% Previous code

@@ -14,12 +14,12 @@ for i=1:size(Encoder.velTrig,2)
     stopTime1 = Encoder.velTrig(1,i)+windowAfterTrig*Encoder.fs - 1;
     stopTime2 = Encoder.velTrig(2,i)+windowAfterTrig*LFPFs - 1;
     %     Encoder.newTrig(i) = Encoder.velTrig(i);
-    if(mean(Encoder.vel(startTime1:stopTime1-0.4*Encoder.fs))> 2)
+    if(mean(Encoder.vel(startTime1:stopTime1-windowAfterTrig*Encoder.fs))> 2)
         Encoder.trialTime(i,1) = NaN;
         Encoder.trialTime(i,2) = NaN;
         Encoder.trialTime(i,3) = NaN;
         Encoder.trialTime(i,4) = NaN;
-    elseif(mean(Encoder.vel(stopTime1-0.4*Encoder.fs:stopTime1+5.0*Encoder.fs))<4)
+    elseif(mean(Encoder.vel(stopTime1-windowAfterTrig*Encoder.fs:stopTime1+0.0*Encoder.fs))<4)
         Encoder.trialTime(i,1) = NaN;
         Encoder.trialTime(i,2) = NaN;
         Encoder.trialTime(i,3) = NaN;

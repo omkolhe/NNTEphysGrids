@@ -18,7 +18,9 @@ addpath(genpath('Dependancies'));
 %%  PreProcessing
 load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
 parameters.rows = 8;  % Number of rows of electrodes on the Grid
-parameters.cols = 4;  % Numever of colums of electrodes on the Grid
+parameters.cols = 4;  % Number of colums of electrodes on the Grid
+parameters.rewardTrials = 1; % 1 if reward is given , 0 if not
+parameters.rewardDistance = 100; % Distance travelled after which reward is given
 IntanConcatenate
 fpath = Intan.path; % where on disk do you want the analysis? ideally and SSD...
 
@@ -36,12 +38,12 @@ figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size
 set(0,'DefaultFigureWindowStyle','normal')
 LFP = fastpreprocess_filtering(Intan.allIntan,8000);
 LFP = bestLFP(LFP);
-%LFP = bandFilter(LFP,'depth'); % Extract LFPs based on 'depth' or 'single'
+LFP = bandFilter(LFP,'depth'); % Extract LFPs based on 'depth' or 'single'
 LFPplot(LFP);
 LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.goodChMap); % Creating datacube
 
 %% Loading Encoder Data
-[Encoder.pos, Encoder.vel, Encoder.time, Encoder.fs] = readPos();
+[Encoder] = readPos(parameters);
 figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
 Encoder.vel = abs(Encoder.vel);
 %Encoder.vel(Encoder.vel<0) = 0;
@@ -63,8 +65,8 @@ LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,80,4,1000);
 [X,Y] = meshgrid( 1:parameters.cols, 1:parameters.rows );
 
 %% Segementing trial windows
-windowBeforeTrig = 0.6; % in seconds
-windowAfterTrig = 0.4; % in seconds
+windowBeforeTrig = 1; % in seconds
+windowAfterTrig = 1; % in seconds
 Encoder = getVelTrigTrials(Encoder,windowBeforeTrig,windowAfterTrig,LFP.Fs);
 
 Encoder.timeWindow1 = -1*windowBeforeTrig:1/Encoder.fs:windowAfterTrig-1/Encoder.fs; % Time series for plotting
@@ -92,32 +94,32 @@ trialno = 1;
 
 % Wave detection for wide band
 disp('Wave Detection for wide band ...')
-rhoThres = getRhoThreshold(LFP.xgp,Encoder,parameters,nShuffle,trialno,threshold);
+% rhoThres = getRhoThreshold(LFP.xgp,Encoder,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres= rhoThres;
 Waves = detectWaves(LFP.xgp,LFP.wt,Encoder,parameters);
 
 % Wave detection for theta band
 disp('Wave Detection for theta band ...')
 threshold = 99;
-thetarhoThres = getRhoThreshold(LFP.xgptheta,Encoder,parameters,nShuffle,trialno,threshold);
+% thetarhoThres = getRhoThreshold(LFP.xgptheta,Encoder,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = thetarhoThres;
 thetaWaves = detectWaves(LFP.xgptheta,LFP.wttheta,Encoder,parameters);
 
 % Wave detection for beta band
 disp('Wave Detection for beta band ...')
 threshold = 99.9;
-betarhoThres = getRhoThreshold(LFP.xgpbeta,Encoder,parameters,nShuffle,trialno,threshold);
+% betarhoThres = getRhoThreshold(LFP.xgpbeta,Encoder,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = betarhoThres;
 betaWaves = detectWaves(LFP.xgpbeta,LFP.wtbeta,Encoder,parameters);
 
 % Wave detection for gamma band
 disp('Wave Detection for gamma band ...')
 threshold = 99.9;
-gammarhoThres = getRhoThreshold(LFP.xgpgamma,Encoder,parameters,nShuffle,trialno,threshold);
+% gammarhoThres = getRhoThreshold(LFP.xgpgamma,Encoder,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = gammarhoThres;    
 gammaWaves = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder,parameters);
 %% PLotting to check visually
-trialPlot = 5;
+trialPlot = 1;
 plot_wave_examples( LFP.xf(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(trialPlot,4)), ...
     options, trialPlot, Waves,rhoThres);
 
@@ -130,6 +132,42 @@ plot_wave_examples( LFP.xfbeta(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialT
 [WaveStats(2)] = getWaveStats(thetaWaves,parameters,0);
 [WaveStats(3)] = getWaveStats(betaWaves,parameters,1);
 [WaveStats(4)] = getWaveStats(gammaWaves,parameters,0);
+
+%% Beta event detection 
+avgBetaband = mean(LFP.beta_band,1);
+window = Encoder.trialTime(:,3:4);
+
+betatrials = zeros(Encoder.nTrig,LFP.Fs*(windowAfterTrig+windowBeforeTrig));
+for i=1:Encoder.nTrig
+   betatrials(i,:) = avgBetaband(window(i,1):window(i,2));
+end
+avgbetaGroup = groupBetaBurstDetection(LFP,betatrials',window,LFP.Fs);
+
+% Calculating for each electrode
+betatrials = zeros(Encoder.nTrig,LFP.Fs*(windowAfterTrig+windowBeforeTrig));
+for i=1:parameters.rows*parameters.cols
+    for j=1:Encoder.nTrig
+        betatrials(j,:) = LFP.beta_band(i,window(j,1):window(j,2));
+    end
+    betaEvents(i).betagroup = groupBetaBurstDetection(LFP,betatrials',window,LFP.Fs);
+end
+
+% Number of beta events per trial
+nbetaevents = zeros(Encoder.nTrig,1);
+for i=1:parameters.rows*parameters.cols
+    nbetaevents = nbetaevents + betaEvents(i).betagroup.betaBurst.NumDetectedBeta;
+end
+
+% Number of beta events on each electrode 
+nbetaperElec = zeros()
+
+figure,plot(nbetaevents);
+
+%% Rest, Initiation, Running
+Encoder.acc = zeros(1,numel(Encoder.time));
+Encoder.acc(2:end) = diff(Encoder.vel)*Encoder.fs;
+
+
 
 %% Wavelet spectrogram
 for trialno = 1:size(Encoder.velTrig,2)

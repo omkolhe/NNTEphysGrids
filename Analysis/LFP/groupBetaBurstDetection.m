@@ -21,8 +21,8 @@ windowLength = round(11);
 betaGroup.betaBurst.lowThresholdFactor = lowThresholdFactor;
 betaGroup.betaBurst.highThresholdFactor = highThresholdFactor;
 betaGroup.betaBurst.window = window;
-betaGroup.downSampleFreq = Fs;
-betaGroup.beta_band = LFP;
+% betaGroup.downSampleFreq = Fs;
+% betaGroup.beta_band = LFP;
 
 H = waitbar(0,'Detecting Beta Events...');
 for idx = 1:size(beta_signal,2)
