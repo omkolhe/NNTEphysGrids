@@ -17,12 +17,12 @@ addpath(genpath('Dependancies'));
 
 %%  PreProcessing
 load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
-rows = 8;  % Number of rows of electrodes on the Grid
-cols = 4;  % Numevbr of colums of electrodes on the Grid
 parameters.rows = 8;  % Number of rows of electrodes on the Grid
-parameters.cols = 4;  % Numever of colums of electrodes on the Grid
+parameters.cols = 4;  % Number of colums of electrodes on the Grid
+parameters.rewardTrials = 1; % 1 if reward is given , 0 if not
+parameters.rewardDistance = 100; % Distance travelled after which reward is given
 IntanConcatenate
-fpath    = Intan.path; % where on disk do you want the analysis? ideally and SSD...
+fpath = Intan.path; % where on disk do you want the analysis? ideally and SSD...
 
 %% Generating time series from Intan data
 Ts = 1/Intan.offsetSample;
@@ -32,22 +32,19 @@ Intan.t = Ts:Ts:Intan.Tmax;
 %% Removing bad channels from impedance values
 [Z,Intan.goodChMap,Intan.badChMap] = readImp(electrode_map,100e6);
 figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size(Z,1)));ylabel('Impedance (in \Omega)');set(gca,'xticklabel',{[]})
-% Intan = removeBadCh(Intan,Intan.badCh);
+%Intan = removeBadCh(Intan,Intan.badCh);
 
 %% LFP
 set(0,'DefaultFigureWindowStyle','normal')
-% LFP = fastpreprocess_filtering(flip(Intan.allIntan,1),8192) ; %Only run for PFF data
 LFP = fastpreprocess_filtering(Intan.allIntan,8000);
 LFP = bestLFP(LFP);
-LFP = bandFilter(LFP,'depth'); % Extract LFPs based on 'depth' or 'single'
+%LFP = bandFilter(LFP,'depth'); % Extract LFPs based on 'depth' or 'single'
 LFPplot(LFP);
 LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.goodChMap); % Creating datacube
 
 %% Loading Encoder Data
-
 [Encoder.pos, Encoder.vel, Encoder.time, Encoder.fs] = readPos();
 figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
-
 Encoder.vel = abs(Encoder.vel);
 %Encoder.vel(Encoder.vel<0) = 0;
 
@@ -89,7 +86,6 @@ options.plot_shuffled_examples = false; % example plots w/channels shuffled in s
 
 %% Wave detection in velocity triggered windows
 parameters.spacing = 0.1; % Grid spacing in mm
-parameters.rhoThres = rhoThres; 
 parameters.X = X;
 parameters.Y = Y;
 nShuffle = 10000;
@@ -132,10 +128,10 @@ plot_wave_examples( LFP.xfbeta(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialT
 
 %% Waves accross trials 
 
-[WaveStats(1)] = getWaveStats(Waves,parameters);
-[WaveStats(2)] = getWaveStats(thetaWaves,parameters);
-[WaveStats(3)] = getWaveStats(betaWaves,parameters);
-[WaveStats(4)] = getWaveStats(gammaWaves,parameters);
+[WaveStats(1)] = getWaveStats(Waves,parameters,1);
+[WaveStats(2)] = getWaveStats(thetaWaves,parameters,0);
+[WaveStats(3)] = getWaveStats(betaWaves,parameters,1);
+[WaveStats(4)] = getWaveStats(gammaWaves,parameters,0);
 
 %% Wavelet spectrogram
 for trialno = 1:size(Encoder.velTrig,2)
@@ -180,9 +176,9 @@ ylabel('Velocity (cm/s)');xlabel('Time (ms)');
 %% PLotting LFP 
 figure();
 for i=1:32
-    subplot(rows,cols,i);
+    subplot(parameters.rows,parameters.cols,i);
     if ismember(i,Intan.badChMap), continue; end
-    plot(goodTrial.relTime,squeeze(goodTrial.xf(floor((i-1)/cols)+1,mod(i-1,cols)+1,:))');xline(0,'-r');
+    plot(goodTrial.relTime,squeeze(goodTrial.xf(floor((i-1)/parameters.cols)+1,mod(i-1,parameters.cols)+1,:))');xline(0,'-r');
 end
 %% Calculating waves without windowing
 p = LFP.xgp(:,:,:);

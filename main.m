@@ -18,7 +18,9 @@ addpath(genpath('Dependancies'));
 %%  PreProcessing
 load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
 parameters.rows = 8;  % Number of rows of electrodes on the Grid
-parameters.cols = 4;  % Numever of colums of electrodes on the Grid
+parameters.cols = 4;  % Number of colums of electrodes on the Grid
+parameters.rewardTrials = 1; % 1 if reward is given , 0 if not
+parameters.rewardDistance = 100; % Distance travelled after which reward is given
 IntanConcatenate
 fpath = Intan.path; % where on disk do you want the analysis? ideally and SSD...
 
@@ -41,7 +43,7 @@ LFPplot(LFP);
 LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.goodChMap); % Creating datacube
 
 %% Loading Encoder Data
-[Encoder.pos, Encoder.vel, Encoder.time, Encoder.fs] = readPos();
+[Encoder] = readPos(parameters);
 figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
 Encoder.vel = abs(Encoder.vel);
 %Encoder.vel(Encoder.vel<0) = 0;
