@@ -141,6 +141,7 @@ trialPlot = 1;
 plot_wave_examples( LFP.xf(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(trialPlot,4)), ...
     options, trialPlot, Waves,rhoThres);
 
+
 plot_wave_examples( LFP.xfbeta(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(trialPlot,4)), ...
     options, trialPlot, betaWaves,betarhoThres);
 

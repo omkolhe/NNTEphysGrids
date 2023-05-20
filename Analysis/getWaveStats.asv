@@ -50,9 +50,9 @@ avgDir = mean(dirComb);
 dirCombStop = horzcat(Waves.wavesStop(1:end).waveDir);
 avgDirStop = mean(dirCombStop);
 
-[t, p] = ttest2(dirComb, dirCombStop);
+[t, p] = ttest2(dirComb, sCombStop);
 % Print the results.
-disp('Wave Direction')
+disp('Wave Speed')
 disp('t-statistic:');
 disp(t);
 disp('p-value:');

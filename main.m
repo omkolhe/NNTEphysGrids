@@ -109,7 +109,7 @@ trialno = 1;
 disp('Wave Detection for wide band ...')
 % rhoThres = getRhoThreshold(LFP.xgp,Encoder,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres= rhoThres;
-Waves.waveStart = detectWaves(LFP.xgp,LFP.wt,Encoder.trialTime,parameters);
+Waves.wavesStart = detectWaves(LFP.xgp,LFP.wt,Encoder.trialTime,parameters);
 Waves.wavesStop = detectWaves(LFP.xgp,LFP.wt,Encoder.trialTimeStop,parameters);
 
 % Wave detection for theta band
@@ -137,18 +137,21 @@ gammaWaves.wavesStart = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder.trialTime,p
 gammaWaves.wavesStop = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder.trialTimeStop,parameters);
 
 %% PLotting to check visually
-trialPlot = 1;
+trialPlot = 4;
 plot_wave_examples( LFP.xf(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(trialPlot,4)), ...
-    options, trialPlot, Waves,rhoThres);
+    options, trialPlot, Waves.wavesStart,rhoThres);
+
+plot_wave_examples( LFP.xf(:,:,Encoder.trialTimeStop(trialPlot,3):Encoder.trialTimeStop(trialPlot,4)), ...
+    options, trialPlot, Waves.wavesStop,rhoThres);
 
 plot_wave_examples( LFP.xfbeta(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(trialPlot,4)), ...
     options, trialPlot, betaWaves,betarhoThres);
 
 %% Waves accross trials 
 
-[WaveStats(1)] = getWaveStats(Waves,parameters,1);
+[WaveStats(1)] = getWaveStats(Waves,parameters,0);
 [WaveStats(2)] = getWaveStats(thetaWaves,parameters,0);
-[WaveStats(3)] = getWaveStats(betaWaves,parameters,1);
+[WaveStats(3)] = getWaveStats(betaWaves,parameters,0);
 [WaveStats(4)] = getWaveStats(gammaWaves,parameters,0);
 
 %% Beta event detection 
