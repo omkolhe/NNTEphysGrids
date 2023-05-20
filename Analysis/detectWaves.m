@@ -1,12 +1,12 @@
-function [Waves] = detectWaves(xgp,wt,Encoder,paramerters)
+function [Waves] = detectWaves(xgp,wt,trialTime,paramerters)
 
 spacing = paramerters.spacing;
 rhoThres = paramerters.rhoThres;
 X = paramerters.X;
 Y = paramerters.Y;
-for ii=1:Encoder.nTrig
-    Waves(ii).p = xgp(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4));
-    Waves(ii).wt = wt(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4));
+for ii=1:size(trialTime,1)
+    Waves(ii).p = xgp(:,:,trialTime(ii,3):trialTime(ii,4));
+    Waves(ii).wt = wt(:,:,trialTime(ii,3):trialTime(ii,4));
     %p = arrayfun(@(jj) inpaint_nans(p(:,:,jj)),1:size(p,3));
     Waves(ii).evaluationPoints = find_evaluation_points(Waves(ii).p,pi,0.2);
     %plot_evaluation_points( p, evaluationPoints );

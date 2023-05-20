@@ -1,4 +1,4 @@
-function [Encoder] = detectVelTrig(Encoder,velThreshold,tol,nSlope,nRejectWindow,LFPTimes)
+function [Encoder] = detectVelTrigStart(Encoder,velThreshold,tol,nSlope,nRejectWindow,LFPTimes)
  
 disp('Thresholding for vel = '+ string(velThreshold) + ' with tolerance =' + string(tol));
 Encoder.velTrig = find(Encoder.vel < velThreshold+tol & Encoder.vel >velThreshold-tol); % finding the points in time where velocity crosses the set threshold
