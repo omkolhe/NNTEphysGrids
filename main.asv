@@ -191,9 +191,7 @@ diffrunindx = zeros(numel(runindx),1);
 diffrunindx(2:end) = diff(runindx);
 rungapfill = find(diffrunindx<=fillFindingGap & diffrunindx>1);
 
-for i=1:numel(rungapfill)
-    Encoder.state(runindx(rungapfill(i)-1):runindx(rungapfill(i))) = 2;
-end
+for i=1:se
 
 %% Wavelet spectrogram
 for trialno = 1:size(Encoder.velTrig,2)
