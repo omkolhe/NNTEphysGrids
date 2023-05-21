@@ -314,17 +314,40 @@ parameters.rhoThres= rhoThres;
 Waves.wavesRest = detectWaves(LFP.xgp,LFP.wt,Encoder.restTrialTime,parameters);
 Waves.wavesRun = detectWaves(LFP.xgp,LFP.wt,Encoder.runTrialTime,parameters);
 Waves.wavesInit = detectWaves(LFP.xgp,LFP.wt,Encoder.initTrialTime,parameters);
-Waves.wavesTerm = detectWaves(LFP.xgp,LFP.wt,runEncoder.termTrialTime,parameters);
+Waves.wavesTerm = detectWaves(LFP.xgp,LFP.wt,Encoder.termTrialTime,parameters);
 
 % Wave detection for wide band
 disp('Wave Detection for theta band ...')
-% rhoThres = getRhoThreshold(LFP.xgp,Encoder,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres= thetarhoThres;
-thetaWaves.wavesRest = detectWaves(LFP.xgp,LFP.wt,Encoder.restTrialTime,parameters);
-thetaWaves.wavesRun = detectWaves(LFP.xgp,LFP.wt,Encoder.runTrialTime,parameters);
-thetaWaves.wavesInit = detectWaves(LFP.xgp,LFP.wt,Encoder.initTrialTime,parameters);
-thetaWaves.wavesTerm = detectWaves(LFP.xgp,LFP.wt,runEncoder.termTrialTime,parameters);
+thetaWaves.wavesRest = detectWaves(LFP.xgptheta,LFP.wttheta,Encoder.restTrialTime,parameters);
+thetaWaves.wavesRun = detectWaves(LFP.xgptheta,LFP.wttheta,Encoder.runTrialTime,parameters);
+thetaWaves.wavesInit = detectWaves(LFP.xgptheta,LFP.wttheta,Encoder.initTrialTime,parameters);
+thetaWaves.wavesTerm = detectWaves(LFP.xgptheta,LFP.wttheta,Encoder.termTrialTime,parameters);
 
+% Wave detection for beta band
+disp('Wave Detection for beta band ...')
+parameters.rhoThres= betarhoThres;
+betaWaves.wavesRest = detectWaves(LFP.xgpbeta,LFP.wtbeta,Encoder.restTrialTime,parameters);
+betaWaves.wavesRun = detectWaves(LFP.xgpbeta,LFP.wtbeta,Encoder.runTrialTime,parameters);
+betaWaves.wavesInit = detectWaves(LFP.xgpbeta,LFP.wtbeta,Encoder.initTrialTime,parameters);
+betaWaves.wavesTerm = detectWaves(LFP.xgpbeta,LFP.wtbeta,Encoder.termTrialTime,parameters);
+
+% Wave detection for gamma band
+disp('Wave Detection for gamma band ...')
+% rhoThres = getRhoThreshold(LFP.xgp,Encoder,parameters,nShuffle,trialno,threshold);
+parameters.rhoThres= gammarhoThres;
+gammaWaves.wavesRest = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder.restTrialTime,parameters);
+gammaWaves.wavesRun = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder.runTrialTime,parameters);
+gammaWaves.wavesInit = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder.initTrialTime,parameters);
+gammaWaves.wavesTerm = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder.termTrialTime,parameters);
+
+
+% Getting stats 
+plotOption = 0;
+[WaveStatsStates(1)] = getWaveStatsStates(Waves,parameters,plotOption);
+[WaveStatsStates(2)] = getWaveStatsStates(thetaWaves,parameters,plotOption);
+[WaveStatsStates(3)] = getWaveStatsStates(betaWaves,parameters,plotOption);
+[WaveStatsStates(4)] = getWaveStatsStates(gammaWaves,parameters,plotOption);
 %% PLotting LFP 
 figure();
 for i=1:32

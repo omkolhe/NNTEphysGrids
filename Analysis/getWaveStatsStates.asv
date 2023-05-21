@@ -10,7 +10,6 @@ totalWavesRest =  sum( horzcat(Waves.wavesRest(1:end).nWaves));
 WavesPerTrialRun = mean( horzcat(Waves.wavesRun(1:end).nWaves),'all');
 totalWavesRun =  sum( horzcat(Waves.wavesRun(1:end).nWaves));
 WavesPerTrialInit = mean( horzcat(Waves.wavesInit(1:end).nWaves),'all');
-totalWavesInit =  sum( horzcat(Waves.wavesInit(1:end).nWaves));
 WavesPerTrialTerm= mean( horzcat(Waves.wavesTerm(1:end).nWaves),'all');
 totalWavesTerm =  sum( horzcat(Waves.wavesTerm(1:end).nWaves));
 
@@ -41,36 +40,36 @@ if plot == 1
     subplot(4,1,1);
     histfit(speedCombRest,100,'kernel');
     xline(avgSpeedRest,'-r',{'Mean speed = ' num2str(avgSpeedRest) ' cm/s'});
-    xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Rest');xlim([0 inf]);
+    xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Rest');
     subplot(4,1,2);
     histfit(speedCombInit,100,'kernel');
     xline(avgSpeedInit,'-r',{'Mean speed = ' num2str(avgSpeedInit) ' cm/s'});
-    xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Initiation');xlim([0 inf]);
+    xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Initiation');
     subplot(4,1,3);
     histfit(speedCombRun,100,'kernel');
     xline(avgSpeedRun,'-r',{'Mean speed = ' num2str(avgSpeedRun) ' cm/s'});
-    xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Run');xlim([0 inf]);
+    xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Run');
     subplot(4,1,4);
     histfit(speedCombTerm,100,'kernel');
     xline(avgSpeedTerm,'-r',{'Mean speed = ' num2str(avgSpeedTerm) ' cm/s'});
-    xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Motion Term');xlim([0 inf]);
+    xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Motion Term');
 
     figure('Name','Wave speeds in Rest, Initiation, Running and Termination');
     group = [ones(size(speedCombRest')); 2.*ones(size(speedCombInit')); 3.*ones(size(speedCombRun')); 4.*ones(size(speedCombTerm'))];
     boxplot([speedCombRest';speedCombInit';speedCombRun';speedCombTerm'],group,'BoxStyle','filled','PlotStyle','compact');
-    set(gca,'xtick',1:4,'XTickLabel',{'Rest','Initiation','Run','Termination'});
+    set(gca,'XTickLabel',{'Rest','Initiation','Run','Termination'});
     ylabel('Wave speed in cm/s');
 end
 
 
 % Wavelength stats
-lCombRest = horzcat(Waves.wavesRest(1:end).wavelength);
+lCombRest = horzcat(Waves.wavesRest(1:end).l);
 avglRest = mean(lCombRest);
-lCombRun = horzcat(Waves.wavesRun(1:end).wavelength);
+lCombRun = horzcat(Waves.wavesRun(1:end).l);
 avglRun = mean(lCombRun);
-lCombInit = horzcat(Waves.wavesInit(1:end).wavelength);
+lCombInit = horzcat(Waves.wavesInit(1:end).l);
 avglInit = mean(lCombInit);
-lCombTerm = horzcat(Waves.wavesTerm(1:end).wavelength);
+lCombTerm = horzcat(Waves.wavesTerm(1:end).l);
 avglTerm = mean(lCombTerm);
 
 if plot == 1
@@ -78,24 +77,24 @@ if plot == 1
     subplot(4,1,1);
     histfit(lCombRest,100,'kernel');
     xline(avglRest,'-r',{'Mean l = ' num2str(avglRest) ' cm'});
-    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength : Rest');xlim([0 inf]);
+    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength : Rest');
     subplot(4,1,2);
     histfit(lCombInit,100,'kernel');
     xline(avglInit,'-r',{'Mean l = ' num2str(avglInit) ' cm'});
-    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength : Initiation');xlim([0 inf]);
+    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength : Initiation');
     subplot(4,1,3);
     histfit(lCombRun,100,'kernel');
     xline(avglRun,'-r',{'Mean l = ' num2str(avglRun) ' cm'});
-    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength : Run');xlim([0 inf]);
+    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength : Run');
     subplot(4,1,4);
     histfit(lCombTerm,100,'kernel');
     xline(avglTerm,'-r',{'Mean l = ' num2str(avglTerm) ' cm'});
-    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength : Motion Term');xlim([0 inf]);
+    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength : Motion Term');
 
     figure('Name','Wavelength in Rest, Initiation, Running and Termination');
     group = [ones(size(lCombRest')); 2.*ones(size(lCombInit')); 3.*ones(size(lCombRun')); 4.*ones(size(lCombTerm'))];
     boxplot([lCombRest';lCombInit';lCombRun';lCombTerm'],group,'BoxStyle','filled','PlotStyle','compact');
-    set(gca,'xtick',1:4,'XTickLabel',{'Rest','Initiation','Run','Termination'});
+    set(gca,'XTickLabel',{'Rest','Initiation','Run','Termination'});
     ylabel('Wavelength in cm');
 end
 
@@ -115,23 +114,23 @@ avgdirTerm = mean(dirCombTerm);
 
 if plot == 1
     figure('Name','Histogram of wave direction');
-    subplot(2,2,1);
+    subplot(4,1,1);
     polarhistogram(dirCombRest,30);
     title('Wave Direction : Rest');
-    subplot(2,2,2);
+    subplot(4,1,2);
     polarhistogram(dirCombInit,30);
     title('Wave Direction : Motion Initiation');
-    subplot(2,2,3);
+    subplot(4,1,3);
     polarhistogram(dirCombRun,30);
     title('Wave Direction : Run');
-    subplot(2,2,4);
+    subplot(4,1,4);
     polarhistogram(dirCombTerm,30);
     title('Wave Direction : Motion Termination');
 
     figure('Name','Wave direction in Rest, Initiation, Running and Termination');
     group = [ones(size(dirCombRest')); 2.*ones(size(dirCombInit')); 3.*ones(size(dirCombRun')); 4.*ones(size(dirCombTerm'))];
     boxplot([rad2deg(dirCombRest)';rad2deg(dirCombInit)';rad2deg(dirCombRun)';rad2deg(dirCombTerm)'],group,'BoxStyle','filled','PlotStyle','compact');
-    set(gca,'xtick',1:4,'XTickLabel',{'Rest','Initiation','Run','Termination'});
+    set(gca,'XTickLabel',{'Rest','Initiation','Run','Termination'});
     ylabel('Wave direction in degrees');
 end
 
@@ -194,7 +193,7 @@ wavesStat.dirTerm = dirCombTerm;
 wavesStat.avgdirTerm = avgdirTerm;
 
 wavesStat.WavesPerTrialRest = WavesPerTrialRest;
-wavesStat.totalWavesRest = totalWavesRest;
+wavesStat.totalWavesRest = totalWaveRest;
 wavesStat.WavesPerTrialInit = WavesPerTrialInit;
 wavesStat.totalWavesInit = totalWavesInit;
 wavesStat.WavesPerTrialRun = WavesPerTrialRun;

@@ -341,6 +341,13 @@ gammaWaves.wavesRun = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder.runTrialTime,
 gammaWaves.wavesInit = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder.initTrialTime,parameters);
 gammaWaves.wavesTerm = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder.termTrialTime,parameters);
 
+
+% Getting stats 
+plotOption = 1;
+[WaveStatsStates(1)] = getWaveStatsStates(Waves,parameters,plotOption);
+[WaveStatsStates(2)] = getWaveStatsStates(thetaWaves,parameters,plotOption);
+[WaveStatsStates(3)] = getWaveStatsStates(betaWaves,parameters,plotOption);
+[WaveStatsStates(4)] = getWaveStatsStates(gammaWaves,parameters,plotOption);
 %% PLotting LFP 
 figure();
 for i=1:32
