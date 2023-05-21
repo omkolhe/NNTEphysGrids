@@ -18,10 +18,10 @@ speedCombStop = horzcat(Waves.wavesStop(1:end).speed);
 avgSpeedStop = mean(speedCombStop);
 
 % Perform the t-test.
-[t, p] = ttest2(speedComb, speedCombStop);
+[p, t] = ranksum(speedComb, speedCombStop);
 % Print the results.
 disp('Wave Speed')
-disp('t-statistic:');
+disp('h-statistic:');
 disp(t);
 disp('p-value:');
 disp(p);
@@ -40,9 +40,47 @@ if plot == 1
 
     figure('Name','Wave speeds in motion Initiation and termination');
     group = [ones(size(speedComb')); 2.*ones(size(speedCombStop'))];
-    boxplot([speedComb';speedCombStop'],group);
+    boxplot([speedComb';speedCombStop'],group,'BoxStyle','filled','PlotStyle','compact');
     set(gca,'XTickLabel',{'Initiation','Termination'});
+    ylabel('Wave speed in cm/s');
 end
+
+
+% Wavelength stats
+lComb = horzcat(Waves.wavesStart(1:end).wavelength);
+avgl = mean(lComb);
+
+lCombStop = horzcat(Waves.wavesStop(1:end).wavelength);
+avglStop = mean(lCombStop);
+
+% Perform the t-test.
+[p, t] = ranksum(lComb, lCombStop);
+% Print the results.
+disp('Wavelength')
+disp('h-statistic:');
+disp(t);
+disp('p-value:');
+disp(p);
+
+
+if plot == 1
+    figure('Name','Histogram of wavelength in motion Initiation and termination');
+    subplot(2,1,1);
+    histogram(lComb,100);
+    xline(avgl,'-r',{'Mean wavelength = ' num2str(avgl) ' cm'});
+    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength: Motion Initiation');
+    subplot(2,1,2);
+    histogram(lStop,100);
+    xline(avglStop,'-r',{'Mean speed = ' num2str(avglStop) ' cm'});
+    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength : Motion Termination');
+
+    figure('Name','Wavelength in motion Initiation and termination');
+    group = [ones(size(lComb')); 2.*ones(size(lCombStop'))];
+    boxplot([lComb';lCombStop'],group,'BoxStyle','filled','PlotStyle','compact');
+    set(gca,'XTickLabel',{'Initiation','Termination'});
+    xlabel('Wavelength in cm');
+end
+
 
 % Wave direction stats
 dirComb = horzcat(Waves.wavesStart(1:end).waveDir);
@@ -50,10 +88,10 @@ avgDir = mean(dirComb);
 dirCombStop = horzcat(Waves.wavesStop(1:end).waveDir);
 avgDirStop = mean(dirCombStop);
 
-[t, p] = ttest2(dirComb, sCombStop);
+[p, t] = ranksum(dirComb, dirCombStop);
 % Print the results.
-disp('Wave Speed')
-disp('t-statistic:');
+disp('Wave Direction')
+disp('h-statistic:');
 disp(t);
 disp('p-value:');
 disp(p);
@@ -70,7 +108,7 @@ if plot == 1
 
     figure('Name','Wave Direction in motion Initiation and termination');
     group = [ones(size(dirComb'));2.*ones(size(dirCombStop'))];
-    boxplot([rad2deg(dirComb)';rad2deg(dirCombStop)'],group);
+    boxplot([rad2deg(dirComb)';rad2deg(dirCombStop)'],group,'BoxStyle','filled','PlotStyle','compact');
     set(gca,'XTickLabel',{'Initiation','Termination'});
 end
 

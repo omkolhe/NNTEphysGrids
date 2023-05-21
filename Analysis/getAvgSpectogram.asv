@@ -1,0 +1,35 @@
+function [globalAvgSpectrogram, avgSpectrogramCWT] = getAvgSpectogram(xf,LFP,trialTime)
+
+
+for trialno = 1:size(Encoder.velTrig,2)
+    xf = xf(:,:,trialTime(trialno,3):trialTime(trialno,4));
+    goodTrial.time = LFP.times(trialTime(trialno,3):trialTime(trialno,4));
+    goodTrial.relTime = Encoder.timeWindow2;
+    figure();
+    for i=1:32
+        subplot(parameters.rows,parameters.cols,i);
+%         if ismember(i,Intan.badChMap), continue; end
+        calCWTSpectogram(squeeze(xf(floor((i-1)/parameters.cols)+1,mod(i-1,parameters.cols)+1,:)),goodTrial.relTime,1024,20,[1 45],0);
+    %     [s,f,t,ps,fc,tc] = spectrogram(squeeze(xf(floor((i-1)/cols)+1,mod(i-1,cols)+1,:)),25,16,1024,1024,'yaxis','onesided');
+    %     imagesc(t,f(10:45),abs(ps(10:45,:)));hold on; xline(301/1024,'-r', 'LineWidth',2);set(gca,'YDir','normal') 
+    end
+    
+    % Average spectrogram across all channels
+    for i=1:parameters.rows
+        for j=1:parameters.cols
+            [spectrogramCh((i-1)*parameters.cols + j,:,:) ,fwt] = calCWTSpectogram(squeeze(xf(parameters.rows,parameters.cols,:)),goodTrial.relTime,1024,20,[1 45],0);
+        end
+    end
+    avgSpectrogramCWT(trialno,:,:) = mean(spectrogramCh,1);
+end
+figure();
+globalAvgSpectrogram = mean(avgSpectrogramCWT,1);
+globalAvgVel = mean(Encoder.velTrial,1);
+subplot(2,1,1);
+imagesc(goodTrial.relTime,fwt,squeeze(globalAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram');ylabel('Frequency (Hz)');xlabel('Time (s)');
+c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
+subplot(2,1,2);
+plot(Encoder.timeWindow1,globalAvgVel,'-r','LineWidth',2);
+ylabel('Velocity (cm/s)');xlabel('Time (ms)');
+end
+

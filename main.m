@@ -136,6 +136,8 @@ parameters.rhoThres = gammarhoThres;
 gammaWaves.wavesStart = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder.trialTime,parameters);
 gammaWaves.wavesStop = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder.trialTimeStop,parameters);
 
+
+
 %% PLotting to check visually
 trialPlot = 4;
 plot_wave_examples( LFP.xf(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(trialPlot,4)), ...
@@ -148,11 +150,11 @@ plot_wave_examples( LFP.xfbeta(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialT
     options, trialPlot, betaWaves,betarhoThres);
 
 %% Waves accross trials 
-
-[WaveStats(1)] = getWaveStats(Waves,parameters,0);
-[WaveStats(2)] = getWaveStats(thetaWaves,parameters,0);
-[WaveStats(3)] = getWaveStats(betaWaves,parameters,0);
-[WaveStats(4)] = getWaveStats(gammaWaves,parameters,0);
+plotOption = 1;
+[WaveStats(1)] = getWaveStats(Waves,parameters,plotOption);
+[WaveStats(2)] = getWaveStats(thetaWaves,parameters,plotOption);
+[WaveStats(3)] = getWaveStats(betaWaves,parameters,plotOption);
+[WaveStats(4)] = getWaveStats(gammaWaves,parameters,plotOption);
 
 %% Beta event detection 
 avgBetaband = mean(LFP.beta_band,1);
@@ -216,7 +218,17 @@ for i=1:numel(rungapfill)
     Encoder.state(runindx(rungapfill(i)-1):runindx(rungapfill(i))) = 2;
 end
 
+%% Wave detecion for entire time 
+parameters.rhoThres= rhoThres;
+Wavesall = detectWaves(LFP.xgp,LFP.wt,[0,0,1,size(LFP.xgp,3)],parameters);
+WaveStatsSingle(Wavesall,parameters,1);
+
+
 %% Wavelet spectrogram
+[globalAvgSpectrogram, avgSpectrogramCWT] = getAvgSpectogram(LFP.xf,LFP,Encoder,Encoder.trialTime,Encoder.velTrial,parameters);
+[globalAvgSpectrogramStop, avgSpectrogramCWTStop] = getAvgSpectogram(LFP.xf,LFP,Encoder,Encoder.trialTimeStop,Encoder.velTrialStop,parameters);
+
+
 for trialno = 1:size(Encoder.velTrig,2)
     goodTrial.xf = LFP.xf(:,:,Encoder.trialTime(trialno,3):Encoder.trialTime(trialno,4));
     goodTrial.xgp = LFP.xgp(:,:,Encoder.trialTime(trialno,3):Encoder.trialTime(trialno,4));
@@ -225,7 +237,7 @@ for trialno = 1:size(Encoder.velTrig,2)
     figure();
     for i=1:32
         subplot(parameters.rows,parameters.cols,i);
-        if ismember(i,Intan.badChMap), continue; end
+%         if ismember(i,Intan.badChMap), continue; end
         calCWTSpectogram(squeeze(goodTrial.xf(floor((i-1)/parameters.cols)+1,mod(i-1,parameters.cols)+1,:)),goodTrial.relTime,1024,20,[1 45],0);
     %     [s,f,t,ps,fc,tc] = spectrogram(squeeze(goodTrial.xf(floor((i-1)/cols)+1,mod(i-1,cols)+1,:)),25,16,1024,1024,'yaxis','onesided');
     %     imagesc(t,f(10:45),abs(ps(10:45,:)));hold on; xline(301/1024,'-r', 'LineWidth',2);set(gca,'YDir','normal') 
