@@ -91,6 +91,21 @@ for i=1:Encoder.nTrigStop
     hold on;xline(0);title("Velocity for Termination Trials");
     text(0.75, 19, 'n = ' + string(Encoder.nTrigStop),'HorizontalAlignment', 'right','VerticalAlignment', 'middle','Color', 'black');
 end
+%% Wavelet spectrogram
+[globalAvgSpectrogram, avgSpectrogramCWT,avgVel] = getAvgSpectogram(LFP.xf,LFP,Encoder,Encoder.trialTime,Encoder.velTrial,parameters);
+[globalAvgSpectrogramStop, avgSpectrogramCWTStop, avgVelStop] = getAvgSpectogram(LFP.xf,LFP,Encoder,Encoder.trialTimeStop,Encoder.velTrialStop,parameters);
+
+figure('Name','Trial Averaged Wavelet Spectrogram for Motion Inititation');
+globalAvgVel = interp(mean(Encoder.velTrial,1),LFP.Fs/Encoder.fs);
+imagesc(Encoder.timeWindow2,fwt,squeeze(globalAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram');ylabel('Frequency (Hz)');xlabel('Time (s)');
+c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);hold on; yyaxis right
+plot(Encoder.timeWindow2,globalAvgVel,'-w','LineWidth',2.5);ylabel('Velocity (cm/s)');xlabel('Time (ms)');
+
+figure('Name','Trial Averaged Wavelet Spectrogram for Motion Termination');
+globalAvgVelStop = interp(mean(Encoder.velTrialStop,1),LFP.Fs/Encoder.fs);
+imagesc(Encoder.timeWindow2,fwt,squeeze(globalAvgSpectrogramStop));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram');ylabel('Frequency (Hz)');xlabel('Time (s)');
+c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);hold on;yyaxis right
+plot(Encoder.timeWindow2,globalAvgVelStop,'-w','LineWidth',2.5);ylabel('Velocity (cm/s)');xlabel('Time (ms)');
 
 %% Initializing plotting options
 options.subject = 'W'; % this can be 'W' or 'T' (two marmoset subjects)
@@ -136,8 +151,6 @@ parameters.rhoThres = gammarhoThres;
 gammaWaves.wavesStart = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder.trialTime,parameters);
 gammaWaves.wavesStop = detectWaves(LFP.xgpgamma,LFP.wtgamma,Encoder.trialTimeStop,parameters);
 
-
-
 %% PLotting to check visually
 trialPlot = 4;
 plot_wave_examples( LFP.xf(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(trialPlot,4)), ...
@@ -155,6 +168,11 @@ plotOption = 1;
 [WaveStats(2)] = getWaveStats(thetaWaves,parameters,plotOption);
 [WaveStats(3)] = getWaveStats(betaWaves,parameters,plotOption);
 [WaveStats(4)] = getWaveStats(gammaWaves,parameters,plotOption);
+
+%% Wave detecion for entire time 
+parameters.rhoThres= rhoThres;
+Wavesall = detectWaves(LFP.xgp,LFP.wt,[0,0,1,size(LFP.xgp,3)],parameters);
+WaveStatsSingle(Wavesall,parameters,1);
 
 %% Beta event detection 
 avgBetaband = mean(LFP.beta_band,1);
@@ -192,7 +210,12 @@ end
 figure(); imagesc(nbetaperElec');%set(gca,'YDir','normal');
 title('Spatial map of beta events accross all trials'); colorbar;
 
-%% Rest, Initiation, Running
+%% Rest, Initiation, Running, Termination
+% 0 - Rest
+% 1 - Initiation
+% 2 - Running 
+% 3 - Termination
+
 Encoder.acc = zeros(1,numel(Encoder.time));
 Encoder.acc(2:end) = diff(Encoder.vel)*Encoder.fs;
 
@@ -203,69 +226,85 @@ fillFindingGap = 1*Encoder.fs;
 velEdges = -segmentSize:segmentSize:maxVel+segmentSize;
 Encoder.discVel = (discretize(Encoder.vel,velEdges)-1)*segmentSize;
 
-Encoder.state = zeros(size(Encoder.discVel,2),1);
-Encoder.state(Encoder.discVel>4) = 2;
-Encoder.state(Encoder.discVel<=4 & Encoder.discVel >0.5) = 1;
+VelTrigLow = 0.5;  % Lower threshold for rest in cm/s
+VelTrigHigh = 8; % Higher threshold for running in cm/s
 
-figure();plot(Encoder.discVel); hold on; plot(Encoder.state);
+Encoder.state = zeros(size(Encoder.discVel,2),1);
+Encoder.state(Encoder.discVel>VelTrigHigh) = 2;
+Encoder.state(Encoder.discVel<=VelTrigHigh & Encoder.discVel >VelTrigLow) = 1;
 
 runindx = find(Encoder.state == 2);
 diffrunindx = zeros(numel(runindx),1);
 diffrunindx(2:end) = diff(runindx);
 rungapfill = find(diffrunindx<=fillFindingGap & diffrunindx>1);
-
 for i=1:numel(rungapfill)
     Encoder.state(runindx(rungapfill(i)-1):runindx(rungapfill(i))) = 2;
 end
 
-%% Wave detecion for entire time 
-parameters.rhoThres= rhoThres;
-Wavesall = detectWaves(LFP.xgp,LFP.wt,[0,0,1,size(LFP.xgp,3)],parameters);
-WaveStatsSingle(Wavesall,parameters,1);
-
-
-%% Wavelet spectrogram
-[globalAvgSpectrogram, avgSpectrogramCWT] = getAvgSpectogram(LFPxf,LFP,Encoder,trialTime,velTrial,parameters);
-
-for trialno = 1:size(Encoder.velTrig,2)
-    goodTrial.xf = LFP.xf(:,:,Encoder.trialTime(trialno,3):Encoder.trialTime(trialno,4));
-    goodTrial.xgp = LFP.xgp(:,:,Encoder.trialTime(trialno,3):Encoder.trialTime(trialno,4));
-    goodTrial.time = LFP.times(Encoder.trialTime(trialno,3):Encoder.trialTime(trialno,4));
-    goodTrial.relTime = Encoder.timeWindow2;
-    figure();
-    for i=1:32
-        subplot(parameters.rows,parameters.cols,i);
-%         if ismember(i,Intan.badChMap), continue; end
-        calCWTSpectogram(squeeze(goodTrial.xf(floor((i-1)/parameters.cols)+1,mod(i-1,parameters.cols)+1,:)),goodTrial.relTime,1024,20,[1 45],0);
-    %     [s,f,t,ps,fc,tc] = spectrogram(squeeze(goodTrial.xf(floor((i-1)/cols)+1,mod(i-1,cols)+1,:)),25,16,1024,1024,'yaxis','onesided');
-    %     imagesc(t,f(10:45),abs(ps(10:45,:)));hold on; xline(301/1024,'-r', 'LineWidth',2);set(gca,'YDir','normal') 
+% Segmenting state = 1 into initiation and termination
+motionindx = find(Encoder.state == 1);
+diffmotionindx = zeros(numel(motionindx),1);
+diffmotionindx(2:end) = diff(motionindx);
+motiongap = find(diffmotionindx > 1);
+for i = 1:numel(motiongap)
+    if i==1
+        st = motionindx(1);
+        sp = motionindx(motiongap(1)-1);
+    else
+        st = motionindx(motiongap(i-1));
+        sp = motionindx(motiongap(i)-1);
     end
+    beforeState = Encoder.state(st-1);
+    afterState = Encoder.state(sp+1);
     
-    % Average spectrogram across all channels
-    for i=1:parameters.rows
-        for j=1:parameters.cols
-            [spectrogramCh((i-1)*parameters.cols + j,:,:) ,fwt] = calCWTSpectogram(squeeze(goodTrial.xf(parameters.rows,parameters.cols,:)),goodTrial.relTime,1024,20,[1 45],0);
-        end
+    if(beforeState == 0 && afterState == 2)
+        Encoder.state(st:sp) = 1;
+    elseif beforeState == 2 && afterState == 0
+            Encoder.state(st:sp) = 3;
+    elseif beforeState == 0 && afterState == 0
+            Encoder.state(st:sp) = 0;
     end
-    avgSpectrogramCWT(trialno,:,:) = mean(spectrogramCh,1);
 end
-figure();
-globalAvgSpeectrogram = mean(avgSpectrogramCWT,1);
-globalAvgVel = mean(Encoder.velTrial,1);
-subplot(2,1,1);
-imagesc(goodTrial.relTime,fwt,squeeze(globalAvgSpeectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram');ylabel('Frequency (Hz)');xlabel('Time (s)');
-c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
-subplot(2,1,2);
-plot(Encoder.timeWindow1,globalAvgVel,'-r','LineWidth',2);
-ylabel('Velocity (cm/s)');xlabel('Time (ms)');
 
-%     subplot(2,1,1);
-%     imagesc(goodTrial.relTime,fwt,squeeze(avgSpectrogramCWT(1,:,:)));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram');ylabel('Frequency (Hz)');xlabel('Time (s)');
-%     c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
-%     subplot(2,1,2);
-%     plot(Encoder.timeWindow1,Encoder.vel(Encoder.trialTime(trialno,1):Encoder.trialTime(trialno,2)),'-r','LineWidth',2);
-%     ylabel('Velocity (cm/s)');xlabel('Time (ms)');
+figure();plot(Encoder.discVel); hold on; plot(Encoder.state);
 
+% Getting trial times for each state
+diffstate = zeros(numel(Encoder.state),1);
+diffstate(2:end) = diff(Encoder.state);
+diffstateindx = find(diffstate ~= 0);
+Encoder.restTrialTime = [];
+Encoder.initTrialTime = [];
+Encoder.runTrialTime = [];
+Encoder.termTrialTime = [];
+
+for i=1:numel(diffstateindx)
+    if i==1
+        st = 1;
+        sp = diffstateindx(1)-1;
+    else
+        st = diffstateindx(i-1);
+        sp = diffstateindx(i)-1;
+    end
+
+    if(sp-st < 1*Encoder.fs)
+        continue;
+    end
+
+    stLFP = max(find(LFP.times<=Encoder.time(Encoder.velTrig(1,i))));
+    spLFP = max(find(LFP.times<=sp));
+
+    stateestimate = mean(Encoder.state(st:sp),'all');
+
+    if stateestimate <= 0.5
+        Encoder.restTrialTime = [Encoder.restTrialTime; [st sp stLFP spLFP]];
+    elseif stateestimate >= 0.5 && stateestimate <= 1.5 
+        Encoder.initTrialTime = [Encoder.initTrialTime; [st sp stLFP spLFP]];
+    elseif stateestimate >= 1.5 && stateestimate <= 2.5 
+        Encoder.runTrialTime = [Encoder.runTrialTime; [st sp stLFP spLFP]];
+    else
+        Encoder.termTrialTime = [Encoder.termTrialTime; [st sp stLFP spLFP]];
+    end
+end
 %% PLotting LFP 
 figure();
 for i=1:32

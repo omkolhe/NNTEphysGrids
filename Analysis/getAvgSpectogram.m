@@ -1,4 +1,4 @@
-function [globalAvgSpectrogram, avgSpectrogramCWT] = getAvgSpectogram(xf,LFP,Encoder,trialTime,velTrial,parameters)
+function [globalAvgSpectrogram, avgSpectrogramCWT,globalAvgVel] = getAvgSpectogram(xf,LFP,Encoder,trialTime,velTrial,parameters)
 
 
 for trialno = 1:size(trialTime,1)
