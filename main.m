@@ -44,7 +44,7 @@ LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.goodChMap); % Cre
 
 %% Loading Encoder Data
 [Encoder] = readPos(parameters);
-figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
+figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-20 20]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
 Encoder.vel = abs(Encoder.vel);
 %Encoder.vel(Encoder.vel<0) = 0;
 
@@ -67,8 +67,8 @@ LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,80,4,1000);
 [X,Y] = meshgrid( 1:parameters.cols, 1:parameters.rows );
 
 %% Segementing trial windows
-windowBeforeTrig = 1; % in seconds
-windowAfterTrig = 1; % in seconds
+windowBeforeTrig = 5; % in seconds
+windowAfterTrig = 5; % in seconds
 Encoder = getVelTrigTrials(Encoder,windowBeforeTrig,windowAfterTrig,LFP.Fs); % Selecting good trials for initiation
 Encoder = getVelTrigTrialsStop(Encoder,windowBeforeTrig,windowAfterTrig,LFP.Fs); % Selecting good trials for stopping
 Encoder.timeWindow1 = -1*windowBeforeTrig:1/Encoder.fs:windowAfterTrig-1/Encoder.fs; % Time series for plotting
@@ -79,32 +79,32 @@ subplot(1,2,1);
 for i=1:Encoder.nTrig
     a = plot(Encoder.timeWindow1,Encoder.vel(Encoder.trialTime(i,1):Encoder.trialTime(i,2)),'LineWidth',1.5);
     Encoder.velTrial(i,:) = Encoder.vel(Encoder.trialTime(i,1):Encoder.trialTime(i,2));
-    ylim([0 20]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
-    hold on;xline(0);title("Velocity for Initiation Trials");
+    ylim([0 20]);xlabel('Time (in s)');ylabel('Velocity in cm/s');%yline([2 -2]);
+    hold on;xline(0,'--');title("Velocity for Initiation Trials");box off;
     text(0.75, 19, 'n = ' + string(Encoder.nTrig),'HorizontalAlignment', 'right','VerticalAlignment', 'middle','Color', 'black');
 end
 subplot(1,2,2);
 for i=1:Encoder.nTrigStop
     plot(Encoder.timeWindow1,Encoder.vel(Encoder.trialTimeStop(i,1):Encoder.trialTimeStop(i,2)),'LineWidth',1.5);
     Encoder.velTrialStop(i,:) = Encoder.vel(Encoder.trialTimeStop(i,1):Encoder.trialTimeStop(i,2));
-    ylim([0 20]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
-    hold on;xline(0);title("Velocity for Termination Trials");
+    ylim([0 20]);xlabel('Time (in s)');ylabel('Velocity in cm/s');%yline([2 -2]);
+    hold on;xline(0,'--');title("Velocity for Termination Trials"); box off;
     text(0.75, 19, 'n = ' + string(Encoder.nTrigStop),'HorizontalAlignment', 'right','VerticalAlignment', 'middle','Color', 'black');
 end
 %% Wavelet spectrogram
-[globalAvgSpectrogram, avgSpectrogramCWT,avgVel] = getAvgSpectogram(LFP.xf,LFP,Encoder,Encoder.trialTime,Encoder.velTrial,parameters);
-[globalAvgSpectrogramStop, avgSpectrogramCWTStop, avgVelStop] = getAvgSpectogram(LFP.xf,LFP,Encoder,Encoder.trialTimeStop,Encoder.velTrialStop,parameters);
+[globalAvgSpectrogram, avgSpectrogramCWT,avgVel,fwt] = getAvgSpectogram(LFP.LFPdatacube,LFP,Encoder,Encoder.trialTime(:,:),Encoder.velTrial,parameters,[40 90]);
+[globalAvgSpectrogramStop, avgSpectrogramCWTStop, avgVelStop,fwtStop] = getAvgSpectogram(LFP.LFPdatacube,LFP,Encoder,Encoder.trialTimeStop(:,:),Encoder.velTrialStop,parameters,[40 90]);
 
 figure('Name','Trial Averaged Wavelet Spectrogram for Motion Inititation');
 globalAvgVel = interp(mean(Encoder.velTrial,1),LFP.Fs/Encoder.fs);
 imagesc(Encoder.timeWindow2,fwt,squeeze(globalAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram');ylabel('Frequency (Hz)');xlabel('Time (s)');
-c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);hold on; yyaxis right
+c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);hold on; yyaxis right; box off;
 plot(Encoder.timeWindow2,globalAvgVel,'-w','LineWidth',2.5);ylabel('Velocity (cm/s)');xlabel('Time (ms)');
 
 figure('Name','Trial Averaged Wavelet Spectrogram for Motion Termination');
 globalAvgVelStop = interp(mean(Encoder.velTrialStop,1),LFP.Fs/Encoder.fs);
-imagesc(Encoder.timeWindow2,fwt,squeeze(globalAvgSpectrogramStop));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram');ylabel('Frequency (Hz)');xlabel('Time (s)');
-c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);hold on;yyaxis right
+imagesc(Encoder.timeWindow2,fwtStop,squeeze(globalAvgSpectrogramStop));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram');ylabel('Frequency (Hz)');xlabel('Time (s)');
+c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);hold on;yyaxis right; box off;
 plot(Encoder.timeWindow2,globalAvgVelStop,'-w','LineWidth',2.5);ylabel('Velocity (cm/s)');xlabel('Time (ms)');
 
 %% Initializing plotting options
@@ -355,36 +355,6 @@ for i=1:32
     if ismember(i,Intan.badChMap), continue; end
     plot(goodTrial.relTime,squeeze(goodTrial.xf(floor((i-1)/parameters.cols)+1,mod(i-1,parameters.cols)+1,:))');xline(0,'-r');
 end
-%% Calculating waves without windowing
-p = LFP.xgp(:,:,:);
-wt = LFP.wt(:,:,:);
-%p = arrayfun(@(jj) inpaint_nans(p(:,:,jj)),1:size(p,3));
-evaluationPoints = find_evaluation_points(p,pi,0.2);
-%plot_evaluation_points( p, evaluationPoints );
-[pm,pd,dx,dy] = phase_gradient_complex_multiplication( p, spacing);
-% Phase gradient directionality 
-PGD = phase_gradient_directionality(pm,dx,dy);
-% Wavelength
-wl = 1./abs(pm);
-% Instantaneous speed   
-s = instantaneous_speed(wt,pm);
-% divergence calculation
-source = find_source_points(evaluationPoints, X, Y, dx, dy );
-% phase correlation with distance (\rho_{\phi,d} measure)
-rho = zeros( 1, length(evaluationPoints) );
-for jj = 1:length(evaluationPoints)
-    ph = angle( p(:,:,evaluationPoints(jj)) );
-    rho(jj) = phase_correlation_distance( ph,source(:,jj), spacing );
-end
-indxBadWave = find(rho<rhoThres);
-evaluationPoints(indxBadWave) = [];
-source(:,indxBadWave) = [];
-rho(indxBadWave) = [];
-nWaves = size(evaluationPoints,2);
-
-figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
-hold on;xline(evaluationPoints/LFP.Fs);
-
 %% Random code
 % %% Plotting video of phase 
 % figure(); hold on;
@@ -440,33 +410,33 @@ hold on;xline(evaluationPoints/LFP.Fs);
 % 
 % %% 
 % 
-% % dt = 1 / 1024; T = size(LFP.LFP,2) / Fs; time = dt:dt:T;
-% time = LFP.times(500:6000);
-% xw = squeeze(LFP.xf(4,3,500:6000));
-% xwRaw = squeeze(LFP.LFPdatacube(4,3,500:6000));
-% xgp1 = squeeze(LFP.xgp(4,3,500:6000));
-% % main figure
-% fg1 = figure; hold on; ax1 = gca; 
-% plot( time, xw, 'linewidth', 2, 'color', 'k' ); h4 = cline( time, xw, [], angle(xgp1) );
-% xlim([1 2])
-% set( h4, 'linestyle', '-', 'linewidth', 2  ), axis off
-% l1 = line( [.1 .2], [-125 -125] ); set( l1, 'linewidth', 4, 'color', 'k' )
-% l2 = line( [.1 .1], [-125 -75] ); set( l2, 'linewidth', 4, 'color', 'k' )
-% 
-% % inset
-% map = colorcet( 'C2' ); colormap( circshift( map, [ 28, 0 ] ) )
-% ax2 = axes; set( ax2, 'position', [0.2116    0.6976    0.0884    0.2000] ); axis image
-% [x1,y1] = pol2cart( angle( exp(1i.*linspace(-pi,pi,100)) ), ones( 1, 100 ) );
-% h3 = cline( x1, y1, linspace(-pi,pi,100) ); axis off; set( h3, 'linewidth', 6 )
-% %%
-% % text labels
-% t1 = text( 0, 0, 'GP' );
-% set( t1, 'fontname', 'arial', 'fontsize', 28, 'fontweight', 'bold', 'horizontalalignment', 'center' )
-% set( gcf, 'currentaxes', ax1 )
-% t2 = text( 0.1260, -146.8832, '100 ms' );
-% set( t2, 'fontname', 'arial', 'fontsize', 24, 'fontweight', 'bold' )
-% t2 = text( 0.0852, -130.2651, '50 \muV' );
-% set( t2, 'fontname', 'arial', 'fontsize', 24, 'fontweight', 'bold', 'rotation', 90 )
+% dt = 1 / 1024; T = size(LFP.LFP,2) / Fs; time = dt:dt:T;
+time = LFP.times(Encoder.trialTime(4,3):Encoder.trialTime(4,4));
+xw = squeeze(LFP.xf(4,3,Encoder.trialTime(4,3):Encoder.trialTime(4,4)));
+xwRaw = squeeze(LFP.LFPdatacube(4,3,Encoder.trialTime(4,3):Encoder.trialTime(4,4)));
+xgp1 = squeeze(LFP.xgp(4,3,Encoder.trialTime(4,3):Encoder.trialTime(4,4)));
+% main figure
+fg1 = figure; hold on; ax1 = gca; 
+plot( time, xwRaw, 'linewidth', 1, 'color', 'k' ); h4 = cline( time, xw, [], angle(xgp1) );
+xlim([166 166.5])
+set( h4, 'linestyle', '-', 'linewidth', 2  ), axis off
+l1 = line( [.1 .2], [-125 -125] ); set( l1, 'linewidth', 4, 'color', 'k' )
+l2 = line( [.1 .1], [-125 -75] ); set( l2, 'linewidth', 4, 'color', 'k' )
+
+% inset
+map = colorcet( 'C2' ); colormap( circshift( map, [ 28, 0 ] ) )
+ax2 = axes; set( ax2, 'position', [0.2116    0.6976    0.0884    0.2000] ); axis image
+[x1,y1] = pol2cart( angle( exp(1i.*linspace(-pi,pi,100)) ), ones( 1, 100 ) );
+h3 = cline( x1, y1, linspace(-pi,pi,100) ); axis off; set( h3, 'linewidth', 6 )
+%%
+% text labels
+t1 = text( 0, 0, 'GP' );
+set( t1, 'fontname', 'arial', 'fontsize', 28, 'fontweight', 'bold', 'horizontalalignment', 'center' )
+set( gcf, 'currentaxes', ax1 )
+t2 = text( 0.1260, -146.8832, '100 ms' );
+set( t2, 'fontname', 'arial', 'fontsize', 24, 'fontweight', 'bold' )
+t2 = text( 0.0852, -130.2651, '50 \muV' );
+set( t2, 'fontname', 'arial', 'fontsize', 24, 'fontweight', 'bold', 'rotation', 90 )
 % 
 % %% 
 % 
@@ -495,3 +465,115 @@ hold on;xline(evaluationPoints/LFP.Fs);
 % w = IF*2*pi;%(1/s)*(rad) = rad/s, AVG INSTANTANEOUS ANGULAR FREQUENCY across the grid. w = 2pi*f
 % speed(jj) = (w/k).*(1/1000); %(rad/s)/(rad/mm) = (mm/s)*(1m/1000mm) = m/s, speed
 % 
+%%
+
+% speedComb = [WaveStatsT4(1).speed WaveStatsT3(1).speed WaveStatsT2(1).speed];
+% avgSpeed = mean(speedComb);
+% 
+% speedCombStop = [WaveStatsT4(1).speedStop WaveStatsT3(1).speedStop WaveStatsT2(1).speedStop];
+% avgSpeedStop = mean(speedCombStop);
+
+speedComb = [WaveStatsT4(3).speed WaveStatsT3(3).speed WaveStatsT2(3).speed];
+avgSpeed = mean(speedComb);
+
+speedCombStop = [WaveStatsT4(4).speed WaveStatsT3(4).speed WaveStatsT2(4).speed];
+avgSpeedStop = mean(speedCombStop);
+
+% Perform the t-test.
+[p, t] = ranksum(speedComb, speedCombStop);
+% Print the results.
+disp('Wave Speed')
+disp('h-statistic:');
+disp(t);
+disp('p-value:');
+disp(p);
+
+figure('Name','Wave speeds in motion Initiation and termination');
+group = [ones(size(speedComb')); 2.*ones(size(speedCombStop'))]; 
+boxplot([speedComb';speedCombStop'],group,'BoxStyle','filled','PlotStyle','compact');
+set(gca,'xtick',1:2,'XTickLabel',{'Initiation','Termination'});box off;
+ylabel('Wave speed in cm/s');
+
+
+% dirComb = [WaveStatsT2(1).velDir WaveStatsT3(1).velDir]; %WaveStatsT3(1).speed WaveStatsT2(1).speed];
+% avgDir = mean(dirComb);
+% 
+% dirCombStop = [WaveStatsT2(1).velDirStop WaveStatsT3(1).velDirStop]; %WaveStatsT3(1).speedStop WaveStatsT2(1).speedStop];
+% avgvelDirStop = mean(dirCombStop);
+
+dirComb = [ WaveStatsT4(3).velDir]; %WaveStatsT3(1).speed WaveStatsT2(1).speed];
+avgDir = mean(dirComb);
+
+dirCombStop = [ WaveStatsT4(4).velDir]; %WaveStatsT3(1).speedStop WaveStatsT2(1).speedStop];
+avgvelDirStop = mean(dirCombStop);
+
+
+[p, t] = ranksum(dirComb, dirCombStop);
+% Print the results.
+disp('Wave Direction')
+disp('h-statistic:');
+disp(t);
+disp('p-value:');
+disp(p);
+
+
+figure('Name','Polar Histogram for wave direction in Motion Initiation and Termination');
+subplot(2,1,1);
+polarhistogram(dirComb,30); box off;
+title('Wave Direction : Motion Initiation');
+subplot(2,1,2);
+polarhistogram(dirCombStop,30); box off;
+title('Wave Direction : Motion Termination');
+
+figure('Name','Wave Direction in motion Initiation and termination');
+group = [ones(size(dirComb'));2.*ones(size(dirCombStop'))];
+boxplot([rad2deg(dirComb)';rad2deg(dirCombStop)'],group,'BoxStyle','filled','PlotStyle','compact');
+set(gca,'XTickLabel',{'Initiation','Termination'});
+
+
+speedCombRest = [WaveStatsStatesT4(3).speedRest WaveStatsStatesT3(3).speedRest WaveStatsStatesT2(3).speedRest];
+avgSpeedRest = mean(speedCombRest);
+speedCombRun = [WaveStatsStatesT4(3).speedRun WaveStatsStatesT3(3).speedRun WaveStatsStatesT2(3).speedRun];
+avgSpeedRun = mean(speedCombRun);
+speedCombInit = [WaveStatsStatesT4(3).speedInit WaveStatsStatesT3(3).speedInit WaveStatsStatesT2(3).speedInit];
+avgSpeedInit = mean(speedCombInit);
+speedCombTerm = [WaveStatsStatesT4(3).speedTerm WaveStatsStatesT3(3).speedTerm WaveStatsStatesT2(3).speedTerm];
+avgSpeedTerm = mean(speedCombTerm);
+
+% Perform the t-test.
+[p, t] = ranksum(speedCombRun , speedCombTerm);
+% Print the results.
+disp('Wave Speed')
+disp('h-statistic:');
+disp(t);
+disp('p-value:');
+disp(p);
+
+
+figure('Name','Histogram of wave speeds');
+subplot(4,1,1);
+histfit(speedCombRest,100,'kernel');
+xline(avgSpeedRest,'-r',{'Mean speed = ' num2str(avgSpeedRest) ' cm/s'});box off;
+xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Rest');xlim([0 inf]);
+subplot(4,1,2);
+histfit(speedCombInit,100,'kernel');
+xline(avgSpeedInit,'-r',{'Mean speed = ' num2str(avgSpeedInit) ' cm/s'});box off;
+xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Initiation');xlim([0 inf]);
+subplot(4,1,3);
+histfit(speedCombRun,100,'kernel');
+xline(avgSpeedRun,'-r',{'Mean speed = ' num2str(avgSpeedRun) ' cm/s'});box off;
+xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Run');xlim([0 inf]);
+subplot(4,1,4);
+histfit(speedCombTerm,100,'kernel');
+xline(avgSpeedTerm,'-r',{'Mean speed = ' num2str(avgSpeedTerm) ' cm/s'});box off;
+xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Motion Term');xlim([0 inf]);
+
+figure('Name','Wave speeds in Rest, Initiation, Running and Termination');
+group = [ones(size(speedCombRest')); 2.*ones(size(speedCombInit')); 3.*ones(size(speedCombRun')); 4.*ones(size(speedCombTerm'))];
+boxplot([speedCombRest';speedCombInit';speedCombRun';speedCombTerm'],group,'BoxStyle','filled','PlotStyle','compact');
+set(gca,'xtick',1:4,'XTickLabel',{'Rest','Initiation','Run','Termination'});box off;
+ylabel('Wave speed in cm/s');
+
+
+
+

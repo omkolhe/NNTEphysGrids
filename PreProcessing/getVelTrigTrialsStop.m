@@ -18,7 +18,7 @@ for i=1:size(Encoder.velTrigStop,2)
     stopTime1 = Encoder.velTrigStop(1,i)+windowAfterTrig*Encoder.fs - 1;
     stopTime2 = Encoder.velTrigStop(2,i)+windowAfterTrig*LFPFs - 1;
     %     Encoder.newTrig(i) = Encoder.velTrigStop(i);
-    if(mean(Encoder.vel(startTime1:stopTime1-windowAfterTrig*Encoder.fs))< 4)
+    if(mean(Encoder.vel(startTime1:stopTime1-windowAfterTrig*Encoder.fs))< 8)
         Encoder.trialTimeStop(i,1) = NaN;
         Encoder.trialTimeStop(i,2) = NaN;
         Encoder.trialTimeStop(i,3) = NaN;

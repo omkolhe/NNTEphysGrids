@@ -9,7 +9,7 @@ for ii=1:size(trialTime,1)
     Waves(ii).wt = wt(:,:,trialTime(ii,3):trialTime(ii,4));
     %p = arrayfun(@(jj) inpaint_nans(p(:,:,jj)),1:size(p,3));
     Waves(ii).evaluationPoints = find_evaluation_points(Waves(ii).p,pi,0.2);
-    %plot_evaluation_points( p, evaluationPoints );
+    %plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );
     [Waves(ii).pm,Waves(ii).pd,Waves(ii).dx,Waves(ii).dy] = phase_gradient_complex_multiplication( Waves(ii).p, spacing );
     % Phase gradient directionality 
     [Waves(ii).PGD] = phase_gradient_directionality(Waves(ii).pm,Waves(ii).dx,Waves(ii).dy);

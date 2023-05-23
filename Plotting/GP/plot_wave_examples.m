@@ -28,8 +28,14 @@ plot_rho_value = rhoThres; plot_time = 30; pause_length = 0.2;
 % init
 M = load( 'myMap.mat' );
 
+fn = 'filename';
+writerobj = VideoWriter([fn '.avi'],'Uncompressed AVI'); % Initialize movie file
+writerobj.FrameRate = 10;
+open(writerobj);
+
+
 ctr = 1; % wave detections counter
-for jj = 1:length(evaluation_points)
+for jj = 8:8%length(evaluation_points)
     
     % animated wave plot
     if ( rho(jj) > plot_rho_value )
@@ -64,7 +70,8 @@ for jj = 1:length(evaluation_points)
             set( cb, 'position', [0.8509    0.3857    0.0330    0.3167] );
         end
         set( get(cb,'ylabel'), 'string', 'Amplitude (\muV)' ); set( cb, 'linewidth', 2 )
-        
+        writeVideo(writerobj,getframe(gcf)); %grabs current fig frame
+
         % animate plot
         for kk = 1:size(x_plot,3)
             set( h, 'cdata', x_plot(:,:,kk) ); 
@@ -72,10 +79,12 @@ for jj = 1:length(evaluation_points)
             set( get(gca,'title'), 'string', ...
                 sprintf( 'trial %d, wave example %d, %d of %d ms', trial, ctr, kk, size(x_plot,3) ) )
             pause(pause_length); 
+            writeVideo(writerobj,getframe(gcf)); %grabs current fig frame
         end
         
         % increment counter
         ctr = ctr + 1;
-        
+        close(writerobj)
+        disp('Video saved to current directory')
     end
 end
