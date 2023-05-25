@@ -19,7 +19,7 @@ d = nan( size(X,1), size(X,2), length(evaluation_points) );
 for ii = 1:length(evaluation_points)
     d(:,:,ii) = divergence( X, Y, dx(:,:,evaluation_points(ii)), dy(:,:,evaluation_points(ii)) );
 end
-d = smoothn( d, 'robust' );
+% d = smoothn( d, 'robust' );
 
 source = nan( 2, length(evaluation_points) );
 for ii = 1:length(evaluation_points)    

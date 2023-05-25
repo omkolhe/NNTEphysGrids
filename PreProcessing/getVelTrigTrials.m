@@ -24,7 +24,7 @@ for i=1:size(Encoder.velTrig,2)
         Encoder.trialTime(i,3) = NaN;
         Encoder.trialTime(i,4) = NaN;
         rejectedTrigs = [rejectedTrigs i];
-    elseif(mean(Encoder.vel(stopTime1-windowAfterTrig*Encoder.fs:stopTime1+0.0*Encoder.fs))<8)
+    elseif(mean(Encoder.vel(stopTime1-windowAfterTrig*Encoder.fs:stopTime1+0.0*Encoder.fs))<5)
         Encoder.trialTime(i,1) = NaN;
         Encoder.trialTime(i,2) = NaN;
         Encoder.trialTime(i,3) = NaN;

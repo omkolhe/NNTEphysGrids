@@ -4,7 +4,7 @@ function [powerCWT, fwt] = calCWTSpectogram(x,t,Fs,VoicesperOctave,flimit,plot)
 
 assert( numel(x)==numel(t), 'Number of elements in x and t dont match' );
 
-[wt,fwt] = cwt(x,'amor',Fs,VoicesperOctave = VoicesperOctave, FrequencyLimits=flimit); % Calculate the CWT
+[wt,fwt] = cwt(x,'amor',Fs,VoicesperOctave = VoicesperOctave,FrequencyLimits=flimit); % Calculate the CWT
 powerCWT = (abs(wt).^2)/abs(var(x,1)); % Estimate power from CWT 
 % The power calculated is normalzied/relative to th ewhite noise power 
 if (plot==1)

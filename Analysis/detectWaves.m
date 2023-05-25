@@ -1,10 +1,12 @@
-function [Waves] = detectWaves(xgp,wt,trialTime,paramerters)
+function [Waves] = detectWaves(xf,xgp,wt,trialTime,paramerters)
 
 spacing = paramerters.spacing;
 rhoThres = paramerters.rhoThres;
 X = paramerters.X;
 Y = paramerters.Y;
 for ii=1:size(trialTime,1)
+    Waves(ii).xf = xf(:,:,trialTime(ii,3):trialTime(ii,4));
+    Waves(ii).trialTime = trialTime;
     Waves(ii).p = xgp(:,:,trialTime(ii,3):trialTime(ii,4));
     Waves(ii).wt = wt(:,:,trialTime(ii,3):trialTime(ii,4));
     %p = arrayfun(@(jj) inpaint_nans(p(:,:,jj)),1:size(p,3));
