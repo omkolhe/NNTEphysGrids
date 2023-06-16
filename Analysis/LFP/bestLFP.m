@@ -17,7 +17,7 @@ LFP.bestLFP = median(medianLFP,1); %Best LFP for Phase Phase Analysis
 commonModeAvg = medianLFP-mean(medianLFP);
 LFP.commonModeAvg = commonModeAvg;
 LFP.coherenceLFP = resample(LFP.bestLFP,8192,1024); %Spike coherence LFP
-LFP.times = (1:size(LFP.bestLFP,2))/LFP.downSampleFreq;
+LFP.times = ((1:size(LFP.bestLFP,2))-1)/LFP.downSampleFreq;
 toc
 
 

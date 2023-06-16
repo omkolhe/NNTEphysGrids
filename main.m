@@ -19,8 +19,11 @@ addpath(genpath('Dependancies'));
 load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
 parameters.rows = 8;  % Number of rows of electrodes on the Grid
 parameters.cols = 4;  % Number of colums of electrodes on the Grid
-parameters.rewardTrials = 1; % 1 if reward is given , 0 if not
-parameters.rewardDistance = 100; % Distance travelled after which reward is given
+parameters.Fs = 1000;
+parameters.ts = 1/parameters.Fs;
+parameters.windowBeforePull = 1; % in seconds
+parameters.windowAfterPull = 1; % in seconds
+
 IntanConcatenate
 fpath = Intan.path; % where on disk do you want the analysis? ideally and SSD...
 
@@ -42,19 +45,6 @@ LFP = bandFilter(LFP,'depth'); % Extract LFPs based on 'depth' or 'single'
 LFPplot(LFP);
 LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.goodChMap); % Creating datacube
 
-%% Loading Encoder Data
-[Encoder] = readPos(parameters);
-figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-20 20]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
-Encoder.vel = abs(Encoder.vel);
-%Encoder.vel(Encoder.vel<0) = 0;
-
-%% Find velocity triggers before velocity reaches 2cm/s
-Encoder = detectVelTrigStart(Encoder,2,0.05,50,100,LFP.times); % For calculating initiation
-Encoder = detectVelTrigStop(Encoder,2,0.05,50,100,LFP.times); % For calculating stopping 
-figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
-hold on;xline(Encoder.velTrig(1,:)/Encoder.fs,'b');xline(Encoder.velTrigStop(1,:)/Encoder.fs,'r');
-
-
 %% Generalized Phase 
 LFP.xf = bandpass_filter(LFP.LFPdatacube,5,40,4,1000);
 [LFP.xgp, LFP.wt] = generalized_phase(LFP.xf,1000,0);
@@ -65,6 +55,18 @@ LFP.xftheta = bandpass_filter(LFP.LFPdatacube,4,10,4,1000);
 LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,80,4,1000);
 [LFP.xgpgamma, LFP.wtgamma]  = generalized_phase(LFP.xfgamma,1000,0);
 [parameters.X,parameters.Y] = meshgrid( 1:parameters.cols, 1:parameters.rows );
+
+%% Loading Lever Data 
+[Behaviour] = readLever(parameters);
+figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-20 20]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
+Encoder.vel = abs(Encoder.vel);
+%Encoder.vel(Encoder.vel<0) = 0;
+
+%% Find velocity triggers before velocity reaches 2cm/s
+Encoder = detectVelTrigStart(Encoder,2,0.05,50,100,LFP.times); % For calculating initiation
+Encoder = detectVelTrigStop(Encoder,2,0.05,50,100,LFP.times); % For calculating stopping 
+figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
+hold on;xline(Encoder.velTrig(1,:)/Encoder.fs,'b');xline(Encoder.velTrigStop(1,:)/Encoder.fs,'r');
 
 %% Segementing trial windows
 windowBeforeTrig = 2; % in seconds
