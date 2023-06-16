@@ -59,8 +59,12 @@ LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,80,4,1000);
 %% Loading Lever Data 
 [Behaviour] = readLever(parameters,LFP.times);
 figure('Name','Lever Trace');plot(Behaviour.time,Behaviour.leverTrace,'LineWidth',1.5);ylim([-5 50]);xlabel('Time (in s)');ylabel('Lever Position in mV');yline(23);
+xline(squeeze(Behaviour.hit(:,2)),'-.b',cellstr(num2str((1:1:Behaviour.nHit)')),'LabelVerticalAlignment','top');
+xline(squeeze(Behaviour.miss(:,2)),'-.r',cellstr(num2str((1:1:Behaviour.nMiss)')),'LabelVerticalAlignment','bottom');
 
-figure('Name','Average Lever Traces for Hits');
+% Plotting Lever traces for Hits and Misses
+figure('Name','Average Lever Traces for Hits & Misse');
+subplot(1,2,1);
 for i=1:Behaviour.nHit
     plot(Behaviour.hitTrace(i).time,Behaviour.hitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
     hold on;
@@ -69,7 +73,7 @@ plot(Behaviour.hitTrace(1).time,mean(horzcat(Behaviour.hitTrace(1:end).trace),2)
 yline(23,'--.b','Threshold','LabelHorizontalAlignment','left'); 
 ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Hits');
 
-figure('Name','Average Lever Traces for Misses');
+subplot(1,2,2);
 for i=1:Behaviour.nMiss
     plot(Behaviour.missTrace(i).time,Behaviour.missTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
     hold on;
@@ -78,57 +82,25 @@ plot(Behaviour.missTrace(1).time,mean(horzcat(Behaviour.missTrace(1:end).trace),
 yline(23,'--.b','Threshold','LabelHorizontalAlignment','left'); 
 ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Misses');
 
-%% Segementing trial windows
-Encoder = getVelTrigTrials(Encoder,windowBeforeTrig,windowAfterTrig,LFP.Fs); % Selecting good trials for initiation
-Encoder = getVelTrigTrialsStop(Encoder,windowBeforeTrig,windowAfterTrig,LFP.Fs); % Selecting good trials for stopping
-Encoder.timeWindow1 = -1*windowBeforeTrig:1/Encoder.fs:windowAfterTrig-1/Encoder.fs; % Time series for plotting
-Encoder.timeWindow2 = -1*windowBeforeTrig:1/LFP.Fs:windowAfterTrig-1/LFP.Fs; % Time series for plotting
-
-figure('Name','Velocity Triggers trials');
-subplot(1,2,1);
-for i=1:Encoder.nTrig
-    a = plot(Encoder.timeWindow1,Encoder.vel(Encoder.trialTime(i,1):Encoder.trialTime(i,2)),'LineWidth',1.5);
-    Encoder.velTrial(i,:) = Encoder.vel(Encoder.trialTime(i,1):Encoder.trialTime(i,2));
-    ylim([0 20]);xlabel('Time (in s)');ylabel('Velocity in cm/s');%yline([2 -2]);
-    hold on;xline(0,'--');title("Velocity for Initiation Trials");box off;
-    text(0.75, 19, 'n = ' + string(Encoder.nTrig),'HorizontalAlignment', 'right','VerticalAlignment', 'middle','Color', 'black');
-end
-subplot(1,2,2);
-for i=1:Encoder.nTrigStop
-    plot(Encoder.timeWindow1,Encoder.vel(Encoder.trialTimeStop(i,1):Encoder.trialTimeStop(i,2)),'LineWidth',1.5);
-    Encoder.velTrialStop(i,:) = Encoder.vel(Encoder.trialTimeStop(i,1):Encoder.trialTimeStop(i,2));
-    ylim([0 20]);xlabel('Time (in s)');ylabel('Velocity in cm/s');%yline([2 -2]);
-    hold on;xline(0,'--');title("Velocity for Termination Trials"); box off;
-    text(0.75, 19, 'n = ' + string(Encoder.nTrigStop),'HorizontalAlignment', 'right','VerticalAlignment', 'middle','Color', 'black');
-end
-
-%% Segmenting Encoder data into Motion States
-Encoder = getMotionStates(Encoder,LFP.times);
-figure('Name','Motion states');
-yyaxis left;plot(Encoder.time,Encoder.discVel,'LineWidth',1.5);ylabel('Velocity (in cm/s)');xlabel('Time (in s)'); hold on
-yyaxis right; plot(Encoder.time,Encoder.state,'-r','LineWidth',1.5);ylabel('State'); 
-dim = [0.75 0.5 0.25 0.3];
-str = {'0 - Rest','1 - Initiation','2 - Run','3 - Termination'};
-annotation('textbox',dim,'String',str,'FitBoxToText','on');
-
 %% Wavelet spectrogram
-[globalAvgSpectrogram, avgSpectrogramCWT,avgVel,fwt] = getAvgSpectogram(LFP.LFPdatacube,LFP,Encoder,Encoder.trialTime(:,:),Encoder.velTrial,parameters,[5 90]);
-[globalAvgSpectrogramStop, avgSpectrogramCWTStop, avgVelStop,fwtStop] = getAvgSpectogram(LFP.LFPdatacube,LFP,Encoder,Encoder.trialTimeStop(:,:),Encoder.velTrialStop,parameters,[5 45]);
+[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(LFP.LFPdatacube,LFP.Fs,Behaviour.hitTrace,parameters,[5 90]);
+[missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(LFP.LFPdatacube,LFP.Fs,Behaviour.missTrace,parameters,[5 90]);
 
-trialno = 2;
-figure('Name','Trial Averaged Wavelet Spectrogram for Motion Inititation');
-globalAvgVel = interp(mean(Encoder.velTrial(trialno,:),1),LFP.Fs/Encoder.fs);
-globalAvgLFP = squeeze(mean(LFP.xfbeta(:,:,Encoder.trialTime(trialno,3):Encoder.trialTime(trialno,4)),[1 2]));
-imagesc(Encoder.timeWindow2,fwt,squeeze(globalAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram');ylabel('Frequency (Hz)');xlabel('Time (s)');
-c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);hold on; yyaxis right; box off;
-plot(Encoder.timeWindow2,globalAvgLFP,'-r','LineWidth',2.5);
-% plot(Encoder.timeWindow2,globalAvgVel,'-w','LineWidth',2.5);ylabel('Velocity (cm/s)');xlabel('Time (ms)');
+trialno = 54;
+figure('Name','Trial Averaged Wavelet Spectrogram for Hits & Misses');
+subplot(2,1,1);
+imagesc(Behaviour.hitTrace(1).time,fwt,squeeze(hitAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Hits');ylabel('Frequency (Hz)');xlabel('Time (s)');
+c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
+hold on; yyaxis right; box off;
+plot(Behaviour.hitTrace(1).time,AvgHitTrace,'-w','LineWidth',2.5);
+ylabel('Lever deflection (mV)');
+subplot(2,1,2);
+imagesc(Behaviour.missTrace(1).time,fwt,squeeze(missAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Misses');ylabel('Frequency (Hz)');xlabel('Time (s)');
+c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
+hold on; yyaxis right; box off;
+plot(Behaviour.missTrace(1).time,AvgMissTrace,'-w','LineWidth',2.5);
+ylabel('Lever deflection (mV)');
 
-figure('Name','Trial Averaged Wavelet Spectrogram for Motion Termination');
-globalAvgVelStop = interp(mean(Encoder.velTrialStop(1,:),1),LFP.Fs/Encoder.fs);
-imagesc(Encoder.timeWindow2,fwtStop,squeeze(globalAvgSpectrogramStop));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram');ylabel('Frequency (Hz)');xlabel('Time (s)');
-c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);hold on;yyaxis right; box off;
-plot(Encoder.timeWindow2,globalAvgVelStop,'-w','LineWidth',2.5);ylabel('Velocity (cm/s)');xlabel('Time (ms)');
 
 %% Initializing plotting options
 options.subject = 'W'; % this can be 'W' or 'T' (two marmoset subjects)
