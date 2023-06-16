@@ -57,20 +57,28 @@ LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,80,4,1000);
 [parameters.X,parameters.Y] = meshgrid( 1:parameters.cols, 1:parameters.rows );
 
 %% Loading Lever Data 
-[Behaviour] = readLever(parameters);
-figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-20 20]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
-Encoder.vel = abs(Encoder.vel);
-%Encoder.vel(Encoder.vel<0) = 0;
+[Behaviour] = readLever(parameters,LFP.times);
+figure('Name','Lever Trace');plot(Behaviour.time,Behaviour.leverTrace,'LineWidth',1.5);ylim([-5 50]);xlabel('Time (in s)');ylabel('Lever Position in mV');yline(23);
 
-%% Find velocity triggers before velocity reaches 2cm/s
-Encoder = detectVelTrigStart(Encoder,2,0.05,50,100,LFP.times); % For calculating initiation
-Encoder = detectVelTrigStop(Encoder,2,0.05,50,100,LFP.times); % For calculating stopping 
-figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-10 10]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);
-hold on;xline(Encoder.velTrig(1,:)/Encoder.fs,'b');xline(Encoder.velTrigStop(1,:)/Encoder.fs,'r');
+figure('Name','Average Lever Traces for Hits');
+for i=1:Behaviour.nHit
+    plot(Behaviour.hitTrace(i).time,Behaviour.hitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    hold on;
+end
+plot(Behaviour.hitTrace(1).time,mean(horzcat(Behaviour.hitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+yline(23,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Hits');
+
+figure('Name','Average Lever Traces for Misses');
+for i=1:Behaviour.nMiss
+    plot(Behaviour.missTrace(i).time,Behaviour.missTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    hold on;
+end
+plot(Behaviour.missTrace(1).time,mean(horzcat(Behaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+yline(23,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Misses');
 
 %% Segementing trial windows
-windowBeforeTrig = 2; % in seconds
-windowAfterTrig = 2; % in seconds
 Encoder = getVelTrigTrials(Encoder,windowBeforeTrig,windowAfterTrig,LFP.Fs); % Selecting good trials for initiation
 Encoder = getVelTrigTrialsStop(Encoder,windowBeforeTrig,windowAfterTrig,LFP.Fs); % Selecting good trials for stopping
 Encoder.timeWindow1 = -1*windowBeforeTrig:1/Encoder.fs:windowAfterTrig-1/Encoder.fs; % Time series for plotting
