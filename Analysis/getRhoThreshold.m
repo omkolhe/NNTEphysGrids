@@ -1,4 +1,4 @@
-function [rhoThres] = getRhoThreshold(xgp,Encoder,parameters,nShuffle,trialno,threshold)
+function [rhoThres] = getRhoThreshold(xgp,behaviourTrace,parameters,nShuffle,trialno,threshold)
 
 % warningid = 'MATLAB:smoothn:SUpperBound';
 warning('off','all');
@@ -8,7 +8,7 @@ X = parameters.X;
 Y = parameters.Y;
 
 ii = trialno;
-p = xgp(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4));
+p = xgp(:,:,behaviourTrace(ii).LFPIndex(1):behaviourTrace(ii).LFPIndex(end));
 evaluationPoints = find_evaluation_points(p,pi,spacing);
 rho = zeros( nShuffle, length(evaluationPoints) );
 for kk=1:nShuffle
