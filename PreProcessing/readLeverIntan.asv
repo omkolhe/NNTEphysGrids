@@ -20,11 +20,10 @@ IntanBehaviour.nHit = size(rewardIndex,2);
 %% Getting hit traces and timings
 
 for i=1:IntanBehaviour.nHit
-%     IntanBehaviour.hit(i) = [rewardIndex(i) lfpTime(rewardIndex(i)) rewardIndex(i) lfpTime(rewardIndex(i))];
-    IntanBehaviour.hitTrace(i).trace = IntanBehaviour.leverTrace(rewardIndex(i)-parameters.windowBeforePull*parameters.Fs:rewardIndex(i)+parameters.windowAfterPull*parameters.Fs)';
-    IntanBehaviour.hitTrace(i).time = IntanBehaviour.time(rewardIndex(i)-parameters.windowBeforePull*parameters.Fs:rewardIndex(i)+parameters.windowAfterPull*parameters.Fs)';
-    IntanBehaviour.hitTrace(i).LFPIndex = ([rewardIndex(i)-parameters.windowBeforePull*parameters.Fs:1:rewardIndex(i)+parameters.windowAfterPull*parameters.Fs])';
-    IntanBehaviour.hitTrace(i).LFPtime = IntanBehaviour.hitTrace(i).time;
+    IntanBehaviour.hit(i) = [rewardIndex(i) lfpTime(rewardIndex(i)) rewardIndex(i) lfpTime(rewardIndex(i))];
+    IntanBehaviour.hitTrace(i).trace = IntanBehaviour.leverTrace(rewardIndex(i)-parameters.windowBeforePull*parameters.Fs:rewardIndex(i)+parameters.windowAfterPull*parameters.Fs);
+    IntanBehaviour.hitTrace(i).time = IntanBehaviour.time(rewardIndex(i)-parameters.windowBeforePull*parameters.Fs:rewardIndex(i)+parameters.windowAfterPull*parameters.Fs);
+    IntanBehaviour.hitTrace(i).LFPIndex = 
 end
 
 
