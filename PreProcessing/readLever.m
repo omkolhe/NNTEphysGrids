@@ -7,7 +7,7 @@ else
    disp(['User selected ', fullfile(enpath,enfile)]);
 end
 
-resting_position = 245;
+resting_position = 242;
 flip = 1;
 nlengthBeforePull = round(parameters.windowAfterPull/parameters.ts);
 nlength = round(parameters.windowAfterPull/parameters.ts + parameters.windowAfterPull/parameters.ts + 1);

@@ -30,7 +30,7 @@ fpath = Intan.path; % where on disk do you want the analysis? ideally and SSD...
 %% Generating time series from Intan data
 Ts = 1/Intan.offsetSample;
 Intan.Tmax = Ts * size(Intan.allIntan,2);
-Intan.t = Ts:Ts:Intan.Tmax;
+Intan.t = 0:Ts:Intan.Tmax-Ts;
 
 %% Removing bad channels from impedance values
 [Z,Intan.goodChMap,Intan.badChMap] = readImp(electrode_map,100e6);
@@ -39,7 +39,7 @@ figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size
 
 %% LFP
 set(0,'DefaultFigureWindowStyle','normal')
-LFP = fastpreprocess_filtering(Intan.allIntan,8000);
+LFP = fastpreprocess_filtering(Intan.allIntan,5000);
 LFP = bestLFP(LFP);
 LFP = bandFilter(LFP,'depth'); % Extract LFPs based on 'depth' or 'single'
 LFPplot(LFP);
@@ -49,7 +49,7 @@ LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.goodChMap); % Cre
 [Behaviour] = readLever(parameters,LFP.times);
 figure('Name','Lever Trace');plot(Behaviour.time,Behaviour.leverTrace,'LineWidth',1.5);ylim([-5 50]);xlabel('Time (in s)');ylabel('Lever Position in mV');yline(23);
 xline(squeeze(Behaviour.hit(:,2)),'-.b',cellstr(num2str((1:1:Behaviour.nHit)')),'LabelVerticalAlignment','top');
-xline(squeeze(Behaviour.miss(:,2)),'-.r',cellstr(num2str((1:1:Behaviour.nMiss)')),'LabelVerticalAlignment','bottom');
+xline(squeeze(Behaviour.miss(:,2)),'-.r',cellstr(num2str((1:1:Behaviour.nMiss)')),'LabelVerticalAlignment','bottom'); xlim([410 470]); box off;
 
 % Plotting Lever traces for Hits and Misses
 figure('Name','Average Lever Traces for Hits & Misses');
@@ -70,6 +70,10 @@ end
 plot(Behaviour.missTrace(1).time,mean(horzcat(Behaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
 yline(23,'--.b','Threshold','LabelHorizontalAlignment','left'); 
 ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Misses');box off;
+
+%% Reading behaviour data from Intan traces 
+IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan.dig_in_data);
+
 
 %% Generalized Phase 
 LFP.xf = bandpass_filter(LFP.LFPdatacube,5,40,4,1000);
@@ -172,19 +176,19 @@ gammaWaves.wavesHit = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,Behaviour
 gammaWaves.wavesMiss = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,Behaviour.missTrace,parameters);
 
 %% PLotting to check visually
-trialPlot = 17;
-plot_wave_examples( LFP.xf(:,:,Behaviour.hitTrace(trialPlot).LFPIndex(1):Behaviour.hitTrace(trialPlot).LFPIndex(end)), ...
-    options, trialPlot, Waves.wavesHit,rhoThres);
-
-trialPlot = 12;
-plot_wave_examples( LFP.xf(:,:,Behaviour.missTrace(trialPlot).LFPIndex(1):Behaviour.missTrace(trialPlot).LFPIndex(end)), ...
-    options, trialPlot, Waves.wavesMiss,rhoThres);
-
-plot_wave_examples( LFP.xfbeta(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(trialPlot,4)), ...
-    options, trialPlot, betaWaves,betarhoThres);
+% trialPlot = 17;
+% plot_wave_examples( LFP.xf(:,:,Behaviour.hitTrace(trialPlot).LFPIndex(1):Behaviour.hitTrace(trialPlot).LFPIndex(end)), ...
+%     options, trialPlot, Waves.wavesHit,rhoThres);
+% 
+% trialPlot = 12;
+% plot_wave_examples( LFP.xf(:,:,Behaviour.missTrace(trialPlot).LFPIndex(1):Behaviour.missTrace(trialPlot).LFPIndex(end)), ...
+%     options, trialPlot, Waves.wavesMiss,rhoThres);
+% 
+% plot_wave_examples( LFP.xfbeta(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(trialPlot,4)), ...
+%     options, trialPlot, betaWaves,betarhoThres);
 
 %% Waves accross trials 
-plotOption = 1;
+plotOption = 0;
 [WaveStats(1)] = getWaveStats(Waves,parameters,plotOption);
 [WaveStats(2)] = getWaveStats(thetaWaves,parameters,plotOption);
 [WaveStats(3)] = getWaveStats(betaWaves,parameters,plotOption);
