@@ -74,6 +74,15 @@ ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Tr
 %% Reading behaviour data from Intan traces 
 IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan.dig_in_data);
 
+% Plotting Lever traces for Hits and Misses
+figure('Name','Average Lever Traces for Hits & Misses');
+for i=1:IntanBehaviour.nHit
+    plot(IntanBehaviour.hitTrace(i).time,IntanBehaviour.hitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    hold on;
+end
+plot(IntanBehaviour.hitTrace(1).time,mean(horzcat(IntanBehaviour.hitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Hits');box off;
 
 %% Generalized Phase 
 LFP.xf = bandpass_filter(LFP.LFPdatacube,5,40,4,1000);
@@ -87,8 +96,8 @@ LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,80,4,1000);
 [parameters.X,parameters.Y] = meshgrid( 1:parameters.cols, 1:parameters.rows );
 
 %% Wavelet spectrogram
-[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(LFP.LFPdatacube,LFP.Fs,IntanBehaviour.hitTrace,parameters,[5 90]);
-[missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(LFP.LFPdatacube,LFP.Fs,IntanBehaviour.missTrace,parameters,[5 90]);
+[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(LFP.LFPdatacube,LFP.Fs,Behaviour.hitTrace,parameters,[5 90]);
+[missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(LFP.LFPdatacube,LFP.Fs,Behaviour.missTrace,parameters,[5 90]);
 
 % Global average spectogram
 figure('Name','Trial Averaged Wavelet Spectrogram for Hits & Misses');
@@ -96,7 +105,7 @@ subplot(2,1,1);
 imagesc(Behaviour.hitTrace(1).time,fwt,squeeze(hitAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Hits');ylabel('Frequency (Hz)');xlabel('Time (s)');
 c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
 hold on; yyaxis right; box off;
-plot(IntanBehaviour.hitTrace(1).time,AvgHitTrace,'-w','LineWidth',2.5);
+plot(Behaviour.hitTrace(1).time,AvgHitTrace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); 
 subplot(2,1,2);
 imagesc(Behaviour.missTrace(1).time,fwt,squeeze(missAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Misses');ylabel('Frequency (Hz)');xlabel('Time (s)');
@@ -131,6 +140,22 @@ c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
 hold on; yyaxis right; box off;
 plot(Behaviour.missTrace(trialno).time,Behaviour.missTrace(trialno).trace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); box off;
+
+trialno = 17;
+figure('Name','Spatial Averaged Wavelet Spectrogram for Hits & Misses');
+subplot(2,1,1);
+imagesc(Behaviour.hitTrace(trialno).time,fwt,squeeze(hitSpectrogramCWT(trialno,:,:)));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Hits');ylabel('Frequency (Hz)');xlabel('Time (s)');
+c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
+hold on; yyaxis right; box off;
+plot(Behaviour.hitTrace(trialno).time,squeeze(mean(LFP.xfbeta(:,:,Behaviour.hitTrace(trialno).LFPIndex),[1 2])),'-w','LineWidth',2);
+ylabel('Amplitude (\mu V)'); 
+subplot(2,1,2);
+trialno = 12;
+imagesc(Behaviour.missTrace(trialno).time,fwt,squeeze(missSpectrogramCWT(trialno,:,:)));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Misses');ylabel('Frequency (Hz)');xlabel('Time (s)');
+c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
+hold on; yyaxis right; box off;
+plot(Behaviour.missTrace(trialno).time,squeeze(mean(LFP.xfbeta(:,:,Behaviour.missTrace(trialno).LFPIndex),[1 2])),'-w','LineWidth',2);
+ylabel('Amplitude (\mu V)');  box off;
 
 
 %% Initializing plotting options
@@ -188,7 +213,7 @@ gammaWaves.wavesMiss = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,Behaviou
 %     options, trialPlot, betaWaves,betarhoThres);
 
 %% Waves accross trials 
-plotOption = 0;
+plotOption = 1;
 [WaveStats(1)] = getWaveStats(Waves,parameters,plotOption);
 [WaveStats(2)] = getWaveStats(thetaWaves,parameters,plotOption);
 [WaveStats(3)] = getWaveStats(betaWaves,parameters,plotOption);

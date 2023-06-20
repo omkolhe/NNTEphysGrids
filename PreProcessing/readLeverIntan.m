@@ -17,14 +17,17 @@ rewardIndex = find(diff(IntanBehaviour.rewardTrace)==1)+1;
 IntanBehaviour.nHit = size(rewardIndex,2);
 % IntanBehaviour.nMiss = B(end,4);
 
+% Estimating the threshold for reward
+IntanBehaviour.threshold = mean(IntanBehaviour.leverTrace(rewardIndex),'all');
+
 %% Getting hit traces and timings
 
 for i=1:IntanBehaviour.nHit
 %     IntanBehaviour.hit(i) = [rewardIndex(i) lfpTime(rewardIndex(i)) rewardIndex(i) lfpTime(rewardIndex(i))];
     IntanBehaviour.hitTrace(i).trace = IntanBehaviour.leverTrace(rewardIndex(i)-parameters.windowBeforePull*parameters.Fs:rewardIndex(i)+parameters.windowAfterPull*parameters.Fs)';
-    IntanBehaviour.hitTrace(i).time = IntanBehaviour.time(rewardIndex(i)-parameters.windowBeforePull*parameters.Fs:rewardIndex(i)+parameters.windowAfterPull*parameters.Fs)';
+    IntanBehaviour.hitTrace(i).time = (0:1/parameters.Fs:(size(IntanBehaviour.hitTrace(i).trace,1)-1)*1/parameters.Fs)';
     IntanBehaviour.hitTrace(i).LFPIndex = ([rewardIndex(i)-parameters.windowBeforePull*parameters.Fs:1:rewardIndex(i)+parameters.windowAfterPull*parameters.Fs])';
-    IntanBehaviour.hitTrace(i).LFPtime = IntanBehaviour.hitTrace(i).time;
+    IntanBehaviour.hitTrace(i).LFPtime = IntanBehaviour.time(rewardIndex(i)-parameters.windowBeforePull*parameters.Fs:rewardIndex(i)+parameters.windowAfterPull*parameters.Fs)';
 end
 
 
