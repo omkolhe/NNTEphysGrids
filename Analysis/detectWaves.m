@@ -11,7 +11,7 @@ for ii=1:size(behaviourTrace,2)
     Waves(ii).wt = wt(:,:,behaviourTrace(ii).LFPIndex(1):behaviourTrace(ii).LFPIndex(end));
     %p = arrayfun(@(jj) inpaint_nans(p(:,:,jj)),1:size(p,3));
     Waves(ii).evaluationPoints = find_evaluation_points(Waves(ii).p,pi,0.2);
-    %plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );
+%     plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );
     [Waves(ii).pm,Waves(ii).pd,Waves(ii).dx,Waves(ii).dy] = phase_gradient_complex_multiplication( Waves(ii).p, spacing );
     % Phase gradient directionality 
     [Waves(ii).PGD] = phase_gradient_directionality(Waves(ii).pm,Waves(ii).dx,Waves(ii).dy);
@@ -39,7 +39,7 @@ for ii=1:size(behaviourTrace,2)
     Waves(ii).source(:,indxBadWave) = [];
     Waves(ii).rho(indxBadWave) = [];
     Waves(ii).nWaves = size(Waves(ii).evaluationPoints,2);
-
+%     plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );
     % Calculating the speed and wave direction of the detected waves in
     % that trial window
     for kk = 1:Waves(ii).nWaves

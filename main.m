@@ -1,7 +1,8 @@
 % clear; clc; 
 % close all;
 format compact;
-set(0,'DefaultFigureWindowStyle','normal')
+% set(0,'DefaultFigureWindowStyle','normal')
+
 addpath(genpath('main'));
 addpath(genpath('chronux'));
 addpath(genpath('Kilosort'));
@@ -55,24 +56,24 @@ xline(squeeze(Behaviour.miss(:,2)),'-.r',cellstr(num2str((1:1:Behaviour.nMiss)')
 figure('Name','Average Lever Traces for Hits & Misses');
 subplot(1,2,1);
 for i=1:Behaviour.nHit
-    plot(Behaviour.hitTrace(i).time,Behaviour.hitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    plot(Behaviour.hitTrace(i).time-1,Behaviour.hitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
     hold on;
 end
-plot(Behaviour.hitTrace(1).time,mean(horzcat(Behaviour.hitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+plot(Behaviour.hitTrace(1).time-1,mean(horzcat(Behaviour.hitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
 yline(23,'--.b','Threshold','LabelHorizontalAlignment','left'); 
 ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Hits');box off;
 
 subplot(1,2,2);
 for i=1:Behaviour.nMiss
-    plot(Behaviour.missTrace(i).time,Behaviour.missTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    plot(Behaviour.missTrace(i).time-1,Behaviour.missTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
     hold on;
 end
-plot(Behaviour.missTrace(1).time,mean(horzcat(Behaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+plot(Behaviour.missTrace(1).time-1,mean(horzcat(Behaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
 yline(23,'--.b','Threshold','LabelHorizontalAlignment','left'); 
 ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Misses');box off;
 
 %% Reading behaviour data from Intan traces 
-IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan.dig_in_data);
+IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan.dig_in_data,Behaviour);
 
 % Plotting Lever traces for Hits and Misses
 figure('Name','Average Lever Traces for Hits & Misses');
@@ -96,22 +97,22 @@ LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,80,4,1000);
 [parameters.X,parameters.Y] = meshgrid( 1:parameters.cols, 1:parameters.rows );
 
 %% Wavelet spectrogram
-[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(LFP.LFPdatacube,LFP.Fs,Behaviour.hitTrace,parameters,[5 90]);
+[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(LFP.LFPdatacube,LFP.Fs,IntanBehaviour.hitTrace,parameters,[5 90]);
 [missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(LFP.LFPdatacube,LFP.Fs,Behaviour.missTrace,parameters,[5 90]);
 
 % Global average spectogram
 figure('Name','Trial Averaged Wavelet Spectrogram for Hits & Misses');
-subplot(2,1,1);
-imagesc(Behaviour.hitTrace(1).time,fwt,squeeze(hitAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Hits');ylabel('Frequency (Hz)');xlabel('Time (s)');
+subplot(1,2,1);
+imagesc(Behaviour.hitTrace(1).time-1,fwt,squeeze(hitAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Hits');ylabel('Frequency (Hz)');xlabel('Time (s)');
 c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
 hold on; yyaxis right; box off;
-plot(Behaviour.hitTrace(1).time,AvgHitTrace,'-w','LineWidth',2.5);
+plot(Behaviour.hitTrace(1).time-1,AvgHitTrace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); 
-subplot(2,1,2);
-imagesc(Behaviour.missTrace(1).time,fwt,squeeze(missAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Misses');ylabel('Frequency (Hz)');xlabel('Time (s)');
+subplot(1,2,2);
+imagesc(Behaviour.missTrace(1).time-1,fwt,squeeze(missAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Misses');ylabel('Frequency (Hz)');xlabel('Time (s)');
 c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
 hold on; yyaxis right; box off;
-plot(Behaviour.missTrace(1).time,AvgMissTrace,'-w','LineWidth',2.5);
+plot(Behaviour.missTrace(1).time-1,AvgMissTrace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); box off;
 
 % Movement average spectogram 
@@ -171,46 +172,43 @@ trialno = 55;
 
 % Wave detection for wide band
 disp('Wave Detection for wide band ...')
-rhoThres = getRhoThreshold(LFP.xgp,Behaviour.hitTrace,parameters,nShuffle,trialno,threshold);
+% rhoThres = getRhoThreshold(LFP.xgp,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres= rhoThres;
-Waves.wavesHit = detectWaves(LFP.xf,LFP.xgp,LFP.wt,Behaviour.hitTrace,parameters);
+Waves.wavesHit = detectWaves(LFP.xf,LFP.xgp,LFP.wt,IntanBehaviour.hitTrace,parameters);
 Waves.wavesMiss = detectWaves(LFP.xf,LFP.xgp,LFP.wt,Behaviour.missTrace,parameters);
 
 % Wave detection for theta band
 disp('Wave Detection for theta band ...')
 threshold = 99.9;
-thetarhoThres = getRhoThreshold(LFP.xgptheta,Behaviour.hitTrace,parameters,nShuffle,trialno,threshold);
+% thetarhoThres = getRhoThreshold(LFP.xgptheta,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = thetarhoThres;
-thetaWaves.wavesHit = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,Behaviour.hitTrace,parameters);
+thetaWaves.wavesHit = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,IntanBehaviour.hitTrace,parameters);
 thetaWaves.wavesMiss = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,Behaviour.missTrace,parameters);
 
 % Wave detection for beta band
 disp('Wave Detection for beta band ...')
 threshold = 99.9;
-betarhoThres = getRhoThreshold(LFP.xgpbeta,Behaviour.hitTrace,parameters,nShuffle,trialno,threshold);
+% betarhoThres = getRhoThreshold(LFP.xgpbeta,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = betarhoThres;
-betaWaves.wavesHit= detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,Behaviour.hitTrace,parameters);
+betaWaves.wavesHit= detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,IntanBehaviour.hitTrace,parameters);
 betaWaves.wavesMiss = detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,Behaviour.missTrace,parameters);
 
 % Wave detection for gamma band
 disp('Wave Detection for gamma band ...')
 threshold = 99.9;
-gammarhoThres = getRhoThreshold(LFP.xgpgamma,Behaviour.hitTrace,parameters,nShuffle,trialno,threshold);
+% gammarhoThres = getRhoThreshold(LFP.xgpgamma,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = gammarhoThres;    
-gammaWaves.wavesHit = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,Behaviour.hitTrace,parameters);
+gammaWaves.wavesHit = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.hitTrace,parameters);
 gammaWaves.wavesMiss = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,Behaviour.missTrace,parameters);
 
 %% PLotting to check visually
-% trialPlot = 17;
-% plot_wave_examples( LFP.xf(:,:,Behaviour.hitTrace(trialPlot).LFPIndex(1):Behaviour.hitTrace(trialPlot).LFPIndex(end)), ...
-%     options, trialPlot, Waves.wavesHit,rhoThres);
-% 
-% trialPlot = 12;
-% plot_wave_examples( LFP.xf(:,:,Behaviour.missTrace(trialPlot).LFPIndex(1):Behaviour.missTrace(trialPlot).LFPIndex(end)), ...
-%     options, trialPlot, Waves.wavesMiss,rhoThres);
-% 
-% plot_wave_examples( LFP.xfbeta(:,:,Encoder.trialTime(trialPlot,3):Encoder.trialTime(trialPlot,4)), ...
-%     options, trialPlot, betaWaves,betarhoThres);
+trialPlot = 17;
+plot_wave_examples( LFP.xf(:,:,Behaviour.hitTrace(trialPlot).LFPIndex(1):Behaviour.hitTrace(trialPlot).LFPIndex(end)), ...
+    options, trialPlot, Waves.wavesHit,rhoThres);
+
+trialPlot = 12;
+plot_wave_examples( LFP.xf(:,:,Behaviour.missTrace(trialPlot).LFPIndex(1):Behaviour.missTrace(trialPlot).LFPIndex(end)), ...
+    options, trialPlot, Waves.wavesMiss,rhoThres);
 
 %% Waves accross trials 
 plotOption = 1;
@@ -274,49 +272,6 @@ end
 figure(); imagesc(nbetaperElec');%set(gca,'YDir','normal');
 title('Spatial map of beta events accross all trials'); colorbar;
 
-%% Wave detection for Rest, Run, Init and Term
-
-% Wave detection for wide band
-disp('Wave Detection for wide band ...')
-% rhoThres = getRhoThreshold(LFP.xgp,Encoder,parameters,nShuffle,trialno,threshold);
-parameters.rhoThres= rhoThres;
-Waves.wavesRest = detectWaves(LFP.xf,LFP.xgp,LFP.wt,Encoder.restTrialTime,parameters);
-Waves.wavesRun = detectWaves(LFP.xf,LFP.xgp,LFP.wt,Encoder.runTrialTime,parameters);
-Waves.wavesInit = detectWaves(LFP.xf,LFP.xgp,LFP.wt,Encoder.initTrialTime,parameters);
-Waves.wavesTerm = detectWaves(LFP.xf,LFP.xgp,LFP.wt,Encoder.termTrialTime,parameters);
-
-% Wave detection for wide band
-disp('Wave Detection for theta band ...')
-parameters.rhoThres= thetarhoThres;
-thetaWaves.wavesRest = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,Encoder.restTrialTime,parameters);
-thetaWaves.wavesRun = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,Encoder.runTrialTime,parameters);
-thetaWaves.wavesInit = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,Encoder.initTrialTime,parameters);
-thetaWaves.wavesTerm = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,Encoder.termTrialTime,parameters);
-
-% Wave detection for beta band
-disp('Wave Detection for beta band ...')
-parameters.rhoThres= betarhoThres;
-betaWaves.wavesRest = detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,Encoder.restTrialTime,parameters);
-betaWaves.wavesRun = detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,Encoder.runTrialTime,parameters);
-betaWaves.wavesInit = detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,Encoder.initTrialTime,parameters);
-betaWaves.wavesTerm = detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,Encoder.termTrialTime,parameters);
-
-% Wave detection for gamma band
-disp('Wave Detection for gamma band ...')
-% rhoThres = getRhoThreshold(LFP.xgp,Encoder,parameters,nShuffle,trialno,threshold);
-parameters.rhoThres= gammarhoThres;
-gammaWaves.wavesRest = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,Encoder.restTrialTime,parameters);
-gammaWaves.wavesRun = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,Encoder.runTrialTime,parameters);
-gammaWaves.wavesInit = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,Encoder.initTrialTime,parameters);
-gammaWaves.wavesTerm = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,Encoder.termTrialTime,parameters);
-
-
-% Getting stats 
-plotOption = 0;
-[WaveStatsStates(1)] = getWaveStatsStates(Waves,parameters,plotOption);
-[WaveStatsStates(2)] = getWaveStatsStates(thetaWaves,parameters,plotOption);
-[WaveStatsStates(3)] = getWaveStatsStates(betaWaves,parameters,plotOption);
-[WaveStatsStates(4)] = getWaveStatsStates(gammaWaves,parameters,plotOption);
 %% PLotting LFP 
 figure();
 trialno = 1;

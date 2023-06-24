@@ -1,0 +1,8 @@
+function [BetaBurst] = detectBetaBurst(LFP)
+
+xamp = abs(LFP.xgp);
+
+figure,plot(squeeze(LFP.xf(1,1,2000:10000)));hold on;plot(squeeze(xamp(1,1,2000:10000))); plot((squeeze(LFP.xf(1,1,2000:10000)))
+
+end
+

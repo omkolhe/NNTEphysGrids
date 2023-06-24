@@ -1,7 +1,8 @@
 % clear; clc; 
 % close all;
 format compact;
-set(0,'DefaultFigureWindowStyle','normal')
+% set(0,'DefaultFigureWindowStyle','normal')
+
 addpath(genpath('main'));
 addpath(genpath('chronux'));
 addpath(genpath('Kilosort'));
@@ -55,19 +56,19 @@ xline(squeeze(Behaviour.miss(:,2)),'-.r',cellstr(num2str((1:1:Behaviour.nMiss)')
 figure('Name','Average Lever Traces for Hits & Misses');
 subplot(1,2,1);
 for i=1:Behaviour.nHit
-    plot(Behaviour.hitTrace(i).time,Behaviour.hitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    plot(Behaviour.hitTrace(i).time-1,Behaviour.hitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
     hold on;
 end
-plot(Behaviour.hitTrace(1).time,mean(horzcat(Behaviour.hitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+plot(Behaviour.hitTrace(1).time-1,mean(horzcat(Behaviour.hitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
 yline(23,'--.b','Threshold','LabelHorizontalAlignment','left'); 
 ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Hits');box off;
 
 subplot(1,2,2);
 for i=1:Behaviour.nMiss
-    plot(Behaviour.missTrace(i).time,Behaviour.missTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    plot(Behaviour.missTrace(i).time-1,Behaviour.missTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
     hold on;
 end
-plot(Behaviour.missTrace(1).time,mean(horzcat(Behaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+plot(Behaviour.missTrace(1).time-1,mean(horzcat(Behaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
 yline(23,'--.b','Threshold','LabelHorizontalAlignment','left'); 
 ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Misses');box off;
 
@@ -81,8 +82,8 @@ for i=1:IntanBehaviour.nHit
     hold on;
 end
 plot(IntanBehaviour.hitTrace(1).time,mean(horzcat(IntanBehaviour.hitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
-yline(Inta,'--.b','Threshold','LabelHorizontalAlignment','left'); 
-ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Hits');box off;
+yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Hits');box off;
 
 %% Generalized Phase 
 LFP.xf = bandpass_filter(LFP.LFPdatacube,5,40,4,1000);
@@ -101,17 +102,17 @@ LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,80,4,1000);
 
 % Global average spectogram
 figure('Name','Trial Averaged Wavelet Spectrogram for Hits & Misses');
-subplot(2,1,1);
-imagesc(Behaviour.hitTrace(1).time,fwt,squeeze(hitAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Hits');ylabel('Frequency (Hz)');xlabel('Time (s)');
+subplot(1,2,1);
+imagesc(Behaviour.hitTrace(1).time-1,fwt,squeeze(hitAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Hits');ylabel('Frequency (Hz)');xlabel('Time (s)');
 c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
 hold on; yyaxis right; box off;
-plot(Behaviour.hitTrace(1).time,AvgHitTrace,'-w','LineWidth',2.5);
+plot(Behaviour.hitTrace(1).time-1,AvgHitTrace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); 
-subplot(2,1,2);
-imagesc(Behaviour.missTrace(1).time,fwt,squeeze(missAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Misses');ylabel('Frequency (Hz)');xlabel('Time (s)');
+subplot(1,2,2);
+imagesc(Behaviour.missTrace(1).time-1,fwt,squeeze(missAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram for Misses');ylabel('Frequency (Hz)');xlabel('Time (s)');
 c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
 hold on; yyaxis right; box off;
-plot(Behaviour.missTrace(1).time,AvgMissTrace,'-w','LineWidth',2.5);
+plot(Behaviour.missTrace(1).time-1,AvgMissTrace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); box off;
 
 % Movement average spectogram 
