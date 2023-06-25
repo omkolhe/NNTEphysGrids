@@ -33,7 +33,6 @@ end
 
 % figure();plot(1:1:10001,(5/1024)*Behaviour.leverTrace(Behaviour.miss(15,1)-5000:Behaviour.miss(15,1)+5000));hold on;
 % plot(0.1:0.1:10000.1,IntanBehaviour.leverTrace(Behaviour.miss(15,3)-50000:Behaviour.miss(15,3)+50000));
-
 correctionWindow = 600; % in number of points in LFPFs
 tol = 0.004;
 nDiffSlope = 10;
@@ -41,21 +40,32 @@ disp('Finding miss trials in the Intan data ...');
 for i=1:Behaviour.nMiss
     missIndexAr = Behaviour.miss(i,3);
     trace1 = IntanBehaviour.leverTrace(missIndexAr-correctionWindow:missIndexAr+correctionWindow);
-    %figure();plot(trace1);
     misstrigs1 = find(trace1 <IntanBehaviour.threshold+tol & trace1>IntanBehaviour.threshold-tol);  
     % Checking slope 
     for j=1:size(misstrigs1,2)
-        if((misstrigs1(j)+nDiffSlope >= (correctionWindow*2+1)) || (misstrigs1(j)-nDiffSlope <= 0))
+        % Checking edge cases, rejects all the edge cases 
+        if((misstrigs1(j)+nDiffSlope >= (correctionWindow*2+1)) || (misstrigs1(j)-nDiffSlope <= 0)) 
             misstrigs1(j) = NaN;
             continue
         end
+        % Checking slope, reject all negative slope 
         slope = mean(trace1(misstrigs1(j):misstrigs1(j)+nDiffSlope)) - mean(trace1(misstrigs1(j)-nDiffSlope:misstrigs1(j)));
         if slope < 0
             misstrigs1(j) = NaN;
         end
     end
     misstrigs1 = misstrigs1(~isnan(misstrigs1));
-    missIndx(i) =  missIndexAr - correctionWindow + min(misstrigs1);
+    missIndex(i) =  missIndexAr - correctionWindow + min(misstrigs1);
+end
+
+IntanBehaviour.nMiss = Behaviour.nMiss;
+
+for i=1:IntanBehaviour.nMiss
+%     IntanBehaviour.hit(i) = [rewardIndex(i) lfpTime(rewardIndex(i)) rewardIndex(i) lfpTime(rewardIndex(i))];
+    IntanBehaviour.missTrace(i).trace = IntanBehaviour.leverTrace(missIndex(i)-parameters.windowBeforePull*parameters.Fs:missIndex(i)+parameters.windowAfterPull*parameters.Fs)';
+    IntanBehaviour.missTrace(i).time = (0:1/parameters.Fs:(size(IntanBehaviour.hitTrace(i).trace,1)-1)*1/parameters.Fs)';
+    IntanBehaviour.missTrace(i).LFPIndex = ([missIndex(i)-parameters.windowBeforePull*parameters.Fs:1:missIndex(i)+parameters.windowAfterPull*parameters.Fs])';
+    IntanBehaviour.missTrace(i).LFPtime = IntanBehaviour.time(missIndex(i)-parameters.windowBeforePull*parameters.Fs:missIndex(i)+parameters.windowAfterPull*parameters.Fs)';
 end
 
 
