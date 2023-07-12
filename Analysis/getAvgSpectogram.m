@@ -26,8 +26,7 @@ end
 figure();
 globalAvgSpectrogram = mean(avgSpectrogramCWT,1);
 globalAvgBehaviour = mean(horzcat(behaviourTrace(1:end).trace),2);
-imagesc(relTime,fwt,squeeze(globalAvgSpectrogram));colormap('jet');set(gca,'YDir','normal');title('Wavelet based Average Spectogram');ylabel('Frequency (Hz)');xlabel('Time (s)');
-c=colorbar;ylabel(c, 'Relative Power to white noise','FontSize',10);
+plotSpectrogram(squeeze(globalAvgSpectrogram),relTime,fwt);
 hold on; yyaxis right; box off;
 plot(relTime,globalAvgBehaviour,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)');

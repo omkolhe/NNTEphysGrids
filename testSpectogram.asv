@@ -1,0 +1,25 @@
+%%Time specifications:
+Fs = 1000;                   % samples per second
+dt = 1/Fs;                   % seconds per sample
+StopTime = 0.7;             % seconds
+t = (0:dt:StopTime-dt)';     % seconds
+Anoise = 0.2;
+%%Sine wave:
+Fc1 = 15;% hertz
+Fc2 = 65;% hertz
+noise = Anoise*(randn(length(t),1));
+x = 1.2*cos(2*pi*Fc1*t) + 3*cos(2*pi*Fc2*t) + noise ;
+
+StopTime2 = 1.3;             % seconds
+t2 = (StopTime:dt:StopTime2-dt)';     % seconds
+Fc1 = 11;% hertz
+Fc2 = 76;% hertz
+noise = Anoise*(randn(length(t),1));
+x = 1.2*cos(2*pi*Fc1*t) + 3*cos(2*pi*Fc2*t) + noise ;
+
+% Plot the signal versus time:
+figure;
+plot(t,x);
+xlabel('time (in seconds)');
+title('Signal versus Time');
+zoom xon;
