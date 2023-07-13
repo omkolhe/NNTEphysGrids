@@ -43,9 +43,9 @@ for ii=1:size(behaviourTrace,2)
     % Calculating the speed and wave direction of the detected waves in
     % that trial window
     for kk = 1:Waves(ii).nWaves
-        st = Waves(ii).evaluationPoints(kk)-2;
+        st = Waves(ii).evaluationPoints(kk)-10;
         if st<=0, st = 1; end  % adjusting is waves is detected at the start of window
-        sp = Waves(ii).evaluationPoints(kk)+2;
+        sp = Waves(ii).evaluationPoints(kk)+10;
         if sp>size(Waves(ii).p,3), sp = Waves(ii).evaluationPoints(kk); end % adjusting is waves is detected at the end of window
         %Waves(ii).speed(kk) = mean(abs(Waves(ii).insts(:,:,st:sp)),[1 2 3]); % speed in cm/s
         Waves(ii).speed(kk) = mean(abs(Waves(ii).s(st:sp)),'all'); % speed in cm/s
