@@ -1,9 +1,13 @@
-function [Waves] = detectWaves(xf,xgp,wt,behaviourTrace,paramerters)
+function [Waves] = detectWaves(xf,xgp,wt,behaviourTrace,parameters)
 
-spacing = paramerters.spacing;
-rhoThres = paramerters.rhoThres;
-X = paramerters.X;
-Y = paramerters.Y;
+spacing = parameters.spacing;
+rhoThres = parameters.rhoThres;
+dirThres = 15; %in degrees
+X = parameters.X;
+Y = parameters.Y;
+
+waveTimeWindow = 15; % in points
+
 for ii=1:size(behaviourTrace,2)
     Waves(ii).xf = xf(:,:,behaviourTrace(ii).LFPIndex(1):behaviourTrace(ii).LFPIndex(end));
     Waves(ii).trialTime = behaviourTrace(ii).LFPIndex;
@@ -29,34 +33,80 @@ for ii=1:size(behaviourTrace,2)
     % phase correlation with distance (\rho_{\phi,d} measure)
     Waves(ii).rho = zeros( 1, length(Waves(ii).evaluationPoints) );
     for jj = 1:length(Waves(ii).evaluationPoints)
-        ph = angle( Waves(ii).p(:,:,Waves(ii).evaluationPoints(jj)) );
-        [Waves(ii).rho(jj),~,Waves(ii).D] = phase_correlation_distance( ph, Waves(ii).source(:,jj), spacing );
+        st = Waves(ii).evaluationPoints(jj)-waveTimeWindow;
+        if st<=0, st = 1; end  % adjusting is waves is detected at the start of window
+        sp = Waves(ii).evaluationPoints(jj)+waveTimeWindow;
+        if sp>size(Waves(ii).p,3), sp = Waves(ii).evaluationPoints(jj); end % adjusting is waves is detected at the end of window
+        rho = zeros(sp-st+1,1);
+        sourcepoint = zeros(2,sp-st+1);
+        dir = zeros(sp-st+1,1);
+        for kk=1:(sp-st+1)
+            ph = angle( Waves(ii).p(:,:,(st+kk-1)));
+            sourcepoint(:,kk) = find_source_points(st+kk-1,X,Y,Waves(ii).dx, Waves(ii).dy );
+            [rho(kk,1),~,~] = phase_correlation_distance( ph,sourcepoint(:,kk), spacing );
+            dir(kk) = rad2deg(Waves(ii).velDir(st+kk-1));
+        end
+        waveClusters = findThresSeg(rho,rhoThres);
+        % Rejecting segements less than 5ms
+        clusterSize = diff(waveClusters,1,2);
+        rejectIndex = find(clusterSize<5);
+        waveClusters(rejectIndex,:) = [];
+        % Getting segments with cummulative sum of first differences less
+        % than 15 degress
+        for aa=1:size(waveClusters,1)
+            dirSegments = segmentDirArray(dir(waveClusters(aa,1):waveClusters(aa,2)),15);
+            dirSegSize = diff(dirSegments,1,2);
+            [maxvalue, maxindex] = max(dirSegSize);
+            %Rejecting segments that that less than 5 seconds long
+            if maxvalue<=5
+                waveClusters(aa,:) = NaN;
+                continue  
+            end
+            %Updating the waveCluster start and stop points
+            waveClusters(aa,1) = waveClusters(aa,1)+dirSegments(maxindex,1)-1;
+            waveClusters(aa,2) = waveClusters(aa,1)+dirSegments(maxindex,2)-dirSegments(maxindex,1);
+        end
+        waveClusters = removeNaNRows(waveClusters);
+        % Selecting the wavecluster with maximum duration 
+        % This is done to have just one wave at each evaluation point
+        if isempty(waveClusters)
+            Waves(ii).evaluationPoints(jj) = NaN;
+            Waves(ii).rho(jj) = NaN;
+            Waves(ii).waveTime(jj,:) = [NaN,NaN];
+            continue
+        end
+        clusterSize = diff(waveClusters,1,2);
+        [~, clusterMaxIndx] = max(clusterSize);
+        Waves(ii).waveTime(jj,:) = [st-1+waveClusters(clusterMaxIndx,1),st-1+waveClusters(clusterMaxIndx,2)];
+        Waves(ii).evaluationPoints(jj) = findArrayMidPoint([Waves(ii).waveTime(jj,1):Waves(ii).waveTime(jj,2)]);
+        Waves(ii).rho(jj) = mean(rho(waveClusters(clusterMaxIndx,1):waveClusters(clusterMaxIndx,2)));
     end
-    % Thresholding using rhoThres. Reject all waves with rho less than
-    % rhoThres
-    indxBadWave = find(Waves(ii).rho<rhoThres);
-    Waves(ii).evaluationPoints(indxBadWave) = [];
-    Waves(ii).source(:,indxBadWave) = [];
-    Waves(ii).rho(indxBadWave) = [];
-    Waves(ii).nWaves = size(Waves(ii).evaluationPoints,2);
+    % Removing evaluation points in which no wave was detected 
+    Waves(ii).evaluationPoints = Waves(ii).evaluationPoints(~isnan(Waves(ii).evaluationPoints));
+    Waves(ii).rho = Waves(ii).rho(~isnan(Waves(ii).rho));
+    Waves(ii).waveTime = removeNaNRows(Waves(ii).waveTime);
+    % Removing duplicate detected waves
+    Waves(ii).evaluationPoints = unique((Waves(ii).evaluationPoints)','rows','stable');
+    Waves(ii).rho = unique((Waves(ii).rho)','rows','stable');
+    Waves(ii).waveTime = unique(Waves(ii).waveTime,'rows','stable');
+
+    Waves(ii).nWaves = size(Waves(ii).evaluationPoints,1);
+
 %     plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );
     % Calculating the speed and wave direction of the detected waves in
     % that trial window
     for kk = 1:Waves(ii).nWaves
-        st = Waves(ii).evaluationPoints(kk)-10;
-        if st<=0, st = 1; end  % adjusting is waves is detected at the start of window
-        sp = Waves(ii).evaluationPoints(kk)+10;
-        if sp>size(Waves(ii).p,3), sp = Waves(ii).evaluationPoints(kk); end % adjusting is waves is detected at the end of window
         %Waves(ii).speed(kk) = mean(abs(Waves(ii).insts(:,:,st:sp)),[1 2 3]); % speed in cm/s
-        Waves(ii).speed(kk) = mean(abs(Waves(ii).s(st:sp)),'all'); % speed in cm/s
-        Waves(ii).waveDir(kk) = mean(Waves(ii).velDir(st:sp),'all'); 
-        Waves(ii).wavelength(kk) = mean(Waves(ii).l(st:sp),'all');
+        Waves(ii).speed(kk) = mean(abs(Waves(ii).s(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2))),'all'); % speed in cm/s
+        Waves(ii).waveDir(kk) = mean(Waves(ii).velDir(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),'all'); 
+        Waves(ii).wavelength(kk) = mean(Waves(ii).l(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),'all');
+        Waves(ii).waveDuration(kk) = Waves(ii).waveTime(kk,2)-Waves(ii).waveTime(kk,1)+1;
     end
     %Waves(ii).speedpdg = pgdMean(Waves(ii).PGD,Waves(ii).s,0.51);
     %Waves(ii).dirpdg = pgdMean(Waves(ii).PGD,Waves(ii).velDir,0.51);
     %plot_vector_field( exp( 1i .* Waves(ii).pd(:,:,100) ), 0 );
     %plot_wave_examples( LFP.xf(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4)), options, ii, Waves(ii).evaluationPoints, Waves(ii).source, Waves(ii).rho );
 end
-
+  
 end
 

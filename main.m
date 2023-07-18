@@ -106,19 +106,54 @@ LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,40,4,1000);
 [LFP.xgpgamma, LFP.wtgamma]  = generalized_phase(LFP.xfgamma,1000,0);
 [parameters.X,parameters.Y] = meshgrid( 1:parameters.cols, 1:parameters.rows );
 
+%% Power Spectrum during task across channels 
+[PSDChHit , f] = getAvgPSD(LFP.LFPdatacube,LFP.Fs,IntanBehaviour.hitTrace,parameters);
+[PSDChMiss , f] = getAvgPSD(LFP.LFPdatacube,LFP.Fs,IntanBehaviour.missTrace,parameters);
+
+avgPSDHit = squeeze(10*log10(mean(PSDChHit,[1 2])));
+trialPSDHit = squeeze(10*log10(mean(PSDChHit,2)));
+avgPSDMiss = squeeze(10*log10(mean(PSDChMiss,[1 2])));
+trialPSDMiss = squeeze(10*log10(mean(PSDChMiss,2)));
+
+figure();
+subplot(1,2,1);
+plot(f(1:51),trialPSDHit(:,1:51),'Color', [0 0 1 0.1]);
+hold on;
+plot(f(1:51),avgPSDHit(1:51),'Color', [0 0 1 1],'LineWidth',1.5);
+ylim([0 50]);
+xlabel('Frequency (Hz)');
+ylabel('Power Spectral Density (dB/Hz)');
+title('Avergage Power Spectral Density for HitTrials');
+box off;
+
+subplot(1,2,2);
+plot(f(1:51),trialPSDMiss(:,1:51),'Color', [1 0 0 0.1]);
+hold on;
+plot(f(1:51),avgPSDMiss(1:51),'Color', [1 0 0 1],'LineWidth',1.5);
+ylim([0 50]);
+xlabel('Frequency (Hz)');
+ylabel('Power Spectral Density (dB/Hz)');
+title('Avergage Power Spectral Density for MissTrials');
+box off;
+
+trialAvgPSD = 10*log10(squeeze(mean(PSDChHit,1)));
+figure();
+imagesc(trialAvgPSD(:,1:51)');
+colormap("jet");set(gca,'YDir','normal');
+
 %% Wavelet spectrogram
-[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(LFP.LFPdatacube,LFP.Fs,IntanBehaviour.hitTrace,parameters,[5 90]);
-[missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(LFP.LFPdatacube,LFP.Fs,IntanBehaviour.missTrace,parameters,[5 90]);
+[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(LFP.xfbeta,LFP.Fs,IntanBehaviour.hitTrace,parameters,[10 30]);
+[missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(LFP.xfbeta,LFP.Fs,IntanBehaviour.missTrace,parameters,[10 30]);
 
 % Global average spectogram
 figure('Name','Trial Averaged Wavelet Spectrogram for Hits & Misses');
 subplot(1,2,1);
-plotSpectrogram(10*log10(squeeze(hitAvgSpectrogram)),IntanBehaviour.hitTrace(1).time-parameters.windowBeforePull,fwt,'Wavelet Based Spectrogram for Hits','Time (s)','Frequency (Hz)')
+plotSpectrogram((squeeze(hitAvgSpectrogram)),IntanBehaviour.hitTrace(1).time-parameters.windowBeforePull,fwt,'Wavelet Based Spectrogram for Hits','Time (s)','Frequency (Hz)')
 hold on; yyaxis right; box off;
 plot(IntanBehaviour.hitTrace(1).time-parameters.windowBeforePull,AvgHitTrace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); 
 subplot(1,2,2);
-plotSpectrogram(10*log10(squeeze(missAvgSpectrogram)),IntanBehaviour.missTrace(1).time-parameters.windowBeforePull,fwt,'Wavelet Based Spectrogram for Misses','Time (s)','Frequency (Hz)')
+plotSpectrogram((squeeze(missAvgSpectrogram)),IntanBehaviour.missTrace(1).time-parameters.windowBeforePull,fwt,'Wavelet Based Spectrogram for Misses','Time (s)','Frequency (Hz)')
 hold on; yyaxis right; box off;
 plot(IntanBehaviour.missTrace(1).time-parameters.windowBeforePull,AvgMissTrace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); box off;
@@ -133,7 +168,7 @@ plot(IntanBehaviour.hitTrace(1).time-parameters.windowBeforePull,allAvgLeverTrac
 ylabel('Lever deflection (mV)'); box off;
 
 % Plotting for specific trial
-trialno = 15;
+trialno = 48;
 figure('Name','Spatial Averaged Wavelet Spectrogram for Hits & Misses');
 subplot(2,1,1);
 plotSpectrogram(squeeze(hitSpectrogramCWT(trialno,:,:)),IntanBehaviour.hitTrace(trialno).time-parameters.windowBeforePull,fwt,'Wavelet based Average Spectogram for Hits','Time (s)','Frequency (Hz)');
@@ -147,7 +182,7 @@ hold on; yyaxis right; box off;
 plot(IntanBehaviour.missTrace(trialno).time-parameters.windowBeforePull,IntanBehaviour.missTrace(trialno).trace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); box off;
 
-trialno = 68;
+trialno = 47;
 figure('Name','Spatial Averaged Wavelet Spectrogram for Hits & Misses');
 subplot(2,1,1);
 plotSpectrogram(squeeze(hitSpectrogramCWT(trialno,:,:)),IntanBehaviour.hitTrace(trialno).time-parameters.windowBeforePull,fwt,'Wavelet based Average Spectogram for Hits','Time (s)','Frequency (Hz)');
@@ -155,7 +190,7 @@ hold on; yyaxis right; box off;
 plot(IntanBehaviour.hitTrace(trialno).time-parameters.windowBeforePull,squeeze(mean(LFP.xfbeta(:,:,IntanBehaviour.hitTrace(trialno).LFPIndex),[1 2])),'-w','LineWidth',2);
 ylabel('Amplitude (\mu V)'); 
 subplot(2,1,2);
-trialno = 12;
+trialno = 11;
 plotSpectrogram(squeeze(missSpectrogramCWT(trialno,:,:)),IntanBehaviour.missTrace(trialno).time-parameters.windowBeforePull,fwt,'Wavelet based Average Spectogram for Misses','Time (s)','Frequency (Hz)');
 hold on; yyaxis right; box off;
 plot(IntanBehaviour.missTrace(trialno).time-parameters.windowBeforePull,squeeze(mean(LFP.xfbeta(:,:,IntanBehaviour.missTrace(trialno).LFPIndex),[1 2])),'-w','LineWidth',2);
@@ -169,7 +204,7 @@ options.plot_shuffled_examples = false; % example plots w/channels shuffled in s
 
 %% Wave detection in velocity triggered windows
 parameters.spacing = 0.1; % Grid spacing in mm
-nShuffle = 10000;
+nShuffle = 1000;
 threshold = 99.9;
 trialno = 55;
 
@@ -198,14 +233,14 @@ betaWaves.wavesMiss = detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,IntanBehavio
 
 % Wave detection for gamma band
 disp('Wave Detection for gamma band ...')
-threshold = 99.9;
+threshold = 99;
 gammarhoThres = getRhoThreshold(LFP.xgpgamma,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = gammarhoThres;    
 gammaWaves.wavesHit = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.hitTrace,parameters);
 gammaWaves.wavesMiss = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.missTrace,parameters);
 
 %% PLotting to check visually
-trialPlot = 17;
+trialPlot = 48;
 plot_wave_examples( LFP.xf(:,:,IntanBehaviour.hitTrace(trialPlot).LFPIndex(1):IntanBehaviour.hitTrace(trialPlot).LFPIndex(end)), ...
     options, trialPlot, Waves.wavesHit,rhoThres);
 
@@ -228,8 +263,33 @@ plotOption = 1;
 parameters.rhoThres= rhoThres;
 allwaves.LFPIndex = (1:1:size(LFP.LFP,2))';
 Wavesall = detectWaves(LFP.xf,LFP.xgp,LFP.wt,allwaves,parameters);
-WaveStatsSingle(Wavesall,parameters,1);
+WaveStatsSingle(Wavesall,parameters,0,size(LFP.LFP,2));
 
+%% Percent Phase Locking
+[PPLHit] = getPPL(LFP.xgpgamma,IntanBehaviour.hitTrace,parameters);
+[PPLMiss] = getPPL(LFP.xgpgamma,IntanBehaviour.missTrace,parameters);
+
+figure();
+subplot(2,1,1);
+imagesc(reshape(PPLHit,[],size(PPLHit,3)));
+colormap(jet);
+
+figure();
+plot(squeeze(nanmean(PPLHit,[1 2])));
+hold on;
+plot(squeeze(nanmean(PPLMiss,[1 2])));
+
+%% Average PGD accross frequency bands
+[PGDfreqHit,PGDfreqMiss] = getPGDFreqBand(LFP.LFPdatacube,IntanBehaviour,parameters);
+
+figure();
+PGDFreq = [5:5:100];
+plot(PGDFreq,PGDfreqHit);
+hold on;
+plot(PGDFreq,PGDfreqMiss);
+xlabel('Frequency');
+ylabel('Phase Gradient Directionality');
+ylim([0.35 0.7]);
 %% Beta event detection 
 avgBetaband = mean(LFP.beta_band,1);
 window = Encoder.trialTime(:,3:4);
@@ -507,5 +567,22 @@ set(gca,'xtick',1:4,'XTickLabel',{'Rest','Initiation','Run','Termination'});box 
 ylabel('Wave speed in cm/s');
 
 
+AvgHitTrace = mean(horzcat(Behaviour.hitTrace(1:end).trace),2);
+AvgMissTrace = mean(horzcat(Behaviour.missTrace(1:end).trace),2);
+meanHitWavelet = mean((abs(waveletHit).^2),3);
+meanMissWavelet = mean((abs(waveletMiss).^2),3);
+
+% Global average spectogram
+figure('Name','Trial Averaged Wavelet Spectrogram for Hits & Misses');
+subplot(1,2,1);
+plotSpectrogram(squeeze(meanHitWavelet),Behaviour.hitTrace(1).time-parameters.windowBeforePull,fwt,'Wavelet Based Spectrogram for Hits','Time (s)','Frequency (Hz)')
+hold on; yyaxis right; box off;
+plot(Behaviour.hitTrace(1).time-parameters.windowBeforePull,AvgHitTrace,'-w','LineWidth',2.5);
+ylabel('Lever deflection (mV)'); 
+subplot(1,2,2);
+plotSpectrogram(squeeze(meanMissWavelet),Behaviour.missTrace(1).time-parameters.windowBeforePull,fwt,'Wavelet Based Spectrogram for Misses','Time (s)','Frequency (Hz)')
+hold on; yyaxis right; box off;
+plot(Behaviour.missTrace(1).time-parameters.windowBeforePull,AvgMissTrace,'-w','LineWidth',2.5);
+ylabel('Lever deflection (mV)'); box off;
 
 

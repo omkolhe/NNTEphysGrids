@@ -30,12 +30,12 @@ M = load( 'myMap.mat' );
 
 fn = 'filename';
 writerobj = VideoWriter([fn '.avi'],'Uncompressed AVI'); % Initialize movie file
-writerobj.FrameRate = 10;
+writerobj.FrameRate = 5;
 open(writerobj);
 
 
 ctr = 1; % wave detections counter
-for jj = 1:length(evaluation_points)
+for jj = 6:length(evaluation_points)
     
     % animated wave plot
     if ( rho(jj) > plot_rho_value )
@@ -70,7 +70,7 @@ for jj = 1:length(evaluation_points)
             set( cb, 'position', [0.8509    0.3857    0.0330    0.3167] );
         end
         set( get(cb,'ylabel'), 'string', 'Amplitude (\muV)' ); set( cb, 'linewidth', 2 )
-%         writeVideo(writerobj,getframe(gcf)); %grabs current fig frame
+        writeVideo(writerobj,getframe(gcf)); %grabs current fig frame
 
         % animate plot
         for kk = 1:size(x_plot,3)
@@ -79,7 +79,7 @@ for jj = 1:length(evaluation_points)
             set( get(gca,'title'), 'string', ...
                 sprintf( 'trial %d, wave example %d, %d of %d ms', trial, ctr, kk, size(x_plot,3) ) )
             pause(pause_length); 
-%             writeVideo(writerobj,getframe(gcf)); %grabs current fig frame
+            writeVideo(writerobj,getframe(gcf)); %grabs current fig frame
         end
         
         % increment counter

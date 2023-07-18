@@ -1,4 +1,4 @@
-function [] = WaveStatsSingle(Waves,parameters,plot)
+function [] = WaveStatsSingle(Waves,parameters,plot,nMax)
 
 avgSpeed = mean(Waves.speed,'all');
 if plot == 1
@@ -24,5 +24,20 @@ if plot == 1
     title('Wave Direction');
 end
 
+minVal = 1;
+maxVal = nMax;
+
+nBins = ceil(nMax/100);
+binEdges = linspace(minVal,maxVal,nBins+1);
+
+
+binnedevalpoints = discretize(Waves.evaluationPoints,binEdges);
+
+a = zeros(nBins,1);
+
+for i=1:nBins
+    a(i) = sum(binnedevalpoints==i);
 end
 
+figure();
+bar(a);
