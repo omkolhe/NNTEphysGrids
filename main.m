@@ -87,7 +87,7 @@ xline(mean(Behaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVertic
 ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
 
 %% Reading behaviour data from Intan traces 
-IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan.dig_in_data,Behaviour);
+IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan.dig_in_data(1,:),Intan.dig_in_data(2,:),Behaviour);
 
 % Plotting Lever traces for Hits and Misses
 figure('Name','Average Lever Traces for Hits & Misses');
@@ -108,6 +108,17 @@ plot(IntanBehaviour.missTrace(1).time,mean(horzcat(IntanBehaviour.missTrace(1:en
 yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
 ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Misses');box off;
 
+% Plotting Lever traces for Cue Hit 
+figure('Name','Average Lever Traces for Cue Hits');
+for i=1:IntanBehaviour.nCueHit
+    plot(IntanBehaviour.cueHitTrace(i).time,IntanBehaviour.cueHitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    hold on;
+end
+plot(IntanBehaviour.cueHitTrace(1).time,mean(horzcat(IntanBehaviour.cueHitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
 
 %% Generalized Phase 
 LFP.xf = bandpass_filter(LFP.LFPdatacube,5,40,4,1000);
