@@ -1,4 +1,18 @@
-function [Behaviour] = readLever(parameters,lfpTime)
+function [Behaviour] = readLever(parameters,lfpTime,experiment)
+
+if ~exist('experiment','var')
+    experiment = 'self';
+    disp('No experiment argument pass. Experiment type set to self initiated');
+end
+
+if strcmp(experiment,'cue')
+    cue = 1;
+    disp('Experiment type set to cue initiated. . . ')
+else
+    cue = 0;
+    disp('Experiment type set to self initiated. . . ')
+end
+
 %% Reading file from arduino 
 [enfile,enpath] = uigetfile('*.csv');
 if isequal(enfile,0)
@@ -7,25 +21,32 @@ else
    disp(['User selected ', fullfile(enpath,enfile)]);
 end
 
-resting_position = 242;
+resting_position = 241;
 flip = 1;
-nlengthBeforePull = round(parameters.windowAfterPull/parameters.ts);
-nlength = round(parameters.windowAfterPull/parameters.ts + parameters.windowAfterPull/parameters.ts + 1);
+nlengthBeforePull = round(parameters.windowBeforePull/parameters.ts);
+nlength = round(parameters.windowBeforePull/parameters.ts + parameters.windowAfterPull/parameters.ts + 1);
+nlengthBeforeCue = round(parameters.windowBeforeCue/parameters.ts);
+nlengthCue = round(parameters.windowBeforeCue/parameters.ts + parameters.windowAfterCue/parameters.ts + 1);
 
 B = readmatrix([enpath,'/',enfile]);
 Behaviour.leverTrace = (B(2:end,1) - resting_position)*flip;
 Behaviour.time = (B(2:end,2) - B(2,2))/1e6; % time in seconds
 Behaviour.nHit = B(end,3);
 Behaviour.nMiss = B(end,4);
+if cue==1 
+    Behaviour.nCue = B(end,5); 
+    Behaviour.nCueHit = Behaviour.nHit;
+    Behaviour.nCueMiss = Behaviour.nCue-Behaviour.nCueHit;
+end   
 Behaviour.B = B(2:end,:);
 
-%% Gettting Hit and miss timings
+%% Getting hit and miss timings
 hitIndex = find(diff(B(:,3)) == 1) + 1;
 hitTime = Behaviour.time(hitIndex);
 hitLFPIndex = zeros(Behaviour.nHit,1);
 hitLFPTime = zeros(Behaviour.nHit,1);
 for i=1:Behaviour.nHit
-    hitLFPIndex(i) = max(find(lfpTime<hitTime(i)));
+    hitLFPIndex(i) = max(find(lfpTime<=hitTime(i)));
     hitLFPTime(i) = lfpTime(hitLFPIndex(i));
 end
 Behaviour.hit = [hitIndex hitTime hitLFPIndex hitLFPTime];
@@ -35,17 +56,63 @@ missTime = Behaviour.time(missIndex);
 missLFPIndex = zeros(Behaviour.nMiss,1);
 missLFPTime = zeros(Behaviour.nMiss,1);
 for i=1:Behaviour.nMiss
-    missLFPIndex(i) = max(find(lfpTime<missTime(i)));
+    missLFPIndex(i) = max(find(lfpTime<=missTime(i)));
     missLFPTime(i) = lfpTime(missLFPIndex(i));
 end
 Behaviour.miss = [missIndex missTime missLFPIndex missLFPTime];
+
+%% Getting cues, hit cues and miss cues
+if cue == 1
+
+    cueIndex = find(Behaviour.B(:,6) == 1);
+    cueTime = Behaviour.time(cueIndex);
+    cueLFPIndex = zeros(Behaviour.nCue,1);
+    cueLFPTime = zeros(Behaviour.nCue,1);
+    for i=1:Behaviour.nCue
+        cueLFPIndex(i) = max(find(lfpTime<=cueTime(i)));
+        cueLFPTime(i) = lfpTime(cueLFPIndex(i));
+    end
+    Behaviour.cue = [cueIndex cueTime cueLFPIndex cueLFPTime];
+    
+    % Getting cueHits and cueMisses 
+    cueHitIndex = zeros(Behaviour.nHit,1);
+    cueHitTime = zeros(Behaviour.nHit,1);
+    cueHitLFPIndex = zeros(Behaviour.nHit,1);
+    cueHitLFPTime = zeros(Behaviour.nHit,1);
+    cueHitPullIndex = zeros(Behaviour.nHit,1);
+    cueHitPullTime = zeros(Behaviour.nHit,1);
+    cueHitPullLFPIndex = zeros(Behaviour.nHit,1);
+    cueHitPullLFPTime = zeros(Behaviour.nHit,1);
+    
+    a = zeros(Behaviour.nHit,1);
+    
+    for i=1:Behaviour.nHit
+        a(i) = max(find(cueTime<hitTime(i))); % No need to check for reaction time. If there is a hit, there is a cue
+        cueHitIndex(i) = cueIndex(a(i));
+        cueHitTime(i) = cueTime(a(i));
+        cueHitLFPIndex(i) = cueLFPIndex(a(i));
+        cueHitLFPTime(i) = cueLFPTime(a(i));
+        cueHitPullIndex(i) = hitIndex(i);
+        cueHitPullTime(i) = hitTime(i);
+        cueHitPullLFPIndex(i) = hitLFPIndex(i);
+        cueHitPullLFPTime(i) = hitLFPTime(i);
+    end
+    
+    Behaviour.cueHit = [cueHitIndex cueHitTime cueHitLFPIndex cueHitLFPTime cueHitPullIndex cueHitPullTime cueHitPullLFPIndex cueHitPullLFPTime];
+    
+    Behaviour.reactionTime = cueHitPullLFPTime - cueHitLFPTime;
+    
+    % For cue Miss trials
+    Behaviour.cueMiss = Behaviour.cue;
+    Behaviour.cueMiss(a,:) = [];
+end
 
 %% get lever traces for hits and miss 
 
 for i=1:Behaviour.nHit
     Behaviour.hitTrace(i).i1 = max(find(Behaviour.time < Behaviour.hit(i,2)-parameters.windowBeforePull));
     Behaviour.hitTrace(i).i0 = Behaviour.hit(i,1);
-    Behaviour.hitTrace(i).i2 = max(find(Behaviour.time < Behaviour.hit(i,2)+parameters.windowBeforePull));
+    Behaviour.hitTrace(i).i2 = max(find(Behaviour.time < Behaviour.hit(i,2)+parameters.windowAfterPull));
     Behaviour.hitTrace(i).rawtrace = Behaviour.leverTrace(Behaviour.hitTrace(i).i1:Behaviour.hitTrace(i).i2);
     Behaviour.hitTrace(i).rawtime = Behaviour.time(Behaviour.hitTrace(i).i1:Behaviour.hitTrace(i).i2) - Behaviour.time(Behaviour.hitTrace(i).i1);
     Behaviour.hitTrace(i).time1 = Behaviour.time(Behaviour.hitTrace(i).i1:Behaviour.hitTrace(i).i2);
@@ -69,7 +136,7 @@ end
 for i=1:Behaviour.nMiss
     Behaviour.missTrace(i).i1 = max(find(Behaviour.time < Behaviour.miss(i,2)-parameters.windowBeforePull));
     Behaviour.missTrace(i).i0 = Behaviour.miss(i,1);
-    Behaviour.missTrace(i).i2 = max(find(Behaviour.time < Behaviour.miss(i,2)+parameters.windowBeforePull));
+    Behaviour.missTrace(i).i2 = max(find(Behaviour.time < Behaviour.miss(i,2)+parameters.windowAfterPull));
     Behaviour.missTrace(i).rawtrace = Behaviour.leverTrace(Behaviour.missTrace(i).i1:Behaviour.missTrace(i).i2);
     Behaviour.missTrace(i).rawtime = Behaviour.time(Behaviour.missTrace(i).i1:Behaviour.missTrace(i).i2) - Behaviour.time(Behaviour.missTrace(i).i1);
     Behaviour.missTrace(i).time1 = Behaviour.time(Behaviour.missTrace(i).i1:Behaviour.missTrace(i).i2);
@@ -90,6 +157,30 @@ for i=1:Behaviour.nMiss
     Behaviour.missTrace(i).LFPIndex = ([Behaviour.miss(i,3)-nlengthBeforePull:1:nlengthBeforePull+Behaviour.miss(i,3)])';
 end
 
+
+for i=1:Behaviour.nCueHit
+    Behaviour.cueHitTrace(i).i1 = max(find(Behaviour.time < Behaviour.cueHit(i,2)-parameters.windowBeforeCue));
+    Behaviour.cueHitTrace(i).i0 = Behaviour.cueHit(i,1);
+    Behaviour.cueHitTrace(i).i2 = max(find(Behaviour.time < Behaviour.cueHit(i,2)+parameters.windowAfterCue));
+    Behaviour.cueHitTrace(i).rawtrace = Behaviour.leverTrace(Behaviour.cueHitTrace(i).i1:Behaviour.cueHitTrace(i).i2);
+    Behaviour.cueHitTrace(i).rawtime = Behaviour.time(Behaviour.cueHitTrace(i).i1:Behaviour.cueHitTrace(i).i2) - Behaviour.time(Behaviour.cueHitTrace(i).i1);
+    Behaviour.cueHitTrace(i).time1 = Behaviour.time(Behaviour.cueHitTrace(i).i1:Behaviour.cueHitTrace(i).i2);
+    Behaviour.cueHitTrace(i).t1 = Behaviour.time(Behaviour.cueHitTrace(i).i1);
+    Behaviour.cueHitTrace(i).t0 = Behaviour.hit(i,2);
+    Behaviour.cueHitTrace(i).t2 = Behaviour.time(Behaviour.cueHitTrace(i).i2);
+    [Behaviour.cueHitTrace(i).trace,Behaviour.cueHitTrace(i).time] = resample(Behaviour.cueHitTrace(i).rawtrace,Behaviour.cueHitTrace(i).rawtime,parameters.Fs,'spline');
+    if (size(Behaviour.cueHitTrace(i).trace,1)<nlengthCue)
+        n1 = size(Behaviour.cueHitTrace(i).trace,1);
+        n2 = nlengthCue;
+        Behaviour.cueHitTrace(i).trace = [Behaviour.cueHitTrace(i).trace;interp1(1:1:n1,Behaviour.cueHitTrace(i).trace,[n1+1:1:n2],'linear','extrap')'];
+        Behaviour.cueHitTrace(i).time = [Behaviour.cueHitTrace(i).time;interp1(1:1:n1,Behaviour.cueHitTrace(i).time,[n1+1:1:n2],'linear','extrap')'];
+    elseif (size(Behaviour.cueHitTrace(i).trace,1)>nlength)
+        Behaviour.cueHitTrace(i).trace(nlength+1:end) = [];
+        Behaviour.cueHitTrace(i).time(nlength+1:end) = []; 
+    end
+    Behaviour.cueHitTrace(i).LFPTime = Behaviour.cueHitTrace(i).time + (Behaviour.cueHit(i,4)-(nlengthBeforePull*parameters.ts));
+    Behaviour.cueHitTrace(i).LFPIndex = ([Behaviour.cueHit(i,3)-nlengthBeforeCue:1:nlengthBeforeCue+Behaviour.cueHit(i,3)])';
+end
 
 
 

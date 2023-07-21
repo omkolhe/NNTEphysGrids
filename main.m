@@ -24,6 +24,8 @@ parameters.Fs = 1000;
 parameters.ts = 1/parameters.Fs;
 parameters.windowBeforePull = 1; % in seconds
 parameters.windowAfterPull = 1; % in seconds
+parameters.windowBeforeCue = 1; % in seconds 
+parameters.windowAfterCue = 2; % in seconds 
 
 IntanConcatenate
 fpath = Intan.path; % where on disk do you want the analysis? ideally and SSD...
@@ -47,7 +49,7 @@ LFPplot(LFP);
 LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.goodChMap); % Creating datacube
 
 %% Loading Lever Data 
-[Behaviour] = readLever(parameters,LFP.times);
+[Behaviour] = readLever(parameters,LFP.times,'cue');
 figure('Name','Lever Trace');plot(Behaviour.time,Behaviour.leverTrace,'LineWidth',1.5);ylim([-5 50]);xlabel('Time (in s)');ylabel('Lever Position in mV');yline(23);
 xline(squeeze(Behaviour.hit(:,2)),'-.b',cellstr(num2str((1:1:Behaviour.nHit)')),'LabelVerticalAlignment','top');
 xline(squeeze(Behaviour.miss(:,2)),'-.r',cellstr(num2str((1:1:Behaviour.nMiss)')),'LabelVerticalAlignment','bottom'); xlim([410 470]); box off;
@@ -60,7 +62,7 @@ for i=1:Behaviour.nHit
     hold on;
 end
 plot(Behaviour.hitTrace(1).time-parameters.windowBeforePull,mean(horzcat(Behaviour.hitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
-yline(23,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+yline(10,'--.b','Threshold','LabelHorizontalAlignment','left'); 
 ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Hits');box off;
 
 subplot(1,2,2);
@@ -69,8 +71,20 @@ for i=1:Behaviour.nMiss
     hold on;
 end
 plot(Behaviour.missTrace(1).time-parameters.windowBeforePull,mean(horzcat(Behaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
-yline(23,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+yline(10,'--.b','Threshold','LabelHorizontalAlignment','left'); 
 ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Misses');box off;
+
+% Plotting Lever traces for Cue Hits and Cue miss 
+figure('Name','Average Lever Traces for Cue Hits');
+for i=1:Behaviour.nCueHit
+    plot(Behaviour.cueHitTrace(i).time-1,Behaviour.cueHitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    hold on;
+end
+plot(Behaviour.cueHitTrace(1).time-parameters.windowBeforeCue,mean(horzcat(Behaviour.cueHitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+yline(10,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+xline(mean(Behaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
 
 %% Reading behaviour data from Intan traces 
 IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan.dig_in_data,Behaviour);

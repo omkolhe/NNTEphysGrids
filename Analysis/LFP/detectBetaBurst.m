@@ -1,4 +1,4 @@
-function [BetaBurst] = detectBetaBurst(avgLFP,behaviourTrace,parameters)
+function [BetaBurst] = detectBetaBurst(LFP,behaviourTrace,parameters)
 
 % Reference - https://academic.oup.com/brain/article/140/11/2968/4430808#112576655
 
