@@ -40,6 +40,6 @@ Intan.analog_adc_data = Intan.analog_adc_data(:,Intan.offsetSample:(size(Intan.a
 Intan.dig_in_data = Intan.dig_in_data(:,Intan.offsetSample:(size(Intan.dig_in_data,2)-Intan.offsetSample));
 clear amplifier_data t_amplifier frequncy_parameters notes aux_input_channels...
     aux_input_data board_dig_in_channels board_dig_in_data amplifier_channels...
-    board_adc_data board_adc_channels t_board_adc t_dig t_aux_input
+    board_adc_data board_adc_channels t_board_adc t_dig t_aux_input analog_adc_data dig_in_data allIntan
 
 

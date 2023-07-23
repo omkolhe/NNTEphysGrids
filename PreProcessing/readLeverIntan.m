@@ -33,6 +33,18 @@ IntanBehaviour.nCueMiss = Behaviour.nCueMiss;
 IntanBehaviour.threshold = mean(IntanBehaviour.leverTrace(rewardIndex),'all');
 
 %% Getting hit traces and timings
+st_hit1 = rewardIndex(1)-parameters.windowBeforePull*parameters.Fs;
+if st_hit1 <= 0
+    disp('First cue hit rejected');
+    IntanBehaviour.nCueHit = Behaviour.nCueHit-1;
+    rewardIndex(1) = [];
+end
+sp_hitend = rewardIndex(end)+parameters.windowAfterPull*parameters.Fs;
+if  sp_hitend > length(IntanBehaviour.time)
+    disp('Last cue hit rejected');
+    IntanBehaviour.nCueHit = Behaviour.nCueHit-1;
+    rewardIndex(end) = [];
+end 
 
 for i=1:IntanBehaviour.nCueHit
 %     IntanBehaviour.hit(i) = [rewardIndex(i) lfpTime(rewardIndex(i)) rewardIndex(i) lfpTime(rewardIndex(i))];
@@ -47,7 +59,7 @@ end
 
 % figure();plot(1:1:10001,(5/1024)*Behaviour.leverTrace(Behaviour.miss(15,1)-5000:Behaviour.miss(15,1)+5000));hold on;
 % plot(0.1:0.1:10000.1,IntanBehaviour.leverTrace(Behaviour.miss(15,3)-50000:Behaviour.miss(15,3)+50000));
-correctionWindow = 1500; % in number of points in LFPFs
+correctionWindow = 800; % in number of points in LFPFs
 tol = 0.005;
 nDiffSlope = 10;
 disp('Finding miss trials in the Intan data ...');

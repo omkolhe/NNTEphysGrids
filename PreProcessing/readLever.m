@@ -1,11 +1,11 @@
 function [Behaviour] = readLever(parameters,lfpTime,experiment)
 
-if ~exist('experiment','var')
-    experiment = 'self';
+if ~exist('parameters.experiment','var')
+    parameters.experiment = 'self';
     disp('No experiment argument passed. Experiment type set to self initiated');
 end
 
-if strcmp(experiment,'cue')
+if strcmp(parameter.experiment,'cue')
     cue = 1;
     disp('Experiment type set to cue initiated. . . ')
 else
@@ -63,7 +63,7 @@ Behaviour.miss = [missIndex missTime missLFPIndex missLFPTime];
 
 %% Getting cues, hit cues and miss cues
 if cue == 1
-    cueIndex = find(Behaviour.B(:,6) == 1);
+    cueIndex = find(Behaviour.B(:,end) == 1);
     cueTime = Behaviour.time(cueIndex);
     cueLFPIndex = zeros(Behaviour.nCue,1);
     cueLFPTime = zeros(Behaviour.nCue,1);
@@ -107,6 +107,18 @@ if cue == 1
 end
 
 %% get lever traces for hits and miss 
+st_hit1 = max(find(Behaviour.time < Behaviour.hit(1,2)-parameters.windowBeforePull));
+if isempty(st_hit1)
+    disp('First hit rejected');
+    Behaviour.nHit = Behaviour.nHit-1;
+    Behaviour.hit(1,:) = [];
+end 
+sp_hitend =  max(find(Behaviour.time < Behaviour.hit(end,2)+parameters.windowAfterPull));
+if isempty(sp_hitend) 
+    disp('Last hit rejected')
+    Behaviour.nHit = Behaviour.nHit-1;
+    Behaviour.hit(end,:) = [];
+end
 
 for i=1:Behaviour.nHit
     Behaviour.hitTrace(i).i1 = max(find(Behaviour.time < Behaviour.hit(i,2)-parameters.windowBeforePull));
@@ -130,6 +142,19 @@ for i=1:Behaviour.nHit
     end
     Behaviour.hitTrace(i).LFPTime = Behaviour.hitTrace(i).time + (Behaviour.hit(i,4)-(nlengthBeforePull*parameters.ts));
     Behaviour.hitTrace(i).LFPIndex = ([Behaviour.hit(i,3)-nlengthBeforePull:1:nlengthBeforePull+Behaviour.hit(i,3)])';
+end
+
+st_miss1 = max(find(Behaviour.time < Behaviour.miss(1,2)-parameters.windowBeforePull));
+if isempty(st_miss1)
+    disp('First miss rejected');
+    Behaviour.nMiss = Behaviour.nMiss-1;
+    Behaviour.miss(1,:) = [];
+end 
+sp_missend =  max(find(Behaviour.time < Behaviour.miss(end,2)+parameters.windowAfterPull));
+if isempty(sp_missend)
+    disp('Last miss rejected')
+    Behaviour.nMiss = Behaviour.nMiss-1;
+    Behaviour.miss(end,:) = [];
 end
 
 for i=1:Behaviour.nMiss
@@ -157,6 +182,18 @@ for i=1:Behaviour.nMiss
 end
 
 if cue == 1 
+    st_cuehit1 = max(find(Behaviour.time < Behaviour.cueHit(1,2)-parameters.windowBeforeCue));
+    if isempty(st_cuehit1)
+        disp('First cue hit rejected');
+        Behaviour.nCueHit = Behaviour.nCueHit-1;
+        Behaviour.cueHit(1,:) = [];
+    end 
+    sp_cuehitend =  max(find(Behaviour.time < Behaviour.cueHit(end,2)+parameters.windowAfterCue));
+    if isempty(sp_cuehitend)
+        disp('Last cue hit rejected')
+        Behaviour.nCueHit = Behaviour.nCueHit-1;
+        Behaviour.cueHit(end,:) = [];
+    end
     for i=1:Behaviour.nCueHit
         Behaviour.cueHitTrace(i).i1 = max(find(Behaviour.time < Behaviour.cueHit(i,2)-parameters.windowBeforeCue));
         Behaviour.cueHitTrace(i).i0 = Behaviour.cueHit(i,1);
