@@ -222,10 +222,10 @@ hold on; yyaxis right; box off;
 plot(IntanBehaviour.missTrace(trialno).time-parameters.windowBeforePull,IntanBehaviour.missTrace(trialno).trace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); box off;
 
-trialno = 49;
+trialno = 67;
 figure('Name','Spatial Averaged Wavelet Spectrogram for Hits & Misses');
-%subplot(2,1,1);
-plotSpectrogram(10*log10(squeeze(hitSpectrogramCWT(trialno,:,:))),IntanBehaviour.cueHitTrace(trialno).time,fwt,'Wavelet based Average Spectogram for Hits','Time (s)','Frequency (Hz)');
+subplot(2,1,1);
+plotSpectrogram((squeeze(hitSpectrogramCWT(trialno,:,:))),IntanBehaviour.cueHitTrace(trialno).time,fwt,'Wavelet based Average Spectogram for Hits','Time (s)','Frequency (Hz)');
 hold on; yyaxis right; box off;
 plot(IntanBehaviour.cueHitTrace(trialno).time,squeeze(mean(LFP.xfwide(:,:,IntanBehaviour.cueHitTrace(trialno).LFPIndex),[1 2])),'-w','LineWidth',2);
 ylabel('Amplitude (\mu V)'); 
@@ -250,26 +250,33 @@ trialno = 55;
 
 % Wave detection for wide band
 disp('Wave Detection for wide band ...')
-% rhoThres = getRhoThreshold(LFP.xgp,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
+rhoThres = getRhoThreshold(LFP.xgp,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres= rhoThres;
 Waves.wavesHit = detectWaves(LFP.xf,LFP.xgp,LFP.wt,IntanBehaviour.hitTrace,parameters);
-Waves.wavesMiss = detectWaves(LFP.xf,LFP.xgp,LFP.wt,IntanBehaviour.missTrace,parameters);
+if exist('Intan.cueMissTrace','var')
+    Waves.wavesMiss = detectWaves(LFP.xf,LFP.xgp,LFP.wt,IntanBehaviour.cueMissTrace,parameters);
+end
+
 
 % Wave detection for theta band
 disp('Wave Detection for theta band ...')
 threshold = 99.9;
-% thetarhoThres = getRhoThreshold(LFP.xgptheta,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
+thetarhoThres = getRhoThreshold(LFP.xgptheta,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = thetarhoThres;
 thetaWaves.wavesHit = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,IntanBehaviour.hitTrace,parameters);
-thetaWaves.wavesMiss = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,IntanBehaviour.missTrace,parameters);
+if exist('Intan.cueMissTrace','var')
+    thetaWaves.wavesMiss = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,IntanBehaviour.cueMissTrace,parameters);
+end
 
 % Wave detection for beta band
 disp('Wave Detection for beta band ...')
 threshold = 99.9;
-% betarhoThres = getRhoThreshold(LFP.xgpbeta,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
+betarhoThres = getRhoThreshold(LFP.xgpbeta,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = betarhoThres;
 betaWaves.wavesHit= detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,IntanBehaviour.hitTrace,parameters);
-betaWaves.wavesMiss = detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,IntanBehaviour.missTrace,parameters);
+if exist('Intan.cueMissTrace','var')
+    betaWaves.wavesMiss = detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,IntanBehaviour.cueMissTrace,parameters);
+end
 
 % Wave detection for gamma band
 disp('Wave Detection for gamma band ...')
@@ -277,7 +284,9 @@ threshold = 99;
 gammarhoThres = getRhoThreshold(LFP.xgpgamma,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = gammarhoThres;    
 gammaWaves.wavesHit = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.hitTrace,parameters);
-gammaWaves.wavesMiss = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.missTrace,parameters);
+if exist('Intan.cueMissTrace','var')
+    gammaWaves.wavesMiss = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.cueMissTrace,parameters);
+end
 
 %% PLotting to check visually
 trialPlot = 48;
