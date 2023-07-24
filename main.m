@@ -122,6 +122,18 @@ xline(0,'--r','Cue','LabelVerticalAlignment','top');
 xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
 ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
 
+% Plotting Lever traces for Cue Miss 
+figure('Name','Average Lever Traces for Cue Misses');
+for i=1:IntanBehaviour.nCueHit
+    plot(IntanBehaviour.cueHitTrace(i).time,IntanBehaviour.cueMissTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    hold on;
+end
+plot(IntanBehaviour.cueHitTrace(1).time,mean(horzcat(IntanBehaviour.cueHitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
+
 %% Generalized Phase 
 LFP.xf = bandpass_filter(LFP.LFPdatacube,5,40,4,1000);
 [LFP.xgp, LFP.wt] = generalized_phase(LFP.xf,1000,0);
@@ -129,7 +141,7 @@ LFP.xfbeta = bandpass_filter(LFP.LFPdatacube,10,30,4,1000);
 [LFP.xgpbeta, LFP.wtbeta] = generalized_phase(LFP.xfbeta,1000,0);
 LFP.xftheta = bandpass_filter(LFP.LFPdatacube,4,10,4,1000);
 [LFP.xgptheta, LFP.wttheta]  = generalized_phase(LFP.xftheta,1000,0);
-LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,40,4,1000);
+LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,80,4,1000);
 [LFP.xgpgamma, LFP.wtgamma]  = generalized_phase(LFP.xfgamma,1000,0);
 [parameters.X,parameters.Y] = meshgrid( 1:parameters.cols, 1:parameters.rows );
 LFP.xfwide = bandpass_filter(LFP.LFPdatacube,5,90,4,1000);
@@ -170,20 +182,20 @@ imagesc(trialAvgPSD(:,1:51)');
 colormap("jet");set(gca,'YDir','normal');
 
 %% Wavelet spectrogram
-[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(LFP.xfbeta,LFP.Fs,IntanBehaviour.cueHitTrace,parameters,[5 90]);
+[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(LFP.xfwide,LFP.Fs,IntanBehaviour.cueHitTrace,parameters,[5 90]);
 [missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(LFP.xfwide,LFP.Fs,IntanBehaviour.missTrace,parameters,[5 90]);
 
 % Global average spectogram
 figure('Name','Trial Averaged Wavelet Spectrogram for Hits & Misses');
-%subplot(1,2,1);
+subplot(1,2,1);
 plotSpectrogram((squeeze(hitAvgSpectrogram)),IntanBehaviour.cueHitTrace(1).time,fwt,'Wavelet Based Spectrogram for Hits','Time (s)','Frequency (Hz)')
 hold on; yyaxis right; box off;
 plot(IntanBehaviour.cueHitTrace(1).time,AvgHitTrace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); 
 subplot(1,2,2);
-plotSpectrogram((squeeze(missAvgSpectrogram)),IntanBehaviour.missTrace(1).time-parameters.windowBeforeCue,fwt,'Wavelet Based Spectrogram for Misses','Time (s)','Frequency (Hz)')
+plotSpectrogram((squeeze(missAvgSpectrogram)),IntanBehaviour.missTrace(1).time,fwt,'Wavelet Based Spectrogram for Misses','Time (s)','Frequency (Hz)')
 hold on; yyaxis right; box off;
-plot(IntanBehaviour.missTrace(1).time-parameters.windowBeforeCue,AvgMissTrace,'-w','LineWidth',2.5);
+plot(IntanBehaviour.missTrace(1).time,AvgMissTrace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); box off;
 
 % Movement average spectogram 

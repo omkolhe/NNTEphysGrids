@@ -18,13 +18,12 @@ powerCWT = (abs(wt).^2);%/abs(var(x,1)); % Estimate power from CWT
 if BLsub == 1
     BLPower = mean(powerCWT(:,1:nBLSub),2);
     powerCWTBLsub = bsxfun(@rdivide,powerCWT,BLPower);
+    powerCWT = powerCWTBLsub;
 end
 
 
-if (plot==1 && BLsub==0)
+if (plot==1 )
     plotSpectrogram(10*log10(powerCWT),t,fwt,'Wavelet Based Spectrogram','Time (s)','Frequency (Hz)')
 end
 
-if (plot==1 && BLsub==1)
-    plotSpectrogram(10*log10(powerCWTBLsub),t,fwt,'Wavelet Based Spectrogram','Time (s)','Frequency (Hz)')
-end
+
