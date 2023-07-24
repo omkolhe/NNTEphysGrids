@@ -26,5 +26,5 @@ if (plot==1 && BLsub==0)
 end
 
 if (plot==1 && BLsub==1)
-    plotSpectrogram(10*log10(powerCWTBLsub),t,fwt,'Wavelet Based Spectrogram','Time (s)','Frequency (Hz)')
+    plotSpectrogram(powerCWTBLsub,t,fwt,'Wavelet Based Spectrogram','Time (s)','Frequency (Hz)')
 end

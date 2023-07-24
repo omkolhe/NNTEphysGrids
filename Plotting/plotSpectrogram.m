@@ -4,10 +4,10 @@ params = parseinputs(varargin{:});
 
 surf(t,f,c,EdgeColor='none');
 view(0,90);
-shading interp;colormap(jet);
+shading interp;colormap(parula(128));
 axis tight;
 h = colorbar;
-h.Label.String = 'Relative Power to white noise';
+h.Label.String = 'Power in dB';
 if isempty(params.xlab) && isempty(params.ylab)
     ylabel('Frequency (Hz)');xlabel('Time (s)');
 else
