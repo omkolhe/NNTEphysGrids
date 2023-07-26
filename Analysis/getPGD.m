@@ -2,7 +2,12 @@ function [PGD] = getPGD(xgp,behaviourTrace,parameters)
 
 spacing = parameters.spacing;
 
-totaltime = parameters.windowAfterPull + parameters.windowBeforePull + parameters.ts;
+if strcmp(parameters.experiment,'cue')
+    totaltime = parameters.windowAfterCue + parameters.windowBeforeCue + parameters.ts;
+elseif strcmp(parameters.experiment,'self')
+    totaltime = parameters.windowAfterPull + parameters.windowBeforePull + parameters.ts;
+end
+
 time = [parameters.ts:parameters.ts:totaltime]; 
 
 PGD = zeros(size(behaviourTrace,2),size(time,2));
