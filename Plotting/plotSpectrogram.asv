@@ -2,12 +2,9 @@ function plotSpectrogram(c,t,f,plottype,varargin)
 
 params = parseinputs(varargin{:});
 
-if strcmp(plottype,'contourf')
-    contourf(t,f,c,40,'LineColor','none');
-else
-    surf(t,f,c,EdgeColor='none');
-    view(0,90);
-end
+if strc
+surf(t,f,c,EdgeColor='none');
+view(0,90);
 shading interp;colormap(parula(128));
 axis tight;
 h = colorbar;

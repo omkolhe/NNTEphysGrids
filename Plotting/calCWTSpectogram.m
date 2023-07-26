@@ -6,7 +6,7 @@ if ~exist('baselinesub','var')
     BLsub = 0;
 else
     BLsub = baselinesub;
-    nBLSub = 0.5*Fs; % in number of points
+    nBLSub = 0.25*Fs; % in number of points
 end
 
 assert( numel(x)==numel(t), 'Number of elements in x and t dont match' );

@@ -215,7 +215,7 @@ if cue == 1
             Behaviour.cueHitTrace(i).trace(nlength+1:end) = [];
             Behaviour.cueHitTrace(i).time(nlength+1:end) = []; 
         end
-        Behaviour.cueHitTrace(i).LFPTime = Behaviour.cueHitTrace(i).time + (Behaviour.cueHit(i,4)-(nlengthBeforePull*parameters.ts));
+        Behaviour.cueHitTrace(i).LFPTime = Behaviour.cueHitTrace(i).time + (Behaviour.cueHit(i,4)-(nlengthBeforeCue*parameters.ts));
         Behaviour.cueHitTrace(i).LFPIndex = ([Behaviour.cueHit(i,3)-nlengthBeforeCue:1:nlengthBeforeCue+Behaviour.cueHit(i,3)])';
     end
     
@@ -253,7 +253,7 @@ if cue == 1
                 Behaviour.cueMissTrace(i).trace(nlength+1:end) = [];
                 Behaviour.cueMissTrace(i).time(nlength+1:end) = []; 
             end
-            Behaviour.cueMissTrace(i).LFPTime = Behaviour.cueMissTrace(i).time + (Behaviour.cueMiss(i,4)-(nlengthBeforePull*parameters.ts));
+            Behaviour.cueMissTrace(i).LFPTime = Behaviour.cueMissTrace(i).time + (Behaviour.cueMiss(i,4)-(nlengthBeforeCue*parameters.ts));
             Behaviour.cueMissTrace(i).LFPIndex = ([Behaviour.cueMiss(i,3)-nlengthBeforeCue:1:nlengthBeforeCue+Behaviour.cueMiss(i,3)])';
         end
     end

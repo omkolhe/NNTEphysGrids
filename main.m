@@ -24,8 +24,8 @@ parameters.Fs = 1000;
 parameters.ts = 1/parameters.Fs;
 parameters.windowBeforePull = 1; % in seconds
 parameters.windowAfterPull = 1; % in seconds
-parameters.windowBeforeCue = 1; % in seconds 
-parameters.windowAfterCue = 2; % in seconds 
+parameters.windowBeforeCue = 0.5; % in seconds 
+parameters.windowAfterCue = 1.5; % in seconds 
 parameters.experiment = 'cue'; % self - internally generated, cue - cue initiated 
 parameters.opto = 1; % 1 - opto ON , 0 - opto OFF
 
@@ -79,7 +79,7 @@ ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Tr
 % Plotting Lever traces for Cue Hits and Cue miss 
 figure('Name','Average Lever Traces for Cue Hits');
 for i=1:Behaviour.nCueHit
-    plot(Behaviour.cueHitTrace(i).time-1,Behaviour.cueHitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    plot(Behaviour.cueHitTrace(i).time-parameters.windowBeforeCue,Behaviour.cueHitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
     hold on;
 end
 plot(Behaviour.cueHitTrace(1).time-parameters.windowBeforeCue,mean(horzcat(Behaviour.cueHitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
@@ -183,19 +183,19 @@ colormap("jet");set(gca,'YDir','normal');
 
 %% Wavelet spectrogram
 [hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(LFP.xfwide,LFP.Fs,IntanBehaviour.cueHitTrace,parameters,[5 90]);
-[missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(LFP.xfwide,LFP.Fs,IntanBehaviour.missTrace,parameters,[5 90]);
+[missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(LFP.xfwide,LFP.Fs,IntanBehaviour.cueMissTrace,parameters,[5 90]);
 
 % Global average spectogram
 figure('Name','Trial Averaged Wavelet Spectrogram for Hits & Misses');
 subplot(1,2,1);
-plotSpectrogram((squeeze(hitAvgSpectrogram)),IntanBehaviour.cueHitTrace(1).time,fwt,'Wavelet Based Spectrogram for Hits','Time (s)','Frequency (Hz)')
+plotSpectrogram((squeeze(hitAvgSpectrogram)),IntanBehaviour.cueHitTrace(1).time,fwt,'contourf','Wavelet Based Spectrogram for Hits','Time (s)','Frequency (Hz)')
 hold on; yyaxis right; box off;
 plot(IntanBehaviour.cueHitTrace(1).time,AvgHitTrace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); 
 subplot(1,2,2);
-plotSpectrogram((squeeze(missAvgSpectrogram)),IntanBehaviour.missTrace(1).time,fwt,'Wavelet Based Spectrogram for Misses','Time (s)','Frequency (Hz)')
+plotSpectrogram((squeeze(missAvgSpectrogram)),IntanBehaviour.cueMissTrace(1).time,fwt,'contourf','Wavelet Based Spectrogram for Misses','Time (s)','Frequency (Hz)')
 hold on; yyaxis right; box off;
-plot(IntanBehaviour.missTrace(1).time,AvgMissTrace,'-w','LineWidth',2.5);
+plot(IntanBehaviour.cueMissTrace(1).time,AvgMissTrace,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)'); box off;
 
 % Movement average spectogram 
@@ -253,7 +253,7 @@ disp('Wave Detection for wide band ...')
 rhoThres = getRhoThreshold(LFP.xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres= rhoThres;
 Waves.wavesHit = detectWaves(LFP.xf,LFP.xgp,LFP.wt,IntanBehaviour.cueHitTrace,parameters);
-if exist('Intan.cueMissTrace','var')
+if isfield(IntanBehaviour,'cueMissTrace')
     Waves.wavesMiss = detectWaves(LFP.xf,LFP.xgp,LFP.wt,IntanBehaviour.cueMissTrace,parameters);
 end
 
@@ -264,7 +264,7 @@ threshold = 99.9;
 thetarhoThres = getRhoThreshold(LFP.xgptheta,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = thetarhoThres;
 thetaWaves.wavesHit = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,IntanBehaviour.cueHitTrace,parameters);
-if exist('Intan.cueMissTrace','var')
+if isfield(IntanBehaviour,'cueMissTrace')
     thetaWaves.wavesMiss = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,IntanBehaviour.cueMissTrace,parameters);
 end
 
@@ -274,7 +274,7 @@ threshold = 99.9;
 betarhoThres = getRhoThreshold(LFP.xgpbeta,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = betarhoThres;
 betaWaves.wavesHit= detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,IntanBehaviour.cueHitTrace,parameters);
-if exist('Intan.cueMissTrace','var')
+if isfield(IntanBehaviour,'cueMissTrace')
     betaWaves.wavesMiss = detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,IntanBehaviour.cueMissTrace,parameters);
 end
 
@@ -284,7 +284,7 @@ threshold = 99;
 gammarhoThres = getRhoThreshold(LFP.xgpgamma,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = gammarhoThres;    
 gammaWaves.wavesHit = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.cueHitTrace,parameters);
-if exist('Intan.cueMissTrace','var')
+if isfield(IntanBehaviour,'cueMissTrace')
     gammaWaves.wavesMiss = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.cueMissTrace,parameters);
 end
 

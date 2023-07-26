@@ -26,7 +26,7 @@ end
 figure();
 globalAvgSpectrogram = mean(avgSpectrogramCWT,1);
 globalAvgBehaviour = mean(horzcat(behaviourTrace(1:end).trace),2);
-plotSpectrogram(10*log10(squeeze(globalAvgSpectrogram)),relTime,fwt);
+plotSpectrogram(10*log10(squeeze(globalAvgSpectrogram)),relTime,fwt,'surf');
 hold on; yyaxis right; box off;
 plot(relTime,globalAvgBehaviour,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)');
