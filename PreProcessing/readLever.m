@@ -1,11 +1,11 @@
-function [Behaviour] = readLever(parameters,lfpTime,experiment)
+function [Behaviour] = readLever(parameters,lfpTime)
 
-if ~exist('parameters.experiment','var')
-    parameters.experiment = 'self';
-    disp('No experiment argument passed. Experiment type set to self initiated');
-end
+% if ~exist('parameters.experiment','var')
+%     parameters.experiment = 'self';
+%     disp('No experiment argument passed. Experiment type set to self initiated');
+% end
 
-if strcmp(parameter.experiment,'cue')
+if strcmp(parameters.experiment,'cue')
     cue = 1;
     disp('Experiment type set to cue initiated. . . ')
 else

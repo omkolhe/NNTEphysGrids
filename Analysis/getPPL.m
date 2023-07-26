@@ -3,7 +3,7 @@ function [PPL] = getPPL(xgp,behaviourTrace,parameters)
 % Reference : Propagating waves mediate information transfer in the motor
 % cortex, Nature Neuro, 2006 
    
-totaltime = parameters.windowAfterPull + parameters.windowBeforePull + parameters.ts;
+totaltime = parameters.windowAfterCue + parameters.windowBeforeCue + parameters.ts;
 time = [parameters.ts:parameters.ts:totaltime]; 
 
 nTrials = size(behaviourTrace,2);

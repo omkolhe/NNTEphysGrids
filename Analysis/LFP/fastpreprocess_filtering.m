@@ -63,4 +63,5 @@ end
 LFP.LFP = LFP.LFP';
 LFP.channel_num = channel_num;
 LFP.downSampleFreq = downSampleFreq;
+LFP.times = ((1:size(LFP.LFP,2))-1)/LFP.downSampleFreq;
 toc

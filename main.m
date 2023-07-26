@@ -45,9 +45,9 @@ figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size
 %% LFP
 set(0,'DefaultFigureWindowStyle','normal')
 LFP = fastpreprocess_filtering(Intan.allIntan,5000);
-LFP = bestLFP(LFP);
-LFP = bandFilter(LFP,'depth'); % Extract LFPs based on 'depth' or 'single'
-LFPplot(LFP);
+% LFP = bestLFP(LFP);
+% LFP = bandFilter(LFP,'depth'); % Extract LFPs based on 'depth' or 'single'
+% LFPplot(LFP);
 LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.goodChMap); % Creating datacube
 
 %% Loading Lever Data 
@@ -244,15 +244,15 @@ options.plot_shuffled_examples = false; % example plots w/channels shuffled in s
 
 %% Wave detection in velocity triggered windows
 parameters.spacing = 0.1; % Grid spacing in mm
-nShuffle = 1000;
+nShuffle = 2000;
 threshold = 99.9;
 trialno = 55;
 
 % Wave detection for wide band
 disp('Wave Detection for wide band ...')
-rhoThres = getRhoThreshold(LFP.xgp,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
+rhoThres = getRhoThreshold(LFP.xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres= rhoThres;
-Waves.wavesHit = detectWaves(LFP.xf,LFP.xgp,LFP.wt,IntanBehaviour.hitTrace,parameters);
+Waves.wavesHit = detectWaves(LFP.xf,LFP.xgp,LFP.wt,IntanBehaviour.cueHitTrace,parameters);
 if exist('Intan.cueMissTrace','var')
     Waves.wavesMiss = detectWaves(LFP.xf,LFP.xgp,LFP.wt,IntanBehaviour.cueMissTrace,parameters);
 end
@@ -261,9 +261,9 @@ end
 % Wave detection for theta band
 disp('Wave Detection for theta band ...')
 threshold = 99.9;
-thetarhoThres = getRhoThreshold(LFP.xgptheta,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
+thetarhoThres = getRhoThreshold(LFP.xgptheta,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = thetarhoThres;
-thetaWaves.wavesHit = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,IntanBehaviour.hitTrace,parameters);
+thetaWaves.wavesHit = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,IntanBehaviour.cueHitTrace,parameters);
 if exist('Intan.cueMissTrace','var')
     thetaWaves.wavesMiss = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,IntanBehaviour.cueMissTrace,parameters);
 end
@@ -271,9 +271,9 @@ end
 % Wave detection for beta band
 disp('Wave Detection for beta band ...')
 threshold = 99.9;
-betarhoThres = getRhoThreshold(LFP.xgpbeta,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
+betarhoThres = getRhoThreshold(LFP.xgpbeta,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = betarhoThres;
-betaWaves.wavesHit= detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,IntanBehaviour.hitTrace,parameters);
+betaWaves.wavesHit= detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,IntanBehaviour.cueHitTrace,parameters);
 if exist('Intan.cueMissTrace','var')
     betaWaves.wavesMiss = detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,IntanBehaviour.cueMissTrace,parameters);
 end
@@ -281,16 +281,16 @@ end
 % Wave detection for gamma band
 disp('Wave Detection for gamma band ...')
 threshold = 99;
-gammarhoThres = getRhoThreshold(LFP.xgpgamma,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
+gammarhoThres = getRhoThreshold(LFP.xgpgamma,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = gammarhoThres;    
-gammaWaves.wavesHit = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.hitTrace,parameters);
+gammaWaves.wavesHit = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.cueHitTrace,parameters);
 if exist('Intan.cueMissTrace','var')
     gammaWaves.wavesMiss = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.cueMissTrace,parameters);
 end
 
 %% PLotting to check visually
 trialPlot = 48;
-plot_wave_examples( LFP.xf(:,:,IntanBehaviour.hitTrace(trialPlot).LFPIndex(1):IntanBehaviour.hitTrace(trialPlot).LFPIndex(end)), ...
+plot_wave_examples( LFP.xf(:,:,IntanBehaviour.cueHitTrace(trialPlot).LFPIndex(1):IntanBehaviour.cueHitTrace(trialPlot).LFPIndex(end)), ...
     options, trialPlot, Waves.wavesHit,rhoThres);
 
 % trialPlot = 12;
@@ -315,8 +315,8 @@ Wavesall = detectWaves(LFP.xf,LFP.xgp,LFP.wt,allwaves,parameters);
 WaveStatsSingle(Wavesall,parameters,0,size(LFP.LFP,2));
 
 %% Percent Phase Locking
-[PPLHit] = getPPL(LFP.xgpgamma,IntanBehaviour.hitTrace,parameters);
-[PPLMiss] = getPPL(LFP.xgpgamma,IntanBehaviour.missTrace,parameters);
+[PPLHit] = getPPL(LFP.xgpgamma,IntanBehaviour.cueHitTrace,parameters);
+[PPLMiss] = getPPL(LFP.xgpgamma,IntanBehaviour.cueMissTrace,parameters);
 
 figure();
 subplot(2,1,1);
@@ -506,132 +506,5 @@ set( t2, 'fontname', 'arial', 'fontsize', 24, 'fontweight', 'bold', 'rotation', 
 % w = IF*2*pi;%(1/s)*(rad) = rad/s, AVG INSTANTANEOUS ANGULAR FREQUENCY across the grid. w = 2pi*f
 % speed(jj) = (w/k).*(1/1000); %(rad/s)/(rad/mm) = (mm/s)*(1m/1000mm) = m/s, speed
 % 
-%%
-
-% speedComb = [WaveStatsT4(1).speed WaveStatsT3(1).speed WaveStatsT2(1).speed];
-% avgSpeed = mean(speedComb);
-% 
-% speedCombStop = [WaveStatsT4(1).speedStop WaveStatsT3(1).speedStop WaveStatsT2(1).speedStop];
-% avgSpeedStop = mean(speedCombStop);
-
-speedComb = [WaveStatsT4(3).speed WaveStatsT3(3).speed WaveStatsT2(3).speed];
-avgSpeed = mean(speedComb);
-
-speedCombStop = [WaveStatsT4(4).speed WaveStatsT3(4).speed WaveStatsT2(4).speed];
-avgSpeedStop = mean(speedCombStop);
-
-% Perform the t-test.
-[p, t] = ranksum(speedComb, speedCombStop);
-% Print the results.
-disp('Wave Speed')
-disp('h-statistic:');
-disp(t);
-disp('p-value:');
-disp(p);
-
-figure('Name','Wave speeds in motion Initiation and termination');
-group = [ones(size(speedComb')); 2.*ones(size(speedCombStop'))]; 
-boxplot([speedComb';speedCombStop'],group,'BoxStyle','filled','PlotStyle','compact');
-set(gca,'xtick',1:2,'XTickLabel',{'Initiation','Termination'});box off;
-ylabel('Wave speed in cm/s');
-
-
-% dirComb = [WaveStatsT2(1).velDir WaveStatsT3(1).velDir]; %WaveStatsT3(1).speed WaveStatsT2(1).speed];
-% avgDir = mean(dirComb);
-% 
-% dirCombStop = [WaveStatsT2(1).velDirStop WaveStatsT3(1).velDirStop]; %WaveStatsT3(1).speedStop WaveStatsT2(1).speedStop];
-% avgvelDirStop = mean(dirCombStop);
-
-dirComb = [ WaveStatsT4(3).velDir]; %WaveStatsT3(1).speed WaveStatsT2(1).speed];
-avgDir = mean(dirComb);
-
-dirCombStop = [ WaveStatsT4(4).velDir]; %WaveStatsT3(1).speedStop WaveStatsT2(1).speedStop];
-avgvelDirStop = mean(dirCombStop);
-
-
-[p, t] = ranksum(dirComb, dirCombStop);
-% Print the results.
-disp('Wave Direction')
-disp('h-statistic:');
-disp(t);
-disp('p-value:');
-disp(p);
-
-
-figure('Name','Polar Histogram for wave direction in Motion Initiation and Termination');
-subplot(2,1,1);
-polarhistogram(dirComb,30); box off;
-title('Wave Direction : Motion Initiation');
-subplot(2,1,2);
-polarhistogram(dirCombStop,30); box off;
-title('Wave Direction : Motion Termination');
-
-figure('Name','Wave Direction in motion Initiation and termination');
-group = [ones(size(dirComb'));2.*ones(size(dirCombStop'))];
-boxplot([rad2deg(dirComb)';rad2deg(dirCombStop)'],group,'BoxStyle','filled','PlotStyle','compact');
-set(gca,'XTickLabel',{'Initiation','Termination'});
-
-
-speedCombRest = [WaveStatsStatesT4(3).speedRest WaveStatsStatesT3(3).speedRest WaveStatsStatesT2(3).speedRest];
-avgSpeedRest = mean(speedCombRest);
-speedCombRun = [WaveStatsStatesT4(3).speedRun WaveStatsStatesT3(3).speedRun WaveStatsStatesT2(3).speedRun];
-avgSpeedRun = mean(speedCombRun);
-speedCombInit = [WaveStatsStatesT4(3).speedInit WaveStatsStatesT3(3).speedInit WaveStatsStatesT2(3).speedInit];
-avgSpeedInit = mean(speedCombInit);
-speedCombTerm = [WaveStatsStatesT4(3).speedTerm WaveStatsStatesT3(3).speedTerm WaveStatsStatesT2(3).speedTerm];
-avgSpeedTerm = mean(speedCombTerm);
-
-% Perform the t-test.
-[p, t] = ranksum(speedCombRun , speedCombTerm);
-% Print the results.
-disp('Wave Speed')
-disp('h-statistic:');
-disp(t);
-disp('p-value:');
-disp(p);
-
-
-figure('Name','Histogram of wave speeds');
-subplot(4,1,1);
-histfit(speedCombRest,100,'kernel');
-xline(avgSpeedRest,'-r',{'Mean speed = ' num2str(avgSpeedRest) ' cm/s'});box off;
-xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Rest');xlim([0 inf]);
-subplot(4,1,2);
-histfit(speedCombInit,100,'kernel');
-xline(avgSpeedInit,'-r',{'Mean speed = ' num2str(avgSpeedInit) ' cm/s'});box off;
-xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Initiation');xlim([0 inf]);
-subplot(4,1,3);
-histfit(speedCombRun,100,'kernel');
-xline(avgSpeedRun,'-r',{'Mean speed = ' num2str(avgSpeedRun) ' cm/s'});box off;
-xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Run');xlim([0 inf]);
-subplot(4,1,4);
-histfit(speedCombTerm,100,'kernel');
-xline(avgSpeedTerm,'-r',{'Mean speed = ' num2str(avgSpeedTerm) ' cm/s'});box off;
-xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Motion Term');xlim([0 inf]);
-
-figure('Name','Wave speeds in Rest, Initiation, Running and Termination');
-group = [ones(size(speedCombRest')); 2.*ones(size(speedCombInit')); 3.*ones(size(speedCombRun')); 4.*ones(size(speedCombTerm'))];
-boxplot([speedCombRest';speedCombInit';speedCombRun';speedCombTerm'],group,'BoxStyle','filled','PlotStyle','compact');
-set(gca,'xtick',1:4,'XTickLabel',{'Rest','Initiation','Run','Termination'});box off;
-ylabel('Wave speed in cm/s');
-
-
-AvgHitTrace = mean(horzcat(Behaviour.hitTrace(1:end).trace),2);
-AvgMissTrace = mean(horzcat(Behaviour.missTrace(1:end).trace),2);
-meanHitWavelet = mean((abs(waveletHit).^2),3);
-meanMissWavelet = mean((abs(waveletMiss).^2),3);
-
-% Global average spectogram
-figure('Name','Trial Averaged Wavelet Spectrogram for Hits & Misses');
-subplot(1,2,1);
-plotSpectrogram(squeeze(meanHitWavelet),Behaviour.hitTrace(1).time-parameters.windowBeforePull,fwt,'Wavelet Based Spectrogram for Hits','Time (s)','Frequency (Hz)')
-hold on; yyaxis right; box off;
-plot(Behaviour.hitTrace(1).time-parameters.windowBeforePull,AvgHitTrace,'-w','LineWidth',2.5);
-ylabel('Lever deflection (mV)'); 
-subplot(1,2,2);
-plotSpectrogram(squeeze(meanMissWavelet),Behaviour.missTrace(1).time-parameters.windowBeforePull,fwt,'Wavelet Based Spectrogram for Misses','Time (s)','Frequency (Hz)')
-hold on; yyaxis right; box off;
-plot(Behaviour.missTrace(1).time-parameters.windowBeforePull,AvgMissTrace,'-w','LineWidth',2.5);
-ylabel('Lever deflection (mV)'); box off;
 
 
