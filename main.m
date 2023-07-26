@@ -315,13 +315,16 @@ Wavesall = detectWaves(LFP.xf,LFP.xgp,LFP.wt,allwaves,parameters);
 WaveStatsSingle(Wavesall,parameters,0,size(LFP.LFP,2));
 
 %% Percent Phase Locking
-[PPLHit] = getPPL(LFP.xgpgamma,IntanBehaviour.cueHitTrace,parameters);
-[PPLMiss] = getPPL(LFP.xgpgamma,IntanBehaviour.cueMissTrace,parameters);
+[PPLHit] = getPPL(LFP.xgp,IntanBehaviour.cueHitTrace,parameters);
+[PPLMiss] = getPPL(LFP.xgp,IntanBehaviour.cueMissTrace,parameters);
 
 figure();
 subplot(2,1,1);
 imagesc(reshape(PPLHit,[],size(PPLHit,3)));
-colormap(jet);
+colormap(hot);
+subplot(2,1,2);
+imagesc(reshape(PPLMiss,[],size(PPLMiss,3)));
+colormap(hot);
 
 figure();
 plot(squeeze(nanmean(PPLHit,[1 2])));

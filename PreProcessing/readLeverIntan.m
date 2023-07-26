@@ -150,6 +150,7 @@ IntanBehaviour.reactionTime = diff(IntanBehaviour.cueHit,1,2)/parameters.Fs; % i
 %% Getting cue Miss traces
 IntanBehaviour.cueMiss = cueIndex';
 IntanBehaviour.cueMiss(a) = [];
+IntanBehaviour.nCueMiss = size(IntanBehaviour.cueMiss,1);
 
 st1 = IntanBehaviour.cueMiss(1,1)-parameters.windowBeforeCue*parameters.Fs;
 spend = IntanBehaviour.cueMiss(end,1)+parameters.windowAfterCue*parameters.Fs;
