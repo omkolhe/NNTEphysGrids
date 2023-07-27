@@ -89,7 +89,7 @@ xline(mean(Behaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVertic
 ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
 
 %% Reading behaviour data from Intan traces 
-IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan.dig_in_data(1,:),Intan.dig_in_data(2,:),Behaviour);
+IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan.dig_in_data,Behaviour);
 
 % Plotting Lever traces for Hits and Misses
 figure('Name','Average Lever Traces for Hits & Misses');

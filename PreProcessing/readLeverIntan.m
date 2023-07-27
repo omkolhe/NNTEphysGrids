@@ -1,11 +1,21 @@
-function [IntanBehaviour] = readLeverIntan(parameters,lfpTime,leverTrace,rewardTrace,cueTrace,Behaviour)
+function [IntanBehaviour] = readLeverIntan(parameters,lfpTime,leverTrace,dig_in_data,Behaviour)
 
-if ~exist('cueTrace','var')
+if strcmp(parameters.experiment,'self')
+    rewardTrace = dig_in_data(1,:);
+    disp('Experiment set to self initiated.');
     cue = 0;
-    disp('No cue trace argument passed. Experiment type set to self initiated');
-else
+elseif strcmp(parameters.experiment,'cue')
+    rewardTrace = dig_in_data(1,:);
+    cueTrace = dig_in_data(2,:);
+    disp('Experiment set to cue initiated.');
     cue = 1;
-    disp('Cue trace argument passed. Experiment type set to cue initiated');
+end
+
+if parameters.opto == 1
+    optoTrace = dig_in_data(3,:);
+    disp('Experiment has opto trials.');
+else
+    disp('Experiment has no opto trials.');
 end
 
 intanFs = 5000;
@@ -25,9 +35,14 @@ if cue == 1
     IntanBehaviour.cueTrace = downsample(cueTrace,round(intanFs/parameters.Fs),2); 
     cueIndex = find(diff(IntanBehaviour.cueTrace)==1)+1;
 end
+if parameters.opto == 1
+    IntanBehaviour.optoTrace = downsample(optoTrace,round(intanFs/parameters.Fs),2);
+    optoIndex = find(diff(IntanBehaviour.optoTrace)==1)+1;
+end
 
 IntanBehaviour.nCueHit = size(rewardIndex,2);
 IntanBehaviour.nCueMiss = Behaviour.nCueMiss;
+IntanBehaviour.nOpto = size(optoIndex,2);
 
 % Estimating the threshold for reward
 IntanBehaviour.threshold = mean(IntanBehaviour.leverTrace(rewardIndex),'all');
