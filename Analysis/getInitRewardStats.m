@@ -3,7 +3,7 @@ function [wavesStat] = getInitRewardStats(Waves,parameters,plot)
 rows = parameters.rows;
 cols = parameters.cols;
 
-cueTime = (parameters.Fs*parameters.windowBeforePull) + 1;
+cueTime = (parameters.Fs*parameters.windowBeforeCue) + 1;
 initWindow = 0.8*parameters.Fs;
 rewardWindow = 0.6*parameters.Fs;
 

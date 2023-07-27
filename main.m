@@ -124,15 +124,14 @@ ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Tra
 
 % Plotting Lever traces for Cue Miss 
 figure('Name','Average Lever Traces for Cue Misses');
-for i=1:IntanBehaviour.nCueHit
-    plot(IntanBehaviour.cueHitTrace(i).time,IntanBehaviour.cueMissTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+for i=1:IntanBehaviour.nCueMiss
+    plot(IntanBehaviour.cueMissTrace(i).time,IntanBehaviour.cueMissTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
     hold on;
 end
-plot(IntanBehaviour.cueHitTrace(1).time,mean(horzcat(IntanBehaviour.cueHitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+plot(IntanBehaviour.cueMissTrace(1).time,mean(horzcat(IntanBehaviour.cueMissTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
 yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
-xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
-ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
+ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Cue Misses');box off;
 
 %% Generalized Phase 
 LFP.xf = bandpass_filter(LFP.LFPdatacube,5,40,4,1000);
@@ -244,8 +243,8 @@ options.plot_shuffled_examples = false; % example plots w/channels shuffled in s
 
 %% Wave detection in velocity triggered windows
 parameters.spacing = 0.1; % Grid spacing in mm
-nShuffle = 2000;
-threshold = 99.9;
+nShuffle = 1000;
+threshold = 99;
 trialno = 55;
 
 % Wave detection for wide band
@@ -260,7 +259,7 @@ end
 
 % Wave detection for theta band
 disp('Wave Detection for theta band ...')
-threshold = 99.9;
+threshold = 99;
 thetarhoThres = getRhoThreshold(LFP.xgptheta,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = thetarhoThres;
 thetaWaves.wavesHit = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,IntanBehaviour.cueHitTrace,parameters);
@@ -270,7 +269,7 @@ end
 
 % Wave detection for beta band
 disp('Wave Detection for beta band ...')
-threshold = 99.9;
+threshold = 99;
 betarhoThres = getRhoThreshold(LFP.xgpbeta,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 parameters.rhoThres = betarhoThres;
 betaWaves.wavesHit= detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,IntanBehaviour.cueHitTrace,parameters);
@@ -288,10 +287,16 @@ if isfield(IntanBehaviour,'cueMissTrace')
     gammaWaves.wavesMiss = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.cueMissTrace,parameters);
 end
 
+%% Wave detecion for entire time 
+parameters.rhoThres= rhoThres;
+allwaves.LFPIndex = (1:1:size(LFP.LFP,2))';
+Wavesall = detectWaves(LFP.xf,LFP.xgp,LFP.wt,allwaves,parameters);
+WaveStatsSingle(Wavesall,parameters,0,size(LFP.LFP,2));
+
 %% PLotting to check visually
-trialPlot = 48;
-plot_wave_examples( LFP.xf(:,:,IntanBehaviour.cueHitTrace(trialPlot).LFPIndex(1):IntanBehaviour.cueHitTrace(trialPlot).LFPIndex(end)), ...
-    options, trialPlot, Waves.wavesHit,rhoThres);
+% trialPlot = 48;
+% plot_wave_examples( LFP.xf(:,:,IntanBehaviour.cueHitTrace(trialPlot).LFPIndex(1):IntanBehaviour.cueHitTrace(trialPlot).LFPIndex(end)), ...
+%     options, trialPlot, Waves.wavesHit,rhoThres);
 
 % trialPlot = 12;
 % plot_wave_examples( LFP.xf(:,:,IntanBehaviour.missTrace(trialPlot).LFPIndex(1):IntanBehaviour.missTrace(trialPlot).LFPIndex(end)), ...
@@ -308,11 +313,6 @@ plotOption = 1;
 [WaveStats2(2)] = getInitRewardStats(thetaWaves,parameters,plotOption);
 [WaveStats2(3)] = getInitRewardStats(betaWaves,parameters,plotOption);
 [WaveStats2(4)] = getInitRewardStats(gammaWaves,parameters,plotOption);
-%% Wave detecion for entire time 
-parameters.rhoThres= rhoThres;
-allwaves.LFPIndex = (1:1:size(LFP.LFP,2))';
-Wavesall = detectWaves(LFP.xf,LFP.xgp,LFP.wt,allwaves,parameters);
-WaveStatsSingle(Wavesall,parameters,0,size(LFP.LFP,2));
 
 %% Percent Phase Locking
 [PPLHit] = getPPL(LFP.xgp,IntanBehaviour.cueHitTrace,parameters);
@@ -332,7 +332,7 @@ hold on;
 plot(squeeze(nanmean(PPLMiss,[1 2])));
 
 %% Average PGD accross frequency bands
-[PGDfreqHit,PGDfreqMiss] = getPGDFreqBand(LFP.LFPdatacube,IntanBehaviour,parameters);
+[PGDfreqHit,PGDfreqMiss] = getPGDFreqBand(LFP.LFPdatacube,IntanBehaviour,1,parameters);
 
 figure();
 PGDFreq = [5:5:100];
