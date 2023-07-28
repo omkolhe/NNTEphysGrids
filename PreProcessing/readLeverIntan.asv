@@ -42,7 +42,7 @@ end
 
 IntanBehaviour.nCueHit = size(rewardIndex,2);
 IntanBehaviour.nCueMiss = Behaviour.nCueMiss;
-IntanBehaviour.n
+IntanBehaviour.nOpto = size(optoIndex,2);
 
 % Estimating the threshold for reward
 IntanBehaviour.threshold = mean(IntanBehaviour.leverTrace(rewardIndex),'all');
@@ -124,6 +124,7 @@ for i=1:IntanBehaviour.nCueHit
     a(i) = max(find(cueIndex<=rewardIndex(i)));
     IntanBehaviour.cueHit(i,1) = cueIndex(a(i)); % Cue index 
     IntanBehaviour.cueHit(i,2) = rewardIndex(i); % pull index for hits
+    if ~isempty()
     st = IntanBehaviour.cueHit(i,1)-parameters.windowBeforeCue*parameters.Fs;
     sp = IntanBehaviour.cueHit(i,1)+parameters.windowAfterCue*parameters.Fs;
     if st <= 0

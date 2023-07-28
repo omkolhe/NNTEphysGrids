@@ -153,7 +153,7 @@ if cue == 1
         Behaviour.cueHitTrace(i).rawtime = Behaviour.time(Behaviour.cueHitTrace(i).i1:Behaviour.cueHitTrace(i).i2) - Behaviour.time(Behaviour.cueHitTrace(i).i1);
         Behaviour.cueHitTrace(i).time1 = Behaviour.time(Behaviour.cueHitTrace(i).i1:Behaviour.cueHitTrace(i).i2);
         Behaviour.cueHitTrace(i).t1 = Behaviour.time(Behaviour.cueHitTrace(i).i1);
-        Behaviour.cueHitTrace(i).t0 = Behaviour.hit(i,2);
+        Behaviour.cueHitTrace(i).t0 = Behaviour.cueHit(i,2);
         Behaviour.cueHitTrace(i).t2 = Behaviour.time(Behaviour.cueHitTrace(i).i2);
     end
     
@@ -179,7 +179,7 @@ if cue == 1
             Behaviour.cueMissTrace(i).rawtime = Behaviour.time(Behaviour.cueMissTrace(i).i1:Behaviour.cueMissTrace(i).i2) - Behaviour.time(Behaviour.cueMissTrace(i).i1);
             Behaviour.cueMissTrace(i).time1 = Behaviour.time(Behaviour.cueMissTrace(i).i1:Behaviour.cueMissTrace(i).i2);
             Behaviour.cueMissTrace(i).t1 = Behaviour.time(Behaviour.cueMissTrace(i).i1);
-            Behaviour.cueMissTrace(i).t0 = Behaviour.hit(i,2);
+            Behaviour.cueMissTrace(i).t0 = Behaviour.cueMiss(i,2);
             Behaviour.cueMissTrace(i).t2 = Behaviour.time(Behaviour.cueMissTrace(i).i2);
         end
     end
