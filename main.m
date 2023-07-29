@@ -181,8 +181,8 @@ imagesc(trialAvgPSD(:,1:51)');
 colormap("jet");set(gca,'YDir','normal');
 
 %% Wavelet spectrogram
-[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(LFP.xfwide,LFP.Fs,IntanBehaviour.cueHitTrace,parameters,[5 90]);
-[missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(LFP.xfwide,LFP.Fs,IntanBehaviour.cueMissTrace,parameters,[5 90]);
+[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(LFP.xf,LFP.Fs,IntanBehaviour.cueHitTrace,parameters,[5 40]);
+[missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(LFP.xf,LFP.Fs,IntanBehaviour.cueMissTrace,parameters,[5 40]);
 
 % Global average spectogram
 figure('Name','Trial Averaged Wavelet Spectrogram for Hits & Misses');
@@ -226,13 +226,18 @@ figure('Name','Spatial Averaged Wavelet Spectrogram for Hits & Misses');
 subplot(2,1,1);
 plotSpectrogram((squeeze(hitSpectrogramCWT(trialno,:,:))),IntanBehaviour.cueHitTrace(trialno).time,fwt,'Wavelet based Average Spectogram for Hits','Time (s)','Frequency (Hz)');
 hold on; yyaxis right; box off;
-plot(IntanBehaviour.cueHitTrace(trialno).time,squeeze(mean(LFP.xfwide(:,:,IntanBehaviour.cueHitTrace(trialno).LFPIndex),[1 2])),'-w','LineWidth',2);
+plot(IntanBehaviour.cueHitTrace(trialno).time,squeeze(mean(LFP.xf(:,:,IntanBehaviour.cueHitTrace(trialno).LFPIndex),[1 2])),'-w','LineWidth',1.5);
+plot(IntanBehaviour.cueHitTrace(trialno).time,squeeze(abs(mean(LFP.xgp(:,:,IntanBehaviour.cueHitTrace(trialno).LFPIndex),[1 2]))),'--w','LineWidth',1);
 ylabel('Amplitude (\mu V)'); 
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+xline(IntanBehaviour.reactionTime(trialno),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
 subplot(2,1,2);
 trialno = 11;
-plotSpectrogram(squeeze(missSpectrogramCWT(trialno,:,:)),IntanBehaviour.missTrace(trialno).time-parameters.windowBeforePull,fwt,'Wavelet based Average Spectogram for Misses','Time (s)','Frequency (Hz)');
+plotSpectrogram(squeeze(missSpectrogramCWT(trialno,:,:)),IntanBehaviour.cueMissTrace(trialno).time,fwt,'Wavelet based Average Spectogram for Misses','Time (s)','Frequency (Hz)');
 hold on; yyaxis right; box off;
-plot(IntanBehaviour.missTrace(trialno).time-parameters.windowBeforePull,squeeze(mean(LFP.xfbeta(:,:,IntanBehaviour.missTrace(trialno).LFPIndex),[1 2])),'-w','LineWidth',2);
+plot(IntanBehaviour.cueMissTrace(trialno).time,squeeze(mean(LFP.xf(:,:,IntanBehaviour.cueMissTrace(trialno).LFPIndex),[1 2])),'-w','LineWidth',1.5);
+plot(IntanBehaviour.cueMissTrace(trialno).time,squeeze(abs(mean(LFP.xgp(:,:,IntanBehaviour.cueMissTrace(trialno).LFPIndex),[1 2]))),'--w','LineWidth',1);
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
 ylabel('Amplitude (\mu V)');  box off;
 
 

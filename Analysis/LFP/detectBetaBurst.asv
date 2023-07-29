@@ -1,8 +1,16 @@
-function [BetaBurst] = detectBetaBurst(LFP)
+function [BetaBurst] = detectBetaBurst(LFP,behaviourTrace,parameters)
 
+% Reference - https://academic.oup.com/brain/article/140/11/2968/4430808#112576655
+
+betaBurstThres = 75; % 75 percenticle 
 xamp = abs(LFP.xgp);
 
-figure,plot(squeeze(LFP.xf(1,1,2000:10000)));hold on;plot(squeeze(xamp(1,1,2000:10000))); plot((squeeze(LFP.xf(1,1,2000:10000)))
+%% Getting LFP for each trial and channels 
+rows = size(LFP,1);
+cols = size(LFP,2);
+
+xTrials = zeros(rows,cols,)
+
 
 end
 
