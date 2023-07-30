@@ -15,10 +15,8 @@ end
 
 if exist("lfpTime",'var')
     expFlag = 1;
-    disp('Intan time data passed. Function set to experiment.');
 else
     expFlag = 0;
-    disp('Intan time data not passed. Function set to training.');
 end
 %% Reading file from arduino 
 [enfile,enpath] = uigetfile('*.csv');
@@ -121,15 +119,11 @@ if cue == 1
         end
     end
     
-    if expFlag == 1
-        Behaviour.cueHit = [cueHitIndex cueHitTime cueHitLFPIndex cueHitLFPTime cueHitPullIndex cueHitPullTime cueHitPullLFPIndex cueHitPullLFPTime];
-        Behaviour.reactionTime = cueHitPullLFPTime - cueHitLFPTime;
-        Behaviour.meanReactionTime = mean(Behaviour.reactionTime,'all');
-    else
-        Behaviour.cueHit = [cueHitIndex cueHitTime cueHitPullIndex cueHitPullTime];
-        Behaviour.reactionTime = cueHitPullTime - cueHitTime;
-        Behaviour.meanReactionTime = mean(Behaviour.reactionTime,'all');
-    end
+    if expF
+    Behaviour.cueHit = [cueHitIndex cueHitTime cueHitLFPIndex cueHitLFPTime cueHitPullIndex cueHitPullTime cueHitPullLFPIndex cueHitPullLFPTime];
+    
+    Behaviour.reactionTime = cueHitPullLFPTime - cueHitLFPTime;
+    Behaviour.meanReactionTime = mean(Behaviour.reactionTime,'all');
     
     % For cue Miss trials
     Behaviour.cueMiss = Behaviour.cue;
@@ -160,20 +154,18 @@ for i=1:Behaviour.nHit
     Behaviour.hitTrace(i).t1 = Behaviour.time(Behaviour.hitTrace(i).i1);
     Behaviour.hitTrace(i).t0 = Behaviour.hit(i,2);
     Behaviour.hitTrace(i).t2 = Behaviour.time(Behaviour.hitTrace(i).i2);
-    if expFlag == 1
-        [Behaviour.hitTrace(i).trace,Behaviour.hitTrace(i).time] = resample(Behaviour.hitTrace(i).rawtrace,Behaviour.hitTrace(i).rawtime,parameters.Fs,'spline');
-        if (size(Behaviour.hitTrace(i).trace,1)<nlength)
-            n1 = size(Behaviour.hitTrace(i).trace,1);
-            n2 = nlength;
-            Behaviour.hitTrace(i).trace = [Behaviour.hitTrace(i).trace;interp1(1:1:n1,Behaviour.hitTrace(i).trace,[n1+1:1:n2],'linear','extrap')'];
-            Behaviour.hitTrace(i).time = [Behaviour.hitTrace(i).time;interp1(1:1:n1,Behaviour.hitTrace(i).time,[n1+1:1:n2],'linear','extrap')'];
-        elseif (size(Behaviour.hitTrace(i).trace,1)>nlength)
-            Behaviour.hitTrace(i).trace(nlength+1:end) = [];
-            Behaviour.hitTrace(i).time(nlength+1:end) = []; 
-        end
-        Behaviour.hitTrace(i).LFPTime = Behaviour.hitTrace(i).time + (Behaviour.hit(i,4)-(nlengthBeforePull*parameters.ts));
-        Behaviour.hitTrace(i).LFPIndex = ([Behaviour.hit(i,3)-nlengthBeforePull:1:nlengthBeforePull+Behaviour.hit(i,3)])';
+    [Behaviour.hitTrace(i).trace,Behaviour.hitTrace(i).time] = resample(Behaviour.hitTrace(i).rawtrace,Behaviour.hitTrace(i).rawtime,parameters.Fs,'spline');
+    if (size(Behaviour.hitTrace(i).trace,1)<nlength)
+        n1 = size(Behaviour.hitTrace(i).trace,1);
+        n2 = nlength;
+        Behaviour.hitTrace(i).trace = [Behaviour.hitTrace(i).trace;interp1(1:1:n1,Behaviour.hitTrace(i).trace,[n1+1:1:n2],'linear','extrap')'];
+        Behaviour.hitTrace(i).time = [Behaviour.hitTrace(i).time;interp1(1:1:n1,Behaviour.hitTrace(i).time,[n1+1:1:n2],'linear','extrap')'];
+    elseif (size(Behaviour.hitTrace(i).trace,1)>nlength)
+        Behaviour.hitTrace(i).trace(nlength+1:end) = [];
+        Behaviour.hitTrace(i).time(nlength+1:end) = []; 
     end
+    Behaviour.hitTrace(i).LFPTime = Behaviour.hitTrace(i).time + (Behaviour.hit(i,4)-(nlengthBeforePull*parameters.ts));
+    Behaviour.hitTrace(i).LFPIndex = ([Behaviour.hit(i,3)-nlengthBeforePull:1:nlengthBeforePull+Behaviour.hit(i,3)])';
 end
 
 st_miss1 = max(find(Behaviour.time < Behaviour.miss(1,2)-parameters.windowBeforePull));
@@ -199,20 +191,18 @@ for i=1:Behaviour.nMiss
     Behaviour.missTrace(i).t1 = Behaviour.time(Behaviour.missTrace(i).i1);
     Behaviour.missTrace(i).t0 = Behaviour.miss(i,2);
     Behaviour.missTrace(i).t2 = Behaviour.time(Behaviour.missTrace(i).i2);
-    if expFlag == 1
-        [Behaviour.missTrace(i).trace,Behaviour.missTrace(i).time] = resample(Behaviour.missTrace(i).rawtrace,Behaviour.missTrace(i).rawtime,parameters.Fs,'spline');
-        if (size(Behaviour.missTrace(i).trace,1)<nlength)
-            n1 = size(Behaviour.missTrace(i).trace,1);
-            n2 = nlength;
-            Behaviour.missTrace(i).trace = [Behaviour.missTrace(i).trace;interp1(1:1:n1,Behaviour.missTrace(i).trace,[n1+1:1:n2],'linear','extrap')'];
-            Behaviour.missTrace(i).time = [Behaviour.missTrace(i).time;interp1(1:1:n1,Behaviour.missTrace(i).time,[n1+1:1:n2],'linear','extrap')'];
-        elseif (size(Behaviour.missTrace(i).trace,1)>nlength)
-            Behaviour.missTrace(i).trace(nlength+1:end) = [];
-            Behaviour.missTrace(i).time(nlength+1:end) = []; 
-        end
-        Behaviour.missTrace(i).LFPTime = Behaviour.missTrace(i).time + (Behaviour.miss(i,4)-(nlengthBeforePull*parameters.ts));
-        Behaviour.missTrace(i).LFPIndex = ([Behaviour.miss(i,3)-nlengthBeforePull:1:nlengthBeforePull+Behaviour.miss(i,3)])';
+    [Behaviour.missTrace(i).trace,Behaviour.missTrace(i).time] = resample(Behaviour.missTrace(i).rawtrace,Behaviour.missTrace(i).rawtime,parameters.Fs,'spline');
+    if (size(Behaviour.missTrace(i).trace,1)<nlength)
+        n1 = size(Behaviour.missTrace(i).trace,1);
+        n2 = nlength;
+        Behaviour.missTrace(i).trace = [Behaviour.missTrace(i).trace;interp1(1:1:n1,Behaviour.missTrace(i).trace,[n1+1:1:n2],'linear','extrap')'];
+        Behaviour.missTrace(i).time = [Behaviour.missTrace(i).time;interp1(1:1:n1,Behaviour.missTrace(i).time,[n1+1:1:n2],'linear','extrap')'];
+    elseif (size(Behaviour.missTrace(i).trace,1)>nlength)
+        Behaviour.missTrace(i).trace(nlength+1:end) = [];
+        Behaviour.missTrace(i).time(nlength+1:end) = []; 
     end
+    Behaviour.missTrace(i).LFPTime = Behaviour.missTrace(i).time + (Behaviour.miss(i,4)-(nlengthBeforePull*parameters.ts));
+    Behaviour.missTrace(i).LFPIndex = ([Behaviour.miss(i,3)-nlengthBeforePull:1:nlengthBeforePull+Behaviour.miss(i,3)])';
 end
 
 if cue == 1 
@@ -238,20 +228,18 @@ if cue == 1
         Behaviour.cueHitTrace(i).t1 = Behaviour.time(Behaviour.cueHitTrace(i).i1);
         Behaviour.cueHitTrace(i).t0 = Behaviour.hit(i,2);
         Behaviour.cueHitTrace(i).t2 = Behaviour.time(Behaviour.cueHitTrace(i).i2);
-        if expFlag == 1
-            [Behaviour.cueHitTrace(i).trace,Behaviour.cueHitTrace(i).time] = resample(Behaviour.cueHitTrace(i).rawtrace,Behaviour.cueHitTrace(i).rawtime,parameters.Fs,'spline');
-            if (size(Behaviour.cueHitTrace(i).trace,1)<nlengthCue)
-                n1 = size(Behaviour.cueHitTrace(i).trace,1);
-                n2 = nlengthCue;
-                Behaviour.cueHitTrace(i).trace = [Behaviour.cueHitTrace(i).trace;interp1(1:1:n1,Behaviour.cueHitTrace(i).trace,[n1+1:1:n2],'linear','extrap')'];
-                Behaviour.cueHitTrace(i).time = [Behaviour.cueHitTrace(i).time;interp1(1:1:n1,Behaviour.cueHitTrace(i).time,[n1+1:1:n2],'linear','extrap')'];
-            elseif (size(Behaviour.cueHitTrace(i).trace,1)>nlength)
-                Behaviour.cueHitTrace(i).trace(nlength+1:end) = [];
-                Behaviour.cueHitTrace(i).time(nlength+1:end) = []; 
-            end
-            Behaviour.cueHitTrace(i).LFPTime = Behaviour.cueHitTrace(i).time + (Behaviour.cueHit(i,4)-(nlengthBeforeCue*parameters.ts));
-            Behaviour.cueHitTrace(i).LFPIndex = ([Behaviour.cueHit(i,3)-nlengthBeforeCue:1:nlengthBeforeCue+Behaviour.cueHit(i,3)])';
+        [Behaviour.cueHitTrace(i).trace,Behaviour.cueHitTrace(i).time] = resample(Behaviour.cueHitTrace(i).rawtrace,Behaviour.cueHitTrace(i).rawtime,parameters.Fs,'spline');
+        if (size(Behaviour.cueHitTrace(i).trace,1)<nlengthCue)
+            n1 = size(Behaviour.cueHitTrace(i).trace,1);
+            n2 = nlengthCue;
+            Behaviour.cueHitTrace(i).trace = [Behaviour.cueHitTrace(i).trace;interp1(1:1:n1,Behaviour.cueHitTrace(i).trace,[n1+1:1:n2],'linear','extrap')'];
+            Behaviour.cueHitTrace(i).time = [Behaviour.cueHitTrace(i).time;interp1(1:1:n1,Behaviour.cueHitTrace(i).time,[n1+1:1:n2],'linear','extrap')'];
+        elseif (size(Behaviour.cueHitTrace(i).trace,1)>nlength)
+            Behaviour.cueHitTrace(i).trace(nlength+1:end) = [];
+            Behaviour.cueHitTrace(i).time(nlength+1:end) = []; 
         end
+        Behaviour.cueHitTrace(i).LFPTime = Behaviour.cueHitTrace(i).time + (Behaviour.cueHit(i,4)-(nlengthBeforeCue*parameters.ts));
+        Behaviour.cueHitTrace(i).LFPIndex = ([Behaviour.cueHit(i,3)-nlengthBeforeCue:1:nlengthBeforeCue+Behaviour.cueHit(i,3)])';
     end
     
     % Getting cueMiss traces
@@ -278,20 +266,18 @@ if cue == 1
             Behaviour.cueMissTrace(i).t1 = Behaviour.time(Behaviour.cueMissTrace(i).i1);
             Behaviour.cueMissTrace(i).t0 = Behaviour.hit(i,2);
             Behaviour.cueMissTrace(i).t2 = Behaviour.time(Behaviour.cueMissTrace(i).i2);
-            if expFlag == 1
-                [Behaviour.cueMissTrace(i).trace,Behaviour.cueMissTrace(i).time] = resample(Behaviour.cueMissTrace(i).rawtrace,Behaviour.cueMissTrace(i).rawtime,parameters.Fs,'spline');
-                if (size(Behaviour.cueMissTrace(i).trace,1)<nlengthCue)
-                    n1 = size(Behaviour.cueMissTrace(i).trace,1);
-                    n2 = nlengthCue;
-                    Behaviour.cueMissTrace(i).trace = [Behaviour.cueMissTrace(i).trace;interp1(1:1:n1,Behaviour.cueMissTrace(i).trace,[n1+1:1:n2],'linear','extrap')'];
-                    Behaviour.cueMissTrace(i).time = [Behaviour.cueMissTrace(i).time;interp1(1:1:n1,Behaviour.cueMissTrace(i).time,[n1+1:1:n2],'linear','extrap')'];
-                elseif (size(Behaviour.cueMissTrace(i).trace,1)>nlength)
-                    Behaviour.cueMissTrace(i).trace(nlength+1:end) = [];
-                    Behaviour.cueMissTrace(i).time(nlength+1:end) = []; 
-                end
-                Behaviour.cueMissTrace(i).LFPTime = Behaviour.cueMissTrace(i).time + (Behaviour.cueMiss(i,4)-(nlengthBeforeCue*parameters.ts));
-                Behaviour.cueMissTrace(i).LFPIndex = ([Behaviour.cueMiss(i,3)-nlengthBeforeCue:1:nlengthBeforeCue+Behaviour.cueMiss(i,3)])';
+            [Behaviour.cueMissTrace(i).trace,Behaviour.cueMissTrace(i).time] = resample(Behaviour.cueMissTrace(i).rawtrace,Behaviour.cueMissTrace(i).rawtime,parameters.Fs,'spline');
+            if (size(Behaviour.cueMissTrace(i).trace,1)<nlengthCue)
+                n1 = size(Behaviour.cueMissTrace(i).trace,1);
+                n2 = nlengthCue;
+                Behaviour.cueMissTrace(i).trace = [Behaviour.cueMissTrace(i).trace;interp1(1:1:n1,Behaviour.cueMissTrace(i).trace,[n1+1:1:n2],'linear','extrap')'];
+                Behaviour.cueMissTrace(i).time = [Behaviour.cueMissTrace(i).time;interp1(1:1:n1,Behaviour.cueMissTrace(i).time,[n1+1:1:n2],'linear','extrap')'];
+            elseif (size(Behaviour.cueMissTrace(i).trace,1)>nlength)
+                Behaviour.cueMissTrace(i).trace(nlength+1:end) = [];
+                Behaviour.cueMissTrace(i).time(nlength+1:end) = []; 
             end
+            Behaviour.cueMissTrace(i).LFPTime = Behaviour.cueMissTrace(i).time + (Behaviour.cueMiss(i,4)-(nlengthBeforeCue*parameters.ts));
+            Behaviour.cueMissTrace(i).LFPIndex = ([Behaviour.cueMiss(i,3)-nlengthBeforeCue:1:nlengthBeforeCue+Behaviour.cueMiss(i,3)])';
         end
     end
 end

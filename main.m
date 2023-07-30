@@ -351,7 +351,7 @@ ylim([0.35 0.7]);
 [BetaBurst] = detectBetaBurst(LFP.xgpbeta,IntanBehaviour.cueHitTrace,parameters);
 
 %% Beta event detection 
-avgBetaband = mean(LFP.beta_band,1);
+avgBetaband = mean(LFP.xfbeta,1);
 window = Encoder.trialTime(:,3:4);
 windowStop = Encoder.trialTimeStop(:,3:4);
 

@@ -36,7 +36,7 @@ for idx = 1:size(beta_signal,2)
         timestamps = window(idx,1):1/Fs:window(idx,2);
         timestamps = timestamps';
     end
-    normByTrial = 1;
+    normByTrial = 0;
     % super unoptimized method in creating the thresholding as a function
     % of all trials instead of each trial (TODO: check differences but I
     % think not norming by trials is better....
