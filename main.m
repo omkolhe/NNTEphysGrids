@@ -325,15 +325,12 @@ plotOption = 1;
 
 figure();
 subplot(2,1,1);
-imagesc(reshape(PPLHit,[],size(PPLHit,3)));
-colormap(hot);
+imagesc(reshape(PPLHit,[],size(PPLHit,3))); colormap(hot);
 subplot(2,1,2);
-imagesc(reshape(PPLMiss,[],size(PPLMiss,3)));
-colormap(hot);
+imagesc(reshape(PPLMiss,[],size(PPLMiss,3))); colormap(hot);
 
 figure();
-plot(squeeze(nanmean(PPLHit,[1 2])));
-hold on;
+plot(squeeze(nanmean(PPLHit,[1 2]))); hold on;
 plot(squeeze(nanmean(PPLMiss,[1 2])));
 
 %% Average PGD accross frequency bands
@@ -341,14 +338,11 @@ plot(squeeze(nanmean(PPLMiss,[1 2])));
 
 figure();
 PGDFreq = [5:5:100];
-plot(PGDFreq,PGDfreqHit);
-hold on;
+plot(PGDFreq,PGDfreqHit); hold on;
 plot(PGDFreq,PGDfreqMiss);
-xlabel('Frequency');
-ylabel('Phase Gradient Directionality');
-ylim([0.35 0.7]);
+xlabel('Frequency'); ylabel('Phase Gradient Directionality'); ylim([0.35 0.7]); box off;
 %% Beta Burst detection using Hilbert Amplitude 
-[BetaBurst] = detectBetaBurst(LFP.xgpbeta,IntanBehaviour.cueHitTrace,parameters);
+[BetaEvent] = detectBetaEvent(LFP.xgpbeta,IntanBehaviour.cueHitTrace,parameters);
 
 %% Beta event detection 
 avgBetaband = mean(LFP.xfbeta,1);
