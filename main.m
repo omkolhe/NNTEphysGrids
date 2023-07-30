@@ -347,6 +347,9 @@ plot(PGDFreq,PGDfreqMiss);
 xlabel('Frequency');
 ylabel('Phase Gradient Directionality');
 ylim([0.35 0.7]);
+%% Beta Burst detection using Hilbert Amplitude 
+[BetaBurst] = detectBetaBurst(LFP.xgpbeta,IntanBehaviour.cueHitTrace,parameters);
+
 %% Beta event detection 
 avgBetaband = mean(LFP.beta_band,1);
 window = Encoder.trialTime(:,3:4);
