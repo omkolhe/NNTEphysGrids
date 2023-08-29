@@ -38,11 +38,11 @@ end
 if parameters.opto == 1
     IntanBehaviour.optoTrace = downsample(optoTrace,round(intanFs/parameters.Fs),2);
     optoIndex = find(diff(IntanBehaviour.optoTrace)==1)+1;
+    IntanBehaviour.nOpto = size(optoIndex,2);
 end
 
 IntanBehaviour.nCueHit = size(rewardIndex,2);
 IntanBehaviour.nCueMiss = Behaviour.nCueMiss;
-IntanBehaviour.nOpto = size(optoIndex,2);
 
 % Estimating the threshold for reward
 IntanBehaviour.threshold = mean(IntanBehaviour.leverTrace(rewardIndex),'all');
@@ -124,11 +124,13 @@ for i=1:IntanBehaviour.nCueHit
     a(i) = max(find(cueIndex<=rewardIndex(i)));
     IntanBehaviour.cueHit(i,1) = cueIndex(a(i)); % Cue index 
     IntanBehaviour.cueHit(i,2) = rewardIndex(i); % pull index for hits
-    if ~isempty(find(optoIndex == IntanBehaviour.cueHit(i,1))) 
-        IntanBehaviour.cueHitTrace(i).opto = 1;
-    else 
-        IntanBehaviour.cueHitTrace(i).opto = 0;
-    end 
+    if parameters.opto == 1
+        if ~isempty(find(optoIndex == IntanBehaviour.cueHit(i,1))) 
+            IntanBehaviour.cueHitTrace(i).opto = 1;
+        else 
+            IntanBehaviour.cueHitTrace(i).opto = 0;
+        end 
+    end
     st = IntanBehaviour.cueHit(i,1)-parameters.windowBeforeCue*parameters.Fs;
     sp = IntanBehaviour.cueHit(i,1)+parameters.windowAfterCue*parameters.Fs;
     if st <= 0
@@ -186,11 +188,13 @@ if spend >= size(IntanBehaviour.leverTrace,2)
 end
 
 for i=1:IntanBehaviour.nCueMiss
-    if ~isempty(find(optoIndex == IntanBehaviour.cueMiss(i,1))) 
-        IntanBehaviour.cueMissTrace(i).opto = 1;
-    else
-        IntanBehaviour.cueMissTrace(i).opto = 0;
-    end 
+    if parameters.opto == 1
+        if ~isempty(find(optoIndex == IntanBehaviour.cueMiss(i,1))) 
+            IntanBehaviour.cueMissTrace(i).opto = 1;
+        else
+            IntanBehaviour.cueMissTrace(i).opto = 0;
+        end 
+    end
     st = IntanBehaviour.cueMiss(i,1)-parameters.windowBeforeCue*parameters.Fs;
     sp = IntanBehaviour.cueMiss(i,1)+parameters.windowAfterCue*parameters.Fs;
     IntanBehaviour.cueMissTrace(i).trace = IntanBehaviour.leverTrace(st:sp)';

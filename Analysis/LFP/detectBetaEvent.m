@@ -102,4 +102,7 @@ for i=1:nTrials
         end
     end
     BetaEvent(i).attens = attenSegments;
+    if parameters.opto == 1
+        BetaEvent(i).opto = behaviourTrace(i).opto;
+    end
 end
