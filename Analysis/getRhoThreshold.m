@@ -8,7 +8,7 @@ X = parameters.X;
 Y = parameters.Y;
 
 ii = trialno;
-p = xgp(:,:,behaviourTrace(ii).LFPIndex(1):behaviourTrace(ii).LFPIndex(end));
+p = xgp{1,ii};
 evaluationPoints = find_evaluation_points(p,pi,spacing);
 rho = zeros( nShuffle, length(evaluationPoints) );
 for kk=1:nShuffle

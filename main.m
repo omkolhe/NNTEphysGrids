@@ -27,7 +27,7 @@ parameters.windowAfterPull = 1; % in seconds
 parameters.windowBeforeCue = 0.5; % in seconds 
 parameters.windowAfterCue = 1.5; % in seconds 
 parameters.experiment = 'cue'; % self - internally generated, cue - cue initiated 
-parameters.opto = 0; % 1 - opto ON , 0 - opto OFF
+parameters.opto = 1; % 1 - opto ON , 0 - opto OFF
 
 IntanConcatenate
 fpath = Intan.path; % where on disk do you want the analysis? ideally and SSD...
@@ -148,9 +148,25 @@ LFP.xfbetanarrow = bandpass_filter(LFP.LFPdatacube,6,9,4,1000);
 [LFP.xgpbetanarrow, LFP.wtbetanarrow] = generalized_phase(LFP.xfbetanarrow,1000,0);
 % GP for spatial mean LFP 
 [LFP.xgpbetamean, ~] = generalized_phase(mean(LFP.xfbetanarrow,[1,2]),1000,0);
+
+%% Add trial segmented data to IntanBehaviour Variable
+IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP);
+% Saving paramters, path, IntanBehaviour to bin file 
+savepath = uigetdir(path);
+sessionName = [savepath,'/','Day1Recording1.mat'];
+save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
+save(sessionName,"IntanBehaviour","fpath","parameters","Waves","Wavesall","betaWaves","thetaWaves","gammaWaves","-v7.3");
+
+%% Combining  multiple Intanbehaviour structs from multiple sessions
+combIntanBehaviour = horzcat(IntanBehaviour1, IntanBehaviour2);
+IntanBehaviour.cueHitTrace = horzcat(combIntanBehaviour(1:end).cueHitTrace);
+IntanBehaviour.cueMissTrace = horzcat(combIntanBehaviour(1:end).cueMissTrace);
+IntanBehaviour.missTrace = horzcat(combIntanBehaviour(1:end).missTrace);
+IntanBehaviour.reactionTime = horzcat(combIntanBehaviour(1:end).reactionTime);
+clear combIntanBehaviour IntanBehaviour1 IntanBehaviour2;
 %% Power Spectrum during task across channels 
-[PSDChHit , f] = getAvgPSD(LFP.LFPdatacube,LFP.Fs,IntanBehaviour.cueHitTrace,parameters);
-[PSDChMiss , f] = getAvgPSD(LFP.LFPdatacube,LFP.Fs,IntanBehaviour.cueMissTrace,parameters);
+[PSDChHit , f] = getAvgPSD(IntanBehaviour.cueHitTrace,parameters);
+[PSDChMiss , f] = getAvgPSD(IntanBehaviour.cueMissTrace,parameters);
 
 avgPSDHit = squeeze(10*log10(mean(PSDChHit,[1 2])));
 trialPSDHit = squeeze(10*log10(mean(PSDChHit,2)));
@@ -184,21 +200,21 @@ imagesc(trialAvgPSD(:,1:51)');
 colormap("jet");set(gca,'YDir','normal');
 
 %% Wavelet spectrogram
-[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(LFP.xf,LFP.Fs,IntanBehaviour.cueHitTrace,parameters,[5 40]);
-[missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(LFP.xf,LFP.Fs,IntanBehaviour.cueMissTrace,parameters,[5 40]);
+[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(IntanBehaviour.cueHitTrace,parameters,[5 80]);
+[missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(IntanBehaviour.cueMissTrace,parameters,[5 80]);
 
 % Global average spectogram
 figure('Name','Trial Averaged Wavelet Spectrogram for Hits & Misses');
 subplot(1,2,1);
-plotSpectrogram((squeeze(hitAvgSpectrogram)),IntanBehaviour.cueHitTrace(1).time,fwt,'surf','Wavelet Based Spectrogram for Hits','Time (s)','Frequency (Hz)')
-hold on; yyaxis right; box off;
+plotSpectrogram(10*log10((squeeze(hitAvgSpectrogram))),IntanBehaviour.cueHitTrace(1).time,fwt,'contourf','Wavelet Based Spectrogram for Hits','Time (s)','Frequency (Hz)')
+caxis([-5 25]);hold on; yyaxis right; box off;
 plot(IntanBehaviour.cueHitTrace(1).time,AvgHitTrace,'-w','LineWidth',2.5);
-ylabel('Lever deflection (mV)'); 
+ylabel('Lever deflection (mV)'); ylim([0 0.1]);
 subplot(1,2,2);
-plotSpectrogram((squeeze(missAvgSpectrogram)),IntanBehaviour.cueMissTrace(1).time,fwt,'surf','Wavelet Based Spectrogram for Misses','Time (s)','Frequency (Hz)')
-hold on; yyaxis right; box off;
+plotSpectrogram(10*log10((squeeze(missAvgSpectrogram))),IntanBehaviour.cueMissTrace(1).time,fwt,'contourf','Wavelet Based Spectrogram for Misses','Time (s)','Frequency (Hz)')
+caxis([-5 25]);hold on; yyaxis right; box off;
 plot(IntanBehaviour.cueMissTrace(1).time,AvgMissTrace,'-w','LineWidth',2.5);
-ylabel('Lever deflection (mV)'); box off;
+ylabel('Lever deflection (mV)'); ylim([0 0.1]); box off;
 
 % Movement average spectogram 
 allAvgSpectogram = mean(cat(1,hitSpectrogramCWT,missSpectrogramCWT));
@@ -257,42 +273,62 @@ trialno = 55;
 
 % Wave detection for wide band
 disp('Wave Detection for wide band ...')
-rhoThres = getRhoThreshold(LFP.xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
-parameters.rhoThres= rhoThres;
-Waves.wavesHit = detectWaves(LFP.xf,LFP.xgp,LFP.wt,IntanBehaviour.cueHitTrace,parameters);
+xf = arrayfun(@(s) s.xf, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+wt = arrayfun(@(s) s.wt, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+% parameters.rhoThres = getRhoThreshold(xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
+Waves.wavesHit = detectWaves(xf,xgp,wt,IntanBehaviour.cueHitTrace,parameters,parameters.rhoThres);
 if isfield(IntanBehaviour,'cueMissTrace')
-    Waves.wavesMiss = detectWaves(LFP.xf,LFP.xgp,LFP.wt,IntanBehaviour.cueMissTrace,parameters);
+    xf = arrayfun(@(s) s.xf, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+    xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+    wt = arrayfun(@(s) s.wt, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+    Waves.wavesMiss = detectWaves(xf,xgp,wt,IntanBehaviour.cueMissTrace,parameters,parameters.rhoThres);
 end
 
 
 % Wave detection for theta band
 disp('Wave Detection for theta band ...')
 threshold = 99;
-thetarhoThres = getRhoThreshold(LFP.xgptheta,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
-parameters.rhoThres = thetarhoThres;
-thetaWaves.wavesHit = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,IntanBehaviour.cueHitTrace,parameters);
+xf = arrayfun(@(s) s.xftheta, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+xgp = arrayfun(@(s) s.xgptheta, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+wt = arrayfun(@(s) s.wttheta, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+% parameters.thetarhoThres = getRhoThreshold(xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
+thetaWaves.wavesHit = detectWaves(xf,xgp,wt,IntanBehaviour.cueHitTrace,parameters,parameters.thetarhoThres);
 if isfield(IntanBehaviour,'cueMissTrace')
-    thetaWaves.wavesMiss = detectWaves(LFP.xftheta,LFP.xgptheta,LFP.wttheta,IntanBehaviour.cueMissTrace,parameters);
+    xf = arrayfun(@(s) s.xftheta, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+    xgp = arrayfun(@(s) s.xgptheta, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+    wt = arrayfun(@(s) s.wttheta, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+    thetaWaves.wavesMiss = detectWaves(xf,xgp,wt,IntanBehaviour.cueMissTrace,parameters,parameters.thetarhoThres);
 end
 
 % Wave detection for beta band
 disp('Wave Detection for beta band ...')
 threshold = 99;
-betarhoThres = getRhoThreshold(LFP.xgpbeta,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
-parameters.rhoThres = betarhoThres;
-betaWaves.wavesHit= detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,IntanBehaviour.cueHitTrace,parameters);
+xf = arrayfun(@(s) s.xfbeta, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+xgp = arrayfun(@(s) s.xgpbeta, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+wt = arrayfun(@(s) s.wtbeta, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+% parameters.betarhoThres = getRhoThreshold(xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
+betaWaves.wavesHit= detectWaves(xf,xgp,wt,IntanBehaviour.cueHitTrace,parameters,parameters.betarhoThres);
 if isfield(IntanBehaviour,'cueMissTrace')
-    betaWaves.wavesMiss = detectWaves(LFP.xfbeta,LFP.xgpbeta,LFP.wtbeta,IntanBehaviour.cueMissTrace,parameters);
+    xf = arrayfun(@(s) s.xfbeta, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+    xgp = arrayfun(@(s) s.xgpbeta, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+    wt = arrayfun(@(s) s.wtbeta, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+    betaWaves.wavesMiss = detectWaves(xf,xgp,wt,IntanBehaviour.cueMissTrace,parameters,parameters.betarhoThres);
 end
 
 % Wave detection for gamma band
 disp('Wave Detection for gamma band ...')
 threshold = 99;
-gammarhoThres = getRhoThreshold(LFP.xgpgamma,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
-parameters.rhoThres = gammarhoThres;    
-gammaWaves.wavesHit = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.cueHitTrace,parameters);
+xf = arrayfun(@(s) s.xfgamma, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+xgp = arrayfun(@(s) s.xgpgamma, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+wt = arrayfun(@(s) s.wtgamma, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+% parameters.gammarhoThres = getRhoThreshold(xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
+gammaWaves.wavesHit = detectWaves(xf,xgp,wt,IntanBehaviour.cueHitTrace,parameters,parameters.gammarhoThres);
 if isfield(IntanBehaviour,'cueMissTrace')
-    gammaWaves.wavesMiss = detectWaves(LFP.xfgamma,LFP.xgpgamma,LFP.wtgamma,IntanBehaviour.cueMissTrace,parameters);
+    xf = arrayfun(@(s) s.xfgamma, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+    xgp = arrayfun(@(s) s.xgpgamma, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+    wt = arrayfun(@(s) s.wtgamma, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+    gammaWaves.wavesMiss = detectWaves(xf,xgp,wt,IntanBehaviour.cueMissTrace,parameters,parameters.gammarhoThres);
 end
 
 %% Wave detecion for entire time 
@@ -323,8 +359,10 @@ plotOption = 1;
 [WaveStats2(4)] = getInitRewardStats(gammaWaves,parameters,plotOption);
 
 %% Percent Phase Locking
-[PPLHit] = getPPL(LFP.xgp,IntanBehaviour.cueHitTrace,parameters);
-[PPLMiss] = getPPL(LFP.xgp,IntanBehaviour.cueMissTrace,parameters);
+xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+[PPLHit] = getPPL(xgp,IntanBehaviour.cueHitTrace,parameters);
+xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+[PPLMiss] = getPPL(xgp,IntanBehaviour.cueMissTrace,parameters);
 
 figure();
 subplot(2,1,1);
@@ -333,11 +371,26 @@ subplot(2,1,2);
 imagesc(reshape(PPLMiss,[],size(PPLMiss,3))); colormap(hot);
 
 figure();
-plot(squeeze(nanmean(PPLHit,[1 2]))); hold on;
-plot(squeeze(nanmean(PPLMiss,[1 2])));
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLHit,[1 2])),'-k','LineWidth',1.2); hold on;
+% plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLMiss,[1 2])),'-r','LineWidth',1);
+ylabel("Percentage Phase Locking"); xlabel("Time (s)");
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+title('Percentage Phase Locking for hits');box off;
 
+%% Average PGD 
+avgPGDHit = mean(vertcat(Waves.wavesHit.PGD),1);
+avgPGDMiss = mean(vertcat(Waves.wavesMiss.PGD),1);
+
+figure(); hold on;
+plot(IntanBehaviour.cueHitTrace(1).time,avgPGDHit,'-k','LineWidth',1.2); hold on;
+% plot(IntanBehaviour.cueHitTrace(1).time,avgPGDMiss,'-r','LineWidth',1.2);
+ylabel("PGD"); xlabel("Time (s)");
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+title('Trial Averaged Phase Gradient  Directionality (PGD)');box off; % legend('Hits','Miss');
 %% Average PGD accross frequency bands
-[PGDfreqHit,PGDfreqMiss] = getPGDFreqBand(LFP.LFPdatacube,IntanBehaviour,1,parameters);
+[PGDfreqHit,PGDfreqMiss] = getPGDFreqBand(LFP.LFPdatacube,IntanBehaviour,0,parameters);
 
 figure();
 PGDFreq = [5:5:100];

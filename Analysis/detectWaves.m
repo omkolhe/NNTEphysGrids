@@ -1,7 +1,7 @@
-function [Waves] = detectWaves(xf,xgp,wt,behaviourTrace,parameters)
+function [Waves] = detectWaves(xf,xgp,wt,behaviourTrace,parameters,threshold)
 
 spacing = parameters.spacing;
-rhoThres = parameters.rhoThres;
+rhoThres = threshold;
 dirThres = 15; %in degrees
 X = parameters.X;
 Y = parameters.Y;
@@ -9,10 +9,10 @@ Y = parameters.Y;
 waveTimeWindow = 15; % in points
 
 for ii=1:size(behaviourTrace,2)
-    Waves(ii).xf = xf(:,:,behaviourTrace(ii).LFPIndex(1):behaviourTrace(ii).LFPIndex(end));
+    Waves(ii).xf = xf{1,ii};
     Waves(ii).trialTime = behaviourTrace(ii).LFPIndex;
-    Waves(ii).p = xgp(:,:,behaviourTrace(ii).LFPIndex(1):behaviourTrace(ii).LFPIndex(end));
-    Waves(ii).wt = wt(:,:,behaviourTrace(ii).LFPIndex(1):behaviourTrace(ii).LFPIndex(end));
+    Waves(ii).p = xgp{1,ii};
+    Waves(ii).wt = wt{1,ii};
     %p = arrayfun(@(jj) inpaint_nans(p(:,:,jj)),1:size(p,3));
     Waves(ii).evaluationPoints = find_evaluation_points(Waves(ii).p,pi,0.2);
 %     plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );

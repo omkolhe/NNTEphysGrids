@@ -4,7 +4,7 @@ if ~exist('nullSpace','var')
     nullSpace = 0;
 end
 
-nNullSpace = 1000;
+nNullSpace = 10;
 nMax = 19;
 PGDfreqHit = zeros(nMax+1,1);
 PGDfreqMiss = zeros(nMax+1,1);

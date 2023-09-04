@@ -1,0 +1,19 @@
+function IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP)
+
+
+for i=1:size(IntanBehaviour.cueHitTrace,2)
+    IntanBehaviour.cueHitTrace(i).rawLFP = LFP.LFPdatacube(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+    IntanBehaviour.cueHitTrace(i).xf = LFP.xf(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+    IntanBehaviour.cueHitTrace(i).xgp = LFP.xgp(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+    IntanBehaviour.cueHitTrace(i).wt = LFP.wt(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+    IntanBehaviour.cueHitTrace(i).xfbeta = LFP.xfbeta(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+    IntanBehaviour.cueHitTrace(i).xgpbeta = LFP.xgpbeta(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+    IntanBehaviour.cueHitTrace(i).wtbeta = LFP.wtbeta(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+    IntanBehaviour.cueHitTrace(i).xftheta = LFP.xftheta(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+    IntanBehaviour.cueHitTrace(i).xgptheta = LFP.xgptheta(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+    IntanBehaviour.cueHitTrace(i).wttheta = LFP.wttheta(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+    IntanBehaviour.cueHitTrace(i).xfgamma = LFP.xfgamma(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+    IntanBehaviour.cueHitTrace(i).xgpgamma = LFP.xgpgamma(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+    IntanBehaviour.cueHitTrace(i).wtgamma = LFP.wtgamma(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+end
+

@@ -1,4 +1,4 @@
-function [globalAvgSpectrogram, avgSpectrogramCWT,globalAvgBehaviour,fwt] = getAvgSpectogram(xf,LFPFs,behaviourTrace,parameters,flimit)
+function [globalAvgSpectrogram, avgSpectrogramCWT,globalAvgBehaviour,fwt] = getAvgSpectogram(behaviourTrace,parameters,flimit)
 
 %% Inputs
 % xf - filtered signal in datacube format
@@ -11,14 +11,14 @@ function [globalAvgSpectrogram, avgSpectrogramCWT,globalAvgBehaviour,fwt] = getA
 voicesPerOctave = 20;
 
 for trialno = 1:size(behaviourTrace,2)
-    xf1 = xf(:,:,behaviourTrace(trialno).LFPIndex(1):behaviourTrace(trialno).LFPIndex(end));
+    xf1 = behaviourTrace(trialno).rawLFP;
     relTime = behaviourTrace(trialno).time;
 %     xf1Avg = squeeze(mean(xf1,[1 2]));
 %     [avgSpectrogramCWT(trialno,:,:),fwt] = calCWTSpectogram(xf1Avg,relTime,LFPFs,voicesPerOctave,flimit,0);
     % Average spectrogram across all channels
     for i=1:parameters.rows
         for j=1:parameters.cols
-            [spectrogramCh((i-1)*parameters.cols + j,:,:) ,fwt] = calCWTSpectogram(squeeze(xf1(parameters.rows,parameters.cols,:)),relTime,LFPFs,voicesPerOctave,flimit,0,1);
+            [spectrogramCh((i-1)*parameters.cols + j,:,:) ,fwt] = calCWTSpectogram(squeeze(xf1(parameters.rows,parameters.cols,:)),relTime,parameters.Fs,voicesPerOctave,flimit,0,1);
         end
     end
     avgSpectrogramCWT(trialno,:,:) = mean(spectrogramCh,1);

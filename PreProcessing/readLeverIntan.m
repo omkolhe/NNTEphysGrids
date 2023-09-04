@@ -80,7 +80,17 @@ nDiffSlope = 10;
 disp('Finding miss trials in the Intan data ...');
 for i=1:Behaviour.nMiss
     missIndexAr = Behaviour.miss(i,3);
-    trace1 = IntanBehaviour.leverTrace(missIndexAr-correctionWindow:missIndexAr+correctionWindow);
+    st1 = missIndexAr-correctionWindow;
+    if st1 <= 0
+        disp("Short miss trial removed");
+        continue;
+    end
+    sp1 = missIndexAr+correctionWindow;
+    if sp1 >= size(IntanBehaviour.leverTrace,2)
+        disp("Short miss trial removed")
+        continue;
+    end
+    trace1 = IntanBehaviour.leverTrace(st1:sp1);
     misstrigs1 = find(trace1 <IntanBehaviour.threshold+tol & trace1>IntanBehaviour.threshold-tol);  
     if isempty(misstrigs1)
         missIndex(i) = NaN;
@@ -167,7 +177,7 @@ elseif shortTrialFlag == 3
 end
 
 % Reaction Time 
-IntanBehaviour.reactionTime = diff(IntanBehaviour.cueHit,1,2)/parameters.Fs; % in seconds
+IntanBehaviour.reactionTime = (diff(IntanBehaviour.cueHit,1,2)/parameters.Fs)'; % in seconds
 
 %% Getting cue Miss traces
 IntanBehaviour.cueMiss = cueIndex';

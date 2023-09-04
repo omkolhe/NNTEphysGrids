@@ -8,7 +8,7 @@ else
     surf(t,f,c,EdgeColor='none');
     view(0,90);
 end
-shading interp;colormap(parula(128));
+shading interp;colormap(jet);
 axis tight;
 h = colorbar;
 h.Label.String = 'Power in dB';
