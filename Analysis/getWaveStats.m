@@ -28,20 +28,20 @@ disp(p);
 
 
 if plot == 1
-    figure('Name','Histogram of wave speeds in motion Initiation and termination');
+    figure('Name','Histogram of wave speeds in Hits and Misses');
     subplot(2,1,1);
     histfit(speedComb,100,'kernel');
     xline(avgSpeed,'-r',{'Mean speed = ' num2str(avgSpeed) ' cm/s'});
-    xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Motion Initiation');box off;
+    xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Hits');box off;
     subplot(2,1,2);
     histfit(speedCombMiss,100,'kernel');
     xline(avgSpeedMiss,'-r',{'Mean speed = ' num2str(avgSpeedMiss) ' cm/s'});
-    xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Motion Termination');box off;
+    xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed : Miss');box off;
 
-    figure('Name','Wave speeds in motion Initiation and termination');
+    figure('Name','Wave speeds in Hits and Misses');
     group = [ones(size(speedComb')); 2.*ones(size(speedCombMiss'))];
     boxplot([speedComb';speedCombMiss'],group,'BoxStyle','filled','PlotStyle','compact');box off;
-    set(gca,'XTickLabel',{'Initiation','Termination'});
+    set(gca,'XTickLabel',{'Hits','Misses'});
     ylabel('Wave speed in cm/s');
 end
 
@@ -64,20 +64,20 @@ disp(p);
 
 
 if plot == 1
-    figure('Name','Histogram of wavelength in motion Initiation and termination');
+    figure('Name','Histogram of wavelength in Hits and Misses');
     subplot(2,1,1);
     histfit(lComb,100,'kernel');
     xline(avgl,'-r',{'Mean wavelength = ' num2str(avgl) ' cm'});
-    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength: Motion Initiation');box off;
+    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength:   Hits');box off;
     subplot(2,1,2);
     histfit(lCombMiss,100,'kernel');
     xline(avglMiss,'-r',{'Mean wavelength = ' num2str(avglMiss) ' cm'});
-    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength : Motion Termination');box off;
+    xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength :   Misses');box off;
 
-    figure('Name','Wavelength in motion Initiation and termination');
+    figure('Name','Wavelength in   Hits and Misses');
     group = [ones(size(lComb')); 2.*ones(size(lCombMiss'))];
     boxplot([lComb';lCombMiss'],group,'BoxStyle','filled','PlotStyle','compact');box off;
-    set(gca,'XTickLabel',{'Initiation','Termination'});
+    set(gca,'XTickLabel',{'Hits','Misses'});
     xlabel('Wavelength in cm');
 end
 
@@ -99,23 +99,57 @@ disp(p);
 
 
 if plot == 1
-    figure('Name','Histogram of wave duration in motion Initiation and termination');
+    figure('Name','Histogram of wave duration in Hits and Misses');
     subplot(2,1,1);
     histfit(tComb,100,'kernel');
-    xline(avgl,'-r',{'Mean wave duration = ' num2str(avgt) ' ms'});
-    xlabel('Wave Duration in ms');ylabel('Frequency');title('Wave Duration: Motion Initiation');box off;
+    xline(avgt,'-r',{'Mean wave duration = ' num2str(avgt) ' ms'});
+    xlabel('Wave Duration in ms');ylabel('Frequency');title('Wave Duration:   Hits');box off;
     subplot(2,1,2);
     histfit(tCombMiss,100,'kernel');
     xline(avgtMiss,'-r',{'Mean wave duration = ' num2str(avgtMiss) ' ms'});
-    xlabel('Wave Duration in ms');ylabel('Frequency');title('Wave Duration : Motion Termination');box off;
+    xlabel('Wave Duration in ms');ylabel('Frequency');title('Wave Duration :   Misses');box off;
 
-    figure('Name','Wave duration in motion Initiation and termination');
+    figure('Name','Wave duration in   Hits and Misses');
     group = [ones(size(tComb')); 2.*ones(size(tCombMiss'))];
     boxplot([tComb';tCombMiss'],group,'BoxStyle','filled','PlotStyle','compact');box off;
-    set(gca,'XTickLabel',{'Initiation','Termination'});
+    set(gca,'XTickLabel',{'Hits','Misses'});
     xlabel('Wave Duration in ms');
 end
 
+% Wave Amplitude stats
+ampComb = horzcat(Waves.wavesHit(1:end).waveAmp);
+avgAmp = mean(ampComb);
+
+ampCombMiss = horzcat(Waves.wavesMiss(1:end).waveAmp);
+avgAmpMiss = mean(ampCombMiss);
+
+% Perform the t-test.
+[p, t] = ranksum(ampComb, ampCombMiss);
+% Print the results.
+disp('Wave Amplitude')
+disp('h-statistic:');
+disp(t);
+disp('p-value:');
+disp(p);
+
+
+if plot == 1
+    figure('Name','Histogram of wave amplitudes in Hits and Misses');
+    subplot(2,1,1);
+    histfit(ampComb,100,'kernel');
+    xline(avgAmp,'-r',{'Mean wave amplitude = ' num2str(avgAmp) ' ms'});
+    xlabel('Wave Amplitude in ms');ylabel('Frequency');title('Wave Amplitude: Hits');box off; xlim([0 250]);
+    subplot(2,1,2);
+    histfit(ampCombMiss,100,'kernel');
+    xline(avgAmpMiss,'-r',{'Mean wave amplitude = ' num2str(avgAmpMiss) ' ms'});
+    xlabel('Wave Amplitude in ms');ylabel('Frequency');title('Wave Amplitude : Misses');box off;xlim([0 250]);
+
+    figure('Name','Wave amplitude in   Hits and Misses');
+    group = [ones(size(ampComb')); 2.*ones(size(ampCombMiss'))];
+    boxplot([ampComb';ampCombMiss'],group,'BoxStyle','filled','PlotStyle','compact');box off;
+    set(gca,'XTickLabel',{'Hits','Misses'});
+    xlabel('Wave Amplitude in \muV');
+end
 
 % Wave direction stats
 dirComb = horzcat(Waves.wavesHit(1:end).waveDir);
@@ -133,19 +167,28 @@ disp(p);
 
 
 if plot == 1
-    figure('Name','Polar Histogram for wave direction in Motion Initiation and Termination');
+    figure('Name','Polar Histogram for wave direction in Hits and Misses');
     subplot(2,1,1);
     polarhistogram(dirComb,30);
-    title('Wave Direction : Motion Initiation');box off;
+    title('Wave Direction :   Hits');box off;
     subplot(2,1,2);
     polarhistogram(dirCombMiss,30);
-    title('Wave Direction : Motion Termination');box off;
+    title('Wave Direction :   Misses');box off;
 
-    figure('Name','Wave Direction in motion Initiation and termination');
+    figure('Name','Wave Direction in   Hits and Misses');
     group = [ones(size(dirComb'));2.*ones(size(dirCombMiss'))];
     boxplot([mapAngle360(rad2deg(dirComb))';mapAngle360(rad2deg(dirCombMiss))'],group,'BoxStyle','filled','PlotStyle','compact');
-    set(gca,'XTickLabel',{'Initiation','Termination'});box off;
+    set(gca,'XTickLabel',{'Hits','Misses'});box off;
 end
+
+figure('Name','Histogram for wave direction in   Hits and Misses');
+subplot(2,1,1);
+histogram(mapAngle360(rad2deg(dirComb)),60);
+title('Wave Direction :  Hits');box off;
+subplot(2,1,2);
+histogram(mapAngle360(rad2deg(dirCombMiss)),60);
+title('Wave Direction :  Misses');box off;
+
 
 % Wave source points stats
 sourceComb = horzcat(Waves.wavesHit(1:end).source);
@@ -164,13 +207,13 @@ end
 maxSourcePointMiss = max(sourceCombMiss);
 
 if plot == 1
-    figure('Name','Spatial map of source points in Motion Initiation and Termination'); 
+    figure('Name','Spatial map of source points in   Hits and Misses'); 
     subplot(2,1,1);
     imagesc(sourceDen);set(gca,'YDir','normal');box off;
-    title('Spatial map of sources points : Motion Inititaion'); colorbar;
+    title('Spatial map of sources points :   Inititaion'); colorbar;
     subplot(2,1,2);
     imagesc(sourceDenMiss);set(gca,'YDir','normal');box off;
-    title('Spatial map of sources points : Motion Termination'); colorbar;
+    title('Spatial map of sources points :   Misses'); colorbar;
 end 
 
 wavesStat.evaluationPoints =  vertcat(Waves.wavesHit(1:end).evaluationPoints);

@@ -6,7 +6,7 @@ dirThres = 15; %in degrees
 X = parameters.X;
 Y = parameters.Y;
 
-waveTimeWindow = 15; % in points
+waveTimeWindow = 20; % in points
 
 for ii=1:size(behaviourTrace,2)
     Waves(ii).xf = xf{1,ii};
@@ -47,7 +47,7 @@ for ii=1:size(behaviourTrace,2)
             dir(kk) = rad2deg(Waves(ii).velDir(st+kk-1));
         end
         waveClusters = findThresSeg(rho,rhoThres);
-        % Rejecting segements less than 5ms
+        % Rejecting segements less than 9ms
         clusterSize = diff(waveClusters,1,2);
         rejectIndex = find(clusterSize<5);
         waveClusters(rejectIndex,:) = [];
@@ -57,8 +57,8 @@ for ii=1:size(behaviourTrace,2)
             dirSegments = segmentDirArray(dir(waveClusters(aa,1):waveClusters(aa,2)),15);
             dirSegSize = diff(dirSegments,1,2);
             [maxvalue, maxindex] = max(dirSegSize);
-            %Rejecting segments that that less than 5 seconds long
-            if maxvalue<=5
+            %Rejecting segments that that less than 9 seconds long
+            if maxvalue<=9
                 waveClusters(aa,:) = NaN;
                 continue  
             end
@@ -91,9 +91,9 @@ for ii=1:size(behaviourTrace,2)
     Waves(ii).waveTime = unique(Waves(ii).waveTime,'rows','stable');
 
     Waves(ii).nWaves = size(Waves(ii).evaluationPoints,1);
-
+    
 %     plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );
-    % Calculating the speed and wave direction of the detected waves in
+    % Calculating the speed, amplitude and wave direction of the detected waves in
     % that trial window
     for kk = 1:Waves(ii).nWaves
         %Waves(ii).speed(kk) = mean(abs(Waves(ii).insts(:,:,st:sp)),[1 2 3]); % speed in cm/s
@@ -101,6 +101,7 @@ for ii=1:size(behaviourTrace,2)
         Waves(ii).waveDir(kk) = mean(Waves(ii).velDir(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),'all'); 
         Waves(ii).wavelength(kk) = mean(Waves(ii).l(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),'all');
         Waves(ii).waveDuration(kk) = Waves(ii).waveTime(kk,2)-Waves(ii).waveTime(kk,1)+1;
+        Waves(ii).waveAmp(kk) = max(abs(Waves(ii).p(:,:,Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2))),[],"all");
     end
     %Waves(ii).speedpdg = pgdMean(Waves(ii).PGD,Waves(ii).s,0.51);
     %Waves(ii).dirpdg = pgdMean(Waves(ii).PGD,Waves(ii).velDir,0.51);
