@@ -474,6 +474,35 @@ PGDFreq = [5:5:100];
 plot(PGDFreq,PGDfreqHit); hold on;
 plot(PGDFreq,PGDfreqMiss);
 xlabel('Frequency'); ylabel('Phase Gradient Directionality'); ylim([0.35 0.7]); box off;
+
+%% Average LFP for Hits and Misses 
+LFPHit = arrayfun(@(s) reshape(s.xf,[],size(s.xf,3)), IntanBehaviour.cueHitTrace,"UniformOutput",false);
+LFPMiss = arrayfun(@(s) reshape(s.xf,[],size(s.xf,3)), IntanBehaviour.cueMissTrace,"UniformOutput",false);
+
+avgLFPHit = zeros(parameters.rows*parameters.cols,size(LFPHit{1,1},2));
+avgLFPMiss = zeros(parameters.rows*parameters.cols,size(LFPMiss{1,1},2));
+
+% Getting trial averaged LFP for each channel for Hits
+a = cell2struct(LFPHit,'lfp',1);
+for i=1:(parameters.rows*parameters.cols)
+    avgLFPHit(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1);
+end
+
+% Getting trial averaged LFP for each channel for Hits
+a = cell2struct(LFPMiss,'lfp',1);
+for i=1:(parameters.rows*parameters.cols)
+    avgLFPMiss(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1);
+end
+
+figure(); % Top half is hits and bottom half is misses
+title("Trial Average LFP for Hits and Misses")
+imagesc(IntanBehaviour.cueHitTrace(1).time,1:64,[avgLFPHit;avgLFPMiss]); colormap(hot);
+ylabel("Electrodes");xlabel("Time (s)"); 
+h = colorbar; h.Label.String = 'Amplitude (uV)';
+xline(0,'-k','Cue','LabelVerticalAlignment','top');
+yline(32.5,'-k');caxis([-20 20]);
+
+
 %% Beta Burst detection using Hilbert Amplitude 
 [BetaEvent] = detectBetaEvent(LFP.xgpbetamean,IntanBehaviour.cueHitTrace,parameters);
 

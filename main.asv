@@ -403,15 +403,15 @@ ylabel("Electrodes");xlabel("Time (s)");
 h = colorbar; h.Label.String = 'Information (bits)';
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
 
-% For speed
-xgpHit = arrayfun(@(s) angle(s.xgp), IntanBehaviour.cueHitTrace, 'UniformOutput', false);
-xgpMiss = arrayfun(@(s) angle(s.xgp), IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+% For amplitude
+xgpHit = arrayfun(@(s) abs(s.xgp), IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+xgpMiss = arrayfun(@(s) abs(s.xgp), IntanBehaviour.cueMissTrace, 'UniformOutput', false);
 
-[MIPhase] = getMutualInformation(xgpHit,xgpMiss,parameters);
+[MIAmp] = getMutualInformation(xgpHit,xgpMiss,parameters);
 
 figure();
-title("Mututal Information across all electrodes - Phase")
-imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,peakSort2DArray(reshape(MIPhase,[],size(MIPhase,3)),'descend',2)); colormap(hot);
+title("Mututal Information across all electrodes - Amplitude")
+imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,peakSort2DArray(reshape(MIAmp,[],size(MIAmp,3)),'descend',2)); colormap(hot);
 ylabel("Electrodes");xlabel("Time (s)"); 
 h = colorbar; h.Label.String = 'Information (bits)';
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
@@ -474,6 +474,35 @@ PGDFreq = [5:5:100];
 plot(PGDFreq,PGDfreqHit); hold on;
 plot(PGDFreq,PGDfreqMiss);
 xlabel('Frequency'); ylabel('Phase Gradient Directionality'); ylim([0.35 0.7]); box off;
+
+%% Average LFP for Hits and Misses 
+LFPHit = arrayfun(@(s) reshape(s.xf,[],size(s.xf,3)), IntanBehaviour.cueHitTrace,"UniformOutput",false);
+LFPMiss = arrayfun(@(s) reshape(s.xf,[],size(s.xf,3)), IntanBehaviour.cueMissTrace,"UniformOutput",false);
+
+avgLFPHit = zeros(parameters.rows*parameters.cols,size(LFPHit{1,1},2));
+avgLFPMiss = zeros(parameters.rows*parameters.cols,size(LFPMiss{1,1},2));
+
+% Getting trial averaged LFP for each channel for Hits
+a = cell2struct(LFPHit,'lfp',1);
+for i=1:(parameters.rows*parameters.cols)
+    avgLFPHit(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1);
+end
+
+% Getting trial averaged LFP for each channel for Hits
+a = cell2struct(LFPMiss,'lfp',1);
+for i=1:(parameters.rows*parameters.cols)
+    avgLFPMiss(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1);
+end
+
+figure();
+title("Trial Average ")
+imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,peakSort2DArray(reshape(MIAmp,[],size(MIAmp,3)),'descend',2)); colormap(hot);
+ylabel("Electrodes");xlabel("Time (s)"); 
+h = colorbar; h.Label.String = 'Information (bits)';
+xline(0,'-w','Cue','LabelVerticalAlignment','top');
+
+
+
 %% Beta Burst detection using Hilbert Amplitude 
 [BetaEvent] = detectBetaEvent(LFP.xgpbetamean,IntanBehaviour.cueHitTrace,parameters);
 
