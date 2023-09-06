@@ -29,3 +29,15 @@ imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,sortedInfomap); colormap(hot);
 ylabel("Electrodes");xlabel("Time (s)"); 
 h = colorbar; h.Label.String = 'Information (bits)';
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
+
+figure();
+for i=1:size(IntanBehaviour.missTrace,2)
+    plot(IntanBehaviour.missTrace(i).time,IntanBehaviour.missTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    hold on;
+end
+plot(IntanBehaviour.missTrace(1).time,mean(horzcat(IntanBehaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Misses');box off;
+
+figure();
+histogram(IntanBehaviour.reactionTime);

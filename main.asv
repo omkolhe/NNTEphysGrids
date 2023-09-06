@@ -94,7 +94,7 @@ IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan
 % Plotting Lever traces for Hits and Misses
 figure('Name','Average Lever Traces for Hits & Misses');
 subplot(1,2,1);
-for i=1:IntanBehaviour.nCueHit
+for i=1:size(IntanBehaviour.cueHitTrace,2)
     plot(IntanBehaviour.hitTrace(i).time,IntanBehaviour.hitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
     hold on;
 end
@@ -284,6 +284,12 @@ if isfield(IntanBehaviour,'cueMissTrace')
     wt = arrayfun(@(s) s.wt, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
     Waves.wavesMiss = detectWaves(xf,xgp,wt,IntanBehaviour.cueMissTrace,parameters,parameters.rhoThres);
 end
+if isfield(IntanBehaviour,'missTrace')
+    xf = arrayfun(@(s) s.xf, IntanBehaviour.missTrace, 'UniformOutput', false);
+    xgp = arrayfun(@(s) s.xgp, IntanBehaviour.missTrace, 'UniformOutput', false);
+    wt = arrayfun(@(s) s.wt, IntanBehaviour.missTrace, 'UniformOutput', false);
+    Waves.wavesFA = detectWaves(xf,xgp,wt,IntanBehaviour.missTrace,parameters,parameters.rhoThres);
+end
 
 % Wave detection for theta band
 disp('Wave Detection for theta band ...')
@@ -364,31 +370,76 @@ xgp = arrayfun(@(s) shuffle3DMatrix(s.xgp,3), IntanBehaviour.cueHitTrace, 'Unifo
 [PPLHitShuffle] = getPPL(xgp,parameters);
 xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
 [PPLMiss] = getPPL(xgp,parameters);
+xgp = arrayfun(@(s) s.xgp, IntanBehaviour.missTrace, 'UniformOutput', false);
+[PPLFA] = getPPL(xgp,parameters);
 
 figure();
-subplot(3,1,1);
+subplot(4,1,1);
 title("Percentage Phase across all electrodes - Hits")
 imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PPLHit,[],size(PPLHit,3))); colormap(hot);
 ylabel("Electrodes");xlabel("Time (s)");
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
-subplot(3,1,2);
+subplot(4,1,2);
 title("Percentage Phase across all electrodes - Misses")
 imagesc(IntanBehaviour.cueMissTrace(1).time,1:32,reshape(PPLMiss,[],size(PPLMiss,3))); colormap(hot);
 ylabel("Electrodes");xlabel("Time (s)");
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
-subplot(3,1,3);
+subplot(4,1,3);
+title("Percentage Phase across all electrodes - False Alarms")
+imagesc(IntanBehaviour.missTrace(1).time-parameters.windowBeforeCue,1:32,reshape(PPLFA,[],size(PPLFA,3))); colormap(hot);
+ylabel("Electrodes");xlabel("Time (s)");
+xline(0,'-w','Cue','LabelVerticalAlignment','top');
+subplot(4,1,4);
 title("Percentage Phase across all electrodes - Hit Shuffled")
 imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PPLHitShuffle,[],size(PPLHitShuffle,3))); colormap(hot);
 ylabel("Electrodes");xlabel("Time (s)");
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
 
+
 figure();
 plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLHit,[1 2])),'-r','LineWidth',1.2); hold on;
 plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLHitShuffle,[1 2])),'-k','LineWidth',1);
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLFA,[1 2])),'-b','LineWidth',1);
+% plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLMiss,[1 2])),'-g','LineWidth',0.2);
 ylabel("Percentage Phase Locking"); xlabel("Time (s)");
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
 xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
-title('Percentage Phase Locking for hits');box off;legend('Hits','Shuffled');
+title('Percentage Phase Locking for hits');box off;legend('Hits','Shuffled','False Alarms');%,'Misses');
+
+% z-scoring 
+nIterrate = 1000;
+xgpHit = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+xgpMiss = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+xgpComb = [xgpHit xgpMiss];
+nHit = size(xgpHit,2);
+nMiss = size(xgpMiss,2);
+nTot = nHit + nMiss;
+nullDistHit = zeros(parameters.rows,parameters.cols,size(PPLHit,3),nIterrate);
+nullDistMiss = zeros(parameters.rows,parameters.cols,size(PPLMiss,3),nIterrate);
+for j=1:nIterrate
+    randIndex = randperm(nTot);
+    xgpHitRand = xgpComb(randIndex(1:nHit));
+    xgpMissRand = xgpComb(randIndex(nHit+1:end));
+    nullDistHit(:,:,:,j) = getPhaseAlignment(xgpHitRand,parameters);
+    nullDistMiss(:,:,:,j) = getPhaseAlignment(xgpMissRand,parameters);
+    j
+end
+muHit = mean(nullDistHit,4); % Mean of the null distribution
+sigmaHit = std(nullDistHit,0,4); % Standard deviation of null distribution
+muMiss = mean(nullDistMiss,4); % Mean of the null distribution
+sigmaMiss = std(nullDistMiss,0,4); % Standard deviation of null distribution
+
+PAHitz = (PAHit-muHit)./sigmaHit;
+PAMissz = (PAMiss-muMiss)./sigmaMiss;
+
+figure();
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAHitz,[1 2])),'-r','LineWidth',1.2); hold on;
+% plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMiss,[1 2])),'-k','LineWidth',1);
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMissz,[1 2])),'-k','LineWidth',1);
+ylabel("z-score"); xlabel("Time (s)");
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+title('z-scored Phase Alignment for Hits');box off; legend('Hits','Miss');
 
 %% Mutual Information
 % For phase
@@ -416,19 +467,19 @@ ylabel("Electrodes");xlabel("Time (s)");
 h = colorbar; h.Label.String = 'Information (bits)';
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
 
-% 
-
 %% Average PGD 
 avgPGDHit = mean(vertcat(Waves.wavesHit.PGD),1);
 avgPGDMiss = mean(vertcat(Waves.wavesMiss.PGD),1);
+avgPGDFA = mean(vertcat(Waves.wavesFA.PGD),1);
 
 figure(); hold on;
 plot(IntanBehaviour.cueHitTrace(1).time,avgPGDHit,'-r','LineWidth',1.2); hold on;
 plot(IntanBehaviour.cueHitTrace(1).time,avgPGDMiss,'-k','LineWidth',1);
+plot(IntanBehaviour.cueHitTrace(1).time,avgPGDFA,'-b','LineWidth',1);
 ylabel("PGD"); xlabel("Time (s)");
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
 xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
-title('Trial Averaged Phase Gradient  Directionality (PGD)');box off;  legend('Hits','Miss');
+title('Trial Averaged Phase Gradient  Directionality (PGD)');box off;  legend('Hits','Misses','False Alarms');
 
 xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
 [avgPGDHit,avgPGDHitNull] = getAvgPGD(xgp,Waves.wavesHit,IntanBehaviour.cueHitTrace,1,parameters);
@@ -446,26 +497,72 @@ xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
 PAHit = getPhaseAlignment(xgp,parameters);
 xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
 PAMiss = getPhaseAlignment(xgp,parameters);
+xgp = arrayfun(@(s) s.xgp, IntanBehaviour.missTrace, 'UniformOutput', false);
+PAFA = getPhaseAlignment(xgp,parameters);
+
 
 figure();
-subplot(2,1,1);
+subplot(3,1,1);
 title("Phase Alignment across all electrodes - Hits")
 imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PAHit,[],size(PAHit,3))); colormap(hot);
 ylabel("Electrodes");xlabel("Time (s)");
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
-subplot(2,1,2);
+subplot(3,1,2);
 title("Phase Alignment across all electrodes - Misses")
 imagesc(IntanBehaviour.cueMissTrace(1).time,1:32,reshape(PAMiss,[],size(PAMiss,3))); colormap(hot);
+ylabel("Electrodes");xlabel("Time (s)");
+xline(0,'-w','Cue','LabelVerticalAlignment','top');
+subplot(3,1,3);
+title("Phase Alignment across all electrodes - False Alarms")
+imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PAFA,[],size(PAFA,3))); colormap(hot);
 ylabel("Electrodes");xlabel("Time (s)");
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
 
 figure();
 plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAHit,[1 2])),'-r','LineWidth',1.2); hold on;
 % plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMiss,[1 2])),'-k','LineWidth',1);
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAFA,[1 2])),'-k','LineWidth',1);
 ylabel("Phase Alignment"); xlabel("Time (s)");
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
 xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
 title('Phase Alignment for Hits');box off;% legend('Hits','Miss');
+% z-scoring 
+PAHit1 = reshape(PAHit,[],size(PAHit,3));
+PAMiss1 = reshape(PAMiss,[],size(PAMiss,3));
+nIterrate = 1000;
+xgpHit = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+xgpMiss = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+xgpComb = [xgpHit xgpMiss];
+nHit = size(xgpHit,2);
+nMiss = size(xgpMiss,2);
+nTot = nHit + nMiss;
+
+nullDistHit = zeros(parameters.rows,parameters.cols,size(PAHit,3),nIterrate);
+nullDistMiss = zeros(parameters.rows,parameters.cols,size(PAM,3),nIterrate);
+for j=1:nIterrate
+    randIndex = randperm(nTot);
+    xgpHitRand = xgpComb(randIndex(1:nHit));
+    xgpMissRand = xgpComb(randIndex(nHit+1:end));
+    nullDistHit(:,:,:,j) = getPhaseAlignment(xgpHitRand,parameters);
+    nullDistMiss(:,:,:,j) = getPhaseAlignment(xgpMissRand,parameters);
+    j
+end
+muHit = mean(nullDistHit,4); % Mean of the null distribution
+sigmaHit = std(nullDistHit,0,4); % Standard deviation of null distribution
+muMiss = mean(nullDistMiss,4); % Mean of the null distribution
+sigmaMiss = std(nullDistMiss,0,4); % Standard deviation of null distribution
+
+PAHitz = (PAHit-muHit)./sigmaHit;
+PAMissz = (PAMiss-muMiss)./sigmaMiss;
+
+figure();
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAHitz,[1 2])),'-r','LineWidth',1.2); hold on;
+% plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMiss,[1 2])),'-k','LineWidth',1);
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMissz,[1 2])),'-k','LineWidth',1);
+ylabel("z-score"); xlabel("Time (s)");
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+title('z-scored Phase Alignment for Hits');box off; legend('Hits','Miss');
 %% Average PGD accross frequency bands
 [PGDfreqHit,PGDfreqMiss] = getPGDFreqBand(LFP.LFPdatacube,IntanBehaviour,0,parameters);
 
@@ -478,9 +575,11 @@ xlabel('Frequency'); ylabel('Phase Gradient Directionality'); ylim([0.35 0.7]); 
 %% Average LFP for Hits and Misses 
 LFPHit = arrayfun(@(s) reshape(s.xf,[],size(s.xf,3)), IntanBehaviour.cueHitTrace,"UniformOutput",false);
 LFPMiss = arrayfun(@(s) reshape(s.xf,[],size(s.xf,3)), IntanBehaviour.cueMissTrace,"UniformOutput",false);
+LFPFA = arrayfun(@(s) reshape(s.xf,[],size(s.xf,3)), IntanBehaviour.missTrace,"UniformOutput",false);
 
 avgLFPHit = zeros(parameters.rows*parameters.cols,size(LFPHit{1,1},2));
 avgLFPMiss = zeros(parameters.rows*parameters.cols,size(LFPMiss{1,1},2));
+avgLFPFA = zeros(parameters.rows*parameters.cols,size(LFPFA{1,1},2));
 
 % Getting trial averaged LFP for each channel for Hits
 a = cell2struct(LFPHit,'lfp',1);
@@ -494,13 +593,20 @@ for i=1:(parameters.rows*parameters.cols)
     avgLFPMiss(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1);
 end
 
-figure();
-title("Trial Average ")
-imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,peakSort2DArray(reshape(MIAmp,[],size(MIAmp,3)),'descend',2)); colormap(hot);
-ylabel("Electrodes");xlabel("Time (s)"); 
-h = colorbar; h.Label.String = 'Information (bits)';
-xline(0,'-w','Cue','LabelVerticalAlignment','top');
+% Getting trial averaged LFP for each channel for False alarms
+a = cell2struct(LFPFA,'lfp',1);
+for i=1:(parameters.rows*parameters.cols)
+    avgLFPFA(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1);
+end
 
+figure(); % Top half is hits and bottom half is misses
+title("Trial Average LFP for Hits and Misses")
+imagesc(IntanBehaviour.cueHitTrace(1).time,1:96,[avgLFPHit;avgLFPMiss;avgLFPFA]); colormap(jet);
+ylabel("Electrodes");xlabel("Time (s)"); 
+h = colorbar; h.Label.String = 'Amplitude (uV)';
+xline(0,'-k','Cue','LabelVerticalAlignment','top');
+yline(32.5,'-k');caxis([-20 20]);
+yline(64.5,'-k');caxis([-20 20]);
 
 
 %% Beta Burst detection using Hilbert Amplitude 
