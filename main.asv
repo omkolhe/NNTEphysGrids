@@ -363,84 +363,6 @@ plotOption = 1;
 [WaveStats2(3)] = getInitRewardStats(betaWaves,parameters,plotOption);
 [WaveStats2(4)] = getInitRewardStats(gammaWaves,parameters,plotOption);
 
-%% Percent Phase Locking
-xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
-[PPLHit] = getPPL(xgp,parameters);
-xgp = arrayfun(@(s) shuffle3DMatrix(s.xgp,3), IntanBehaviour.cueHitTrace, 'UniformOutput', false);
-[PPLHitShuffle] = getPPL(xgp,parameters);
-xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
-[PPLMiss] = getPPL(xgp,parameters);
-xgp = arrayfun(@(s) s.xgp, IntanBehaviour.missTrace, 'UniformOutput', false);
-[PPLFA] = getPPL(xgp,parameters);
-
-figure();
-subplot(4,1,1);
-title("Percentage Phase across all electrodes - Hits")
-imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PPLHit,[],size(PPLHit,3))); colormap(hot);
-ylabel("Electrodes");xlabel("Time (s)");
-xline(0,'-w','Cue','LabelVerticalAlignment','top');
-subplot(4,1,2);
-title("Percentage Phase across all electrodes - Misses")
-imagesc(IntanBehaviour.cueMissTrace(1).time,1:32,reshape(PPLMiss,[],size(PPLMiss,3))); colormap(hot);
-ylabel("Electrodes");xlabel("Time (s)");
-xline(0,'-w','Cue','LabelVerticalAlignment','top');
-subplot(4,1,3);
-title("Percentage Phase across all electrodes - False Alarms")
-imagesc(IntanBehaviour.missTrace(1).time-parameters.windowBeforeCue,1:32,reshape(PPLFA,[],size(PPLFA,3))); colormap(hot);
-ylabel("Electrodes");xlabel("Time (s)");
-xline(0,'-w','Cue','LabelVerticalAlignment','top');
-subplot(4,1,4);
-title("Percentage Phase across all electrodes - Hit Shuffled")
-imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PPLHitShuffle,[],size(PPLHitShuffle,3))); colormap(hot);
-ylabel("Electrodes");xlabel("Time (s)");
-xline(0,'-w','Cue','LabelVerticalAlignment','top');
-
-
-figure();
-plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLHit,[1 2])),'-r','LineWidth',1.2); hold on;
-plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLHitShuffle,[1 2])),'-k','LineWidth',1);
-plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLFA,[1 2])),'-b','LineWidth',1);
-% plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLMiss,[1 2])),'-g','LineWidth',0.2);
-ylabel("Percentage Phase Locking"); xlabel("Time (s)");
-xline(0,'--r','Cue','LabelVerticalAlignment','top');
-xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
-title('Percentage Phase Locking for hits');box off;legend('Hits','Shuffled','False Alarms');%,'Misses');
-
-% z-scoring 
-nIterrate = 1000;
-xgpHit = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
-xgpMiss = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
-xgpComb = [xgpHit xgpMiss];
-nHit = size(xgpHit,2);
-nMiss = size(xgpMiss,2);
-nTot = nHit + nMiss;
-nullDistHit = zeros(parameters.rows,parameters.cols,size(PPLHit,3),nIterrate);
-nullDistMiss = zeros(parameters.rows,parameters.cols,size(PPLMiss,3),nIterrate);
-for j=1:nIterrate
-    randIndex = randperm(nTot);
-    xgpHitRand = xgpComb(randIndex(1:nHit));
-    xgpMissRand = xgpComb(randIndex(nHit+1:end));
-    nullDistHit(:,:,:,j) = getPhaseAlignment(xgpHitRand,parameters);
-    nullDistMiss(:,:,:,j) = getPhaseAlignment(xgpMissRand,parameters);
-    j
-end
-muHit = mean(nullDistHit,4); % Mean of the null distribution
-sigmaHit = std(nullDistHit,0,4); % Standard deviation of null distribution
-muMiss = mean(nullDistMiss,4); % Mean of the null distribution
-sigmaMiss = std(nullDistMiss,0,4); % Standard deviation of null distribution
-
-PAHitz = (PAHit-muHit)./sigmaHit;
-PAMissz = (PAMiss-muMiss)./sigmaMiss;
-
-figure();
-plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAHitz,[1 2])),'-r','LineWidth',1.2); hold on;
-% plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMiss,[1 2])),'-k','LineWidth',1);
-plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMissz,[1 2])),'-k','LineWidth',1);
-ylabel("z-score"); xlabel("Time (s)");
-xline(0,'--r','Cue','LabelVerticalAlignment','top');
-xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
-title('z-scored Phase Alignment for Hits');box off; legend('Hits','Miss');
-
 %% Mutual Information
 % For phase
 xgpHit = arrayfun(@(s) angle(s.xgp), IntanBehaviour.cueHitTrace, 'UniformOutput', false);
@@ -529,7 +451,7 @@ title('Phase Alignment for Hits');box off;% legend('Hits','Miss');
 % z-scoring 
 PAHit1 = reshape(PAHit,[],size(PAHit,3));
 PAMiss1 = reshape(PAMiss,[],size(PAMiss,3));
-nIterrate = 1000;
+nIterrate = 5000;
 xgpHit = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
 xgpMiss = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
 xgpComb = [xgpHit xgpMiss];
@@ -538,7 +460,7 @@ nMiss = size(xgpMiss,2);
 nTot = nHit + nMiss;
 
 nullDistHit = zeros(parameters.rows,parameters.cols,size(PAHit,3),nIterrate);
-nullDistMiss = zeros(parameters.rows,parameters.cols,size(PAM,3),nIterrate);
+nullDistMiss = zeros(parameters.rows,parameters.cols,size(PAMiss,3),nIterrate);
 for j=1:nIterrate
     randIndex = randperm(nTot);
     xgpHitRand = xgpComb(randIndex(1:nHit));
@@ -563,6 +485,110 @@ ylabel("z-score"); xlabel("Time (s)");
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
 xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
 title('z-scored Phase Alignment for Hits');box off; legend('Hits','Miss');
+
+
+figure();
+subplot(2,1,1);
+title("Phase Alignment across all electrodes - Hits")
+imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PAHitz,[],size(PAHitz,3))); colormap(hot);
+ylabel("Electrodes");xlabel("Time (s)");
+xline(0,'-w','Cue','LabelVerticalAlignment','top');caxis([-4 8]);
+subplot(2,1,2);
+title("Phase Alignment across all electrodes - Misses")
+imagesc(IntanBehaviour.cueMissTrace(1).time,1:32,reshape(PAMissz,[],size(PAMissz,3))); colormap(hot);
+ylabel("Electrodes");xlabel("Time (s)");
+xline(0,'-w','Cue','LabelVerticalAlignment','top');caxis([-4 8]);
+
+%% Percent Phase Locking
+xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+[PPLHit] = getPPL(xgp,parameters);
+xgp = arrayfun(@(s) shuffle3DMatrix(s.xgp,3), IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+[PPLHitShuffle] = getPPL(xgp,parameters);
+xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+[PPLMiss] = getPPL(xgp,parameters);
+xgp = arrayfun(@(s) s.xgp, IntanBehaviour.missTrace, 'UniformOutput', false);
+[PPLFA] = getPPL(xgp,parameters);
+
+figure();
+subplot(4,1,1);
+title("Percentage Phase across all electrodes - Hits")
+imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PPLHit,[],size(PPLHit,3))); colormap(hot);
+ylabel("Electrodes");xlabel("Time (s)");
+xline(0,'-w','Cue','LabelVerticalAlignment','top');
+subplot(4,1,2);
+title("Percentage Phase across all electrodes - Misses")
+imagesc(IntanBehaviour.cueMissTrace(1).time,1:32,reshape(PPLMiss,[],size(PPLMiss,3))); colormap(hot);
+ylabel("Electrodes");xlabel("Time (s)");
+xline(0,'-w','Cue','LabelVerticalAlignment','top');
+subplot(4,1,3);
+title("Percentage Phase across all electrodes - False Alarms")
+imagesc(IntanBehaviour.missTrace(1).time-parameters.windowBeforeCue,1:32,reshape(PPLFA,[],size(PPLFA,3))); colormap(hot);
+ylabel("Electrodes");xlabel("Time (s)");
+xline(0,'-w','Cue','LabelVerticalAlignment','top');
+subplot(4,1,4);
+title("Percentage Phase across all electrodes - Hit Shuffled")
+imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PPLHitShuffle,[],size(PPLHitShuffle,3))); colormap(hot);
+ylabel("Electrodes");xlabel("Time (s)");
+xline(0,'-w','Cue','LabelVerticalAlignment','top');
+
+
+figure();
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLHit,[1 2])),'-r','LineWidth',1.2); hold on;
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLHitShuffle,[1 2])),'-k','LineWidth',1);
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLFA,[1 2])),'-b','LineWidth',1);
+% plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLMiss,[1 2])),'-g','LineWidth',0.2);
+ylabel("Percentage Phase Locking"); xlabel("Time (s)");
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+title('Percentage Phase Locking for hits');box off;legend('Hits','Shuffled','False Alarms');%,'Misses');
+
+% z-scoring 
+nIterrate = 200;
+xgpHit = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+xgpMiss = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
+xgpComb = [xgpHit xgpMiss];
+nHit = size(xgpHit,2);
+nMiss = size(xgpMiss,2);
+nTot = nHit + nMiss;
+nullDistHit = zeros(parameters.rows,parameters.cols,size(PPLHit,3),nIterrate);
+nullDistMiss = zeros(parameters.rows,parameters.cols,size(PPLMiss,3),nIterrate);
+for j=1:nIterrate
+    randIndex = randperm(nTot);
+    xgpHitRand = xgpComb(randIndex(1:nHit));
+    xgpMissRand = xgpComb(randIndex(nHit+1:end));
+    nullDistHit(:,:,:,j) = getPPL(xgpHitRand,parameters);
+    nullDistMiss(:,:,:,j) = getPPL(xgpMissRand,parameters);
+    j
+end
+muHit = mean(nullDistHit,4); % Mean of the null distribution
+sigmaHit = std(nullDistHit,0,4); % Standard deviation of null distribution
+muMiss = mean(nullDistMiss,4); % Mean of the null distribution
+sigmaMiss = std(nullDistMiss,0,4); % Standard deviation of null distribution
+
+PPLHitz = (PPLHit-muHit)./sigmaHit;
+PPLMissz = (PPLMiss-muMiss)./sigmaMiss;
+
+figure();
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLHitz,[1 2])),'-r','LineWidth',1.2); hold on;
+% plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMiss,[1 2])),'-k','LineWidth',1);
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLMissz,[1 2])),'-k','LineWidth',1);
+ylabel("z-score"); xlabel("Time (s)");
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+title('z-scored Phase Alignment for Hits');box off; legend('Hits','Miss');
+
+figure();
+subplot(2,1,1);
+title("Percentage Phase across all electrodes - Hits")
+imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PPLHitz,[],size(PPLHitz,3))); colormap(hot);
+ylabel("Electrodes");xlabel("Time (s)");
+xline(0,'-w','Cue','LabelVerticalAlignment','top');
+subplot(2,1,2);
+title("Percentage Phase across all electrodes - Misses")
+imagesc(IntanBehaviour.cueMissTrace(1).time,1:32,reshape(PPLMissz,[],size(PPLMissz,3))); colormap(hot);
+ylabel("Electrodes");xlabel("Time (s)");
+xline(0,'-w','Cue','LabelVerticalAlignment','top');
+
 %% Average PGD accross frequency bands
 [PGDfreqHit,PGDfreqMiss] = getPGDFreqBand(LFP.LFPdatacube,IntanBehaviour,0,parameters);
 
@@ -607,7 +633,6 @@ h = colorbar; h.Label.String = 'Amplitude (uV)';
 xline(0,'-k','Cue','LabelVerticalAlignment','top');
 yline(32.5,'-k');caxis([-20 20]);
 yline(64.5,'-k');caxis([-20 20]);
-
 
 %% Beta Burst detection using Hilbert Amplitude 
 [BetaEvent] = detectBetaEvent(LFP.xgpbetamean,IntanBehaviour.cueHitTrace,parameters);

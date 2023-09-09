@@ -84,22 +84,22 @@ for ii=1:size(behaviourTrace,2)
     Waves(ii).evaluationPoints = Waves(ii).evaluationPoints(~isnan(Waves(ii).evaluationPoints));
     Waves(ii).waveTime = removeNaNRows(Waves(ii).waveTime);
     % Removing duplicate detected waves
-%     Waves(ii).evaluationPoints = unique((Waves(ii).evaluationPoints)','rows','stable');
-%     Waves(ii).waveTime = unique(Waves(ii).waveTime,'rows','stable');
+    Waves(ii).evaluationPoints = unique((Waves(ii).evaluationPoints)','rows','stable');
+    Waves(ii).waveTime = unique(Waves(ii).waveTime,'rows','stable');
     % Merging repetetive waves 
-    Waves(ii).nWaves = size(Waves(ii).waveTime,1);
+    nDetectedWaves = size(Waves(ii).waveTime,1);
     kk = 1;
-    while kk < Waves(ii).nWaves
-        if(Waves(ii).waveTime(kk,2) > Waves(ii).waveTime(kk+1,1)) % check there is a overlap
+    while kk < nDetectedWaves
+        if(Waves(ii).waveTime(kk,2) > Waves(ii).waveTime(kk+1,1) && Waves(ii).waveTime(kk,2) < Waves(ii).waveTime(kk+1,2)) % check there is a overlap
             Waves(ii).waveTime(kk,2) = Waves(ii).waveTime(kk+1,2); % Merge the two waves
-            Waves(ii).evaluationPoints(kk) = findArrayMidPoint([Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)]);
+            Waves(ii).evaluationPoints(jj) = findArrayMidPoint([Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)]);
             Waves(ii).waveTime(kk+1,:) = [];
             Waves(ii).evaluationPoints(kk+1) = [];
-            Waves(ii).nWaves = Waves(ii).nWaves-1;
         else
-            kk = kk+1;
-        end
+            kk 
     end
+
+    Waves(ii).nWaves = size(Waves(ii).evaluationPoints,1);
     
 %     plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );
     % Calculating the speed, amplitude and wave direction of the detected waves in

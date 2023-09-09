@@ -169,10 +169,10 @@ disp(p);
 if plot == 1
     figure('Name','Polar Histogram for wave direction in Hits and Misses');
     subplot(2,1,1);
-    polarhistogram(dirComb,30);
+    polarhistogram(dirComb,60);
     title('Wave Direction :   Hits');box off;
     subplot(2,1,2);
-    polarhistogram(dirCombMiss,30);
+    polarhistogram(dirCombMiss,60);
     title('Wave Direction :   Misses');box off;
 
     figure('Name','Wave Direction in   Hits and Misses');
