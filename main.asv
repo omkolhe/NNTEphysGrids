@@ -278,11 +278,13 @@ xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
 wt = arrayfun(@(s) s.wt, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
 % parameters.rhoThres = getRhoThreshold(xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 Waves.wavesHit = detectWaves(xf,xgp,wt,IntanBehaviour.cueHitTrace,parameters,parameters.rhoThres);
+Waves.wavesHit = detectPlanarWaves(xf,xgp,wt,IntanBehaviour.cueHitTrace,parameters,0.5);
 if isfield(IntanBehaviour,'cueMissTrace')
     xf = arrayfun(@(s) s.xf, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
     xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
     wt = arrayfun(@(s) s.wt, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
     Waves.wavesMiss = detectWaves(xf,xgp,wt,IntanBehaviour.cueMissTrace,parameters,parameters.rhoThres);
+    Waves.wavesMiss = detectPlanarWaves(xf,xgp,wt,IntanBehaviour.cueMissTrace,parameters,0.5);
 end
 if isfield(IntanBehaviour,'missTrace')
     xf = arrayfun(@(s) s.xf, IntanBehaviour.missTrace, 'UniformOutput', false);
@@ -389,6 +391,7 @@ ylabel("Electrodes");xlabel("Time (s)");
 h = colorbar; h.Label.String = 'Information (bits)';
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
 
+
 %% Average PGD 
 avgPGDHit = mean(vertcat(Waves.wavesHit.PGD),1);
 avgPGDMiss = mean(vertcat(Waves.wavesMiss.PGD),1);
@@ -442,8 +445,8 @@ xline(0,'-w','Cue','LabelVerticalAlignment','top');
 
 figure();
 plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAHit,[1 2])),'-r','LineWidth',1.2); hold on;
-% plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMiss,[1 2])),'-k','LineWidth',1);
-plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAFA,[1 2])),'-k','LineWidth',1);
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMiss,[1 2])),'-k','LineWidth',1);
+% plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAFA,[1 2])),'-k','LineWidth',1);
 ylabel("Phase Alignment"); xlabel("Time (s)");
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
 xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');

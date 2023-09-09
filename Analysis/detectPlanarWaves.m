@@ -1,7 +1,7 @@
-function [Waves] = detectWaves(xf,xgp,wt,behaviourTrace,parameters,threshold)
+function [Waves] = detectPlanarWaves(xf,xgp,wt,behaviourTrace,parameters,threshold)
 
 spacing = parameters.spacing;
-rhoThres = threshold;
+pgdThres = threshold;
 dirThres = 15; %in degrees
 X = parameters.X;
 Y = parameters.Y;
@@ -37,41 +37,33 @@ for ii=1:size(behaviourTrace,2)
         if st<=0, st = 1; end  % adjusting is waves is detected at the start of window
         sp = Waves(ii).evaluationPoints(jj)+waveTimeWindow;
         if sp>size(Waves(ii).p,3), sp = Waves(ii).evaluationPoints(jj); end % adjusting is waves is detected at the end of window
-        rho = zeros(sp-st+1,1);
-        sourcepoint = zeros(2,sp-st+1);
-        dir = zeros(sp-st+1,1);
-        for kk=1:(sp-st+1)
-            ph = angle( Waves(ii).p(:,:,(st+kk-1)));
-            sourcepoint(:,kk) = find_source_points(st+kk-1,X,Y,Waves(ii).dx, Waves(ii).dy );
-            [rho(kk,1),~,~] = phase_correlation_distance( ph,sourcepoint(:,kk), spacing );
-            dir(kk) = rad2deg(Waves(ii).velDir(st+kk-1));
-        end
-        waveClusters = findThresSeg(rho,rhoThres);
+        pgd = Waves(ii).PGD(1,st:sp);
+        dir = Waves(ii).velDir(1,st:sp);
+        waveClusters = findThresSeg(pgd,pgdThres);
         % Rejecting segements less than 9ms
         clusterSize = diff(waveClusters,1,2);
         rejectIndex = find(clusterSize<9);
         waveClusters(rejectIndex,:) = [];
         % Getting segments with cummulative sum of first differences less
         % than 15 degress
-%         for aa=1:size(waveClusters,1)
-%             dirSegments = segmentDirArray(dir(waveClusters(aa,1):waveClusters(aa,2)),15);
-%             dirSegSize = diff(dirSegments,1,2);
-%             [maxvalue, maxindex] = max(dirSegSize);
-%             %Rejecting segments that that less than 9 seconds long
-%             if maxvalue<=9
-%                 waveClusters(aa,:) = NaN;
-%                 continue  
-%             end
-%             %Updating the waveCluster start and stop points
-%             waveClusters(aa,1) = waveClusters(aa,1)+dirSegments(maxindex,1)-1;
-%             waveClusters(aa,2) = waveClusters(aa,1)+dirSegments(maxindex,2)-dirSegments(maxindex,1);
-%         end
+        for aa=1:size(waveClusters,1)
+            dirSegments = segmentDirArray(dir(waveClusters(aa,1):waveClusters(aa,2)),15);
+            dirSegSize = diff(dirSegments,1,2);
+            [maxvalue, maxindex] = max(dirSegSize);
+            %Rejecting segments that that less than 9 seconds long
+            if maxvalue<=9
+                waveClusters(aa,:) = NaN;
+                continue  
+            end
+            %Updating the waveCluster start and stop points
+            waveClusters(aa,1) = waveClusters(aa,1)+dirSegments(maxindex,1)-1;
+            waveClusters(aa,2) = waveClusters(aa,1)+dirSegments(maxindex,2)-dirSegments(maxindex,1);
+        end
         waveClusters = removeNaNRows(waveClusters);
         % Selecting the wavecluster with maximum duration 
         % This is done to have just one wave at each evaluation point
         if isempty(waveClusters)
             Waves(ii).evaluationPoints(jj) = NaN;
-            Waves(ii).rho(jj) = NaN;
             Waves(ii).waveTime(jj,:) = [NaN,NaN];
             continue
         end

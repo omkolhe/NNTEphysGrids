@@ -142,11 +142,11 @@ xline(0,'-w','Cue','LabelVerticalAlignment','top');
 for i = 1:4
     st = (i-1)*500;
     sp = (i)*500;
-    dirComb1 = horzcat(Waves.wavesHit(1:end).waveDuration);
+    dirComb1 = horzcat(Waves.wavesHit(1:end).wavelength);
     evalPointsHit = horzcat(Waves.wavesHit(1:end).evaluationPoints);
     WaveComb(i).Hit = dirComb1(evalPointsHit >=st & evalPointsHit <= sp);
 
-    dirCombMiss1 = horzcat(Waves.wavesMiss(1:end).waveDuration);
+    dirCombMiss1 = horzcat(Waves.wavesMiss(1:end).wavelength);
     evalPointsMiss = horzcat(Waves.wavesMiss(1:end).evaluationPoints);
     WaveComb(i).Miss = dirCombMiss1(evalPointsMiss >=st & evalPointsMiss <= sp);
 end
@@ -154,8 +154,8 @@ end
 
 
 figure(); hold on;
-plot(1:4,arrayfun(@(s) mean(s.dir,'all'), dirComb));
-plot(1:4,arrayfun(@(s) mean(s.dir,'all'), dirCombMiss));
+plot(1:4,arrayfun(@(s) mean(s.Hit,'all'), WaveComb));
+plot(1:4,arrayfun(@(s) mean(s.Miss,'all'), WaveComb));
 
 a = arrayfun(@(s) ranksum(s.Hit,s.Miss) , WaveComb);
 

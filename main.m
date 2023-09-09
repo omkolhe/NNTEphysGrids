@@ -278,11 +278,13 @@ xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
 wt = arrayfun(@(s) s.wt, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
 % parameters.rhoThres = getRhoThreshold(xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 Waves.wavesHit = detectWaves(xf,xgp,wt,IntanBehaviour.cueHitTrace,parameters,parameters.rhoThres);
+Waves.wavesHit = detectPlanarWaves(xf,xgp,wt,IntanBehaviour.cueHitTrace,parameters,0.5);
 if isfield(IntanBehaviour,'cueMissTrace')
     xf = arrayfun(@(s) s.xf, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
     xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
     wt = arrayfun(@(s) s.wt, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
     Waves.wavesMiss = detectWaves(xf,xgp,wt,IntanBehaviour.cueMissTrace,parameters,parameters.rhoThres);
+    Waves.wavesMiss = detectPlanarWaves(xf,xgp,wt,IntanBehaviour.cueMissTrace,parameters,0.5);
 end
 if isfield(IntanBehaviour,'missTrace')
     xf = arrayfun(@(s) s.xf, IntanBehaviour.missTrace, 'UniformOutput', false);
@@ -388,6 +390,7 @@ imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,peakSort2DArray(reshape(MIAmp,[]
 ylabel("Electrodes");xlabel("Time (s)"); 
 h = colorbar; h.Label.String = 'Information (bits)';
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
+
 
 %% Average PGD 
 avgPGDHit = mean(vertcat(Waves.wavesHit.PGD),1);
