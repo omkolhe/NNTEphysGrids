@@ -143,11 +143,11 @@ for i = 1:4
     st = (i-1)*500;
     sp = (i)*500;
     dirComb1 = horzcat(Waves.wavesHit(1:end).waveDuration);
-    evalPointsHit = vertcat(Waves.wavesHit(1:end).evaluationPoints)';
+    evalPointsHit = horzcat(Waves.wavesHit(1:end).evaluationPoints);
     WaveComb(i).Hit = dirComb1(evalPointsHit >=st & evalPointsHit <= sp);
 
     dirCombMiss1 = horzcat(Waves.wavesMiss(1:end).waveDuration);
-    evalPointsMiss = vertcat(Waves.wavesMiss(1:end).evaluationPoints)';
+    evalPointsMiss = horzcat(Waves.wavesMiss(1:end).evaluationPoints);
     WaveComb(i).Miss = dirCombMiss1(evalPointsMiss >=st & evalPointsMiss <= sp);
 end
 

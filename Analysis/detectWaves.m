@@ -91,8 +91,10 @@ for ii=1:size(behaviourTrace,2)
     kk = 1;
     while kk < Waves(ii).nWaves
         if(Waves(ii).waveTime(kk,2) > Waves(ii).waveTime(kk+1,1)) % check there is a overlap
-            Waves(ii).waveTime(kk,2) = Waves(ii).waveTime(kk+1,2); % Merge the two waves
-            Waves(ii).evaluationPoints(kk) = findArrayMidPoint([Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)]);
+            if (Waves(ii).waveTime(kk,2) < Waves(ii).waveTime(kk+1,2))
+                Waves(ii).waveTime(kk,2) = Waves(ii).waveTime(kk+1,2); % Merge the two waves
+            end
+            Waves(ii).evaluationPoints(kk) = Waves(ii).waveTime(kk,1);
             Waves(ii).waveTime(kk+1,:) = [];
             Waves(ii).evaluationPoints(kk+1) = [];
             Waves(ii).nWaves = Waves(ii).nWaves-1;
