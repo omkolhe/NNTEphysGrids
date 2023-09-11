@@ -14,7 +14,7 @@ for ii=1:size(behaviourTrace,2)
     Waves(ii).p = xgp{1,ii};
     Waves(ii).wt = wt{1,ii};
     %p = arrayfun(@(jj) inpaint_nans(p(:,:,jj)),1:size(p,3));
-    Waves(ii).evaluationPoints = find_evaluation_points(Waves(ii).p,pi,0.2);
+    Waves(ii).evaluationPoints = find_evaluation_points(Waves(ii).p,0,0.2);
 %     plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );
     [Waves(ii).pm,Waves(ii).pd,Waves(ii).dx,Waves(ii).dy] = phase_gradient_complex_multiplication( Waves(ii).p, spacing );
     % Phase gradient directionality 
@@ -29,7 +29,7 @@ for ii=1:size(behaviourTrace,2)
     [Waves(ii).vx, Waves(ii).vy] = wavefront_direction(Waves(ii).pd,Waves(ii).insts);
     Waves(ii).velDir = atan2(Waves(ii).vy,Waves(ii).vx);
     % divergence calculation
-    Waves(ii).source = find_source_points( Waves(ii).evaluationPoints, X, Y, Waves(ii).dx, Waves(ii).dy );
+%     Waves(ii).source = find_source_points( Waves(ii).evaluationPoints, X, Y, Waves(ii).dx, Waves(ii).dy );
     % phase correlation with distance (\rho_{\phi,d} measure)
     Waves(ii).rho = zeros( 1, length(Waves(ii).evaluationPoints) );
     for jj = 1:length(Waves(ii).evaluationPoints)
@@ -51,21 +51,6 @@ for ii=1:size(behaviourTrace,2)
         clusterSize = diff(waveClusters,1,2);
         rejectIndex = find(clusterSize<9);
         waveClusters(rejectIndex,:) = [];
-        % Getting segments with cummulative sum of first differences less
-        % than 15 degress
-%         for aa=1:size(waveClusters,1)
-%             dirSegments = segmentDirArray(dir(waveClusters(aa,1):waveClusters(aa,2)),15);
-%             dirSegSize = diff(dirSegments,1,2);
-%             [maxvalue, maxindex] = max(dirSegSize);
-%             %Rejecting segments that that less than 9 seconds long
-%             if maxvalue<=9
-%                 waveClusters(aa,:) = NaN;
-%                 continue  
-%             end
-%             %Updating the waveCluster start and stop points
-%             waveClusters(aa,1) = waveClusters(aa,1)+dirSegments(maxindex,1)-1;
-%             waveClusters(aa,2) = waveClusters(aa,1)+dirSegments(maxindex,2)-dirSegments(maxindex,1);
-%         end
         waveClusters = removeNaNRows(waveClusters);
         % Selecting the wavecluster with maximum duration 
         % This is done to have just one wave at each evaluation point
@@ -73,16 +58,20 @@ for ii=1:size(behaviourTrace,2)
             Waves(ii).evaluationPoints(jj) = NaN;
             Waves(ii).rho(jj) = NaN;
             Waves(ii).waveTime(jj,:) = [NaN,NaN];
+            Waves(ii).source(jj,:) = [NaN,NaN];
             continue
         end
         clusterSize = diff(waveClusters,1,2);
         [~, clusterMaxIndx] = max(clusterSize);
         Waves(ii).waveTime(jj,:) = [st-1+waveClusters(clusterMaxIndx,1),st-1+waveClusters(clusterMaxIndx,2)];
-        Waves(ii).evaluationPoints(jj) = findArrayMidPoint([Waves(ii).waveTime(jj,1):Waves(ii).waveTime(jj,2)]);
+        Waves(ii).evaluationPoints(jj) = Waves(ii).waveTime(jj,1);
+        Waves(ii).source(jj,1) = round(mode(sourcepoint(1,waveClusters(clusterMaxIndx,1):waveClusters(clusterMaxIndx,2))));
+        Waves(ii).source(jj,2) = round(mode(sourcepoint(1,waveClusters(clusterMaxIndx,1):waveClusters(clusterMaxIndx,2))));
     end
     % Removing evaluation points in which no wave was detected 
     Waves(ii).evaluationPoints = Waves(ii).evaluationPoints(~isnan(Waves(ii).evaluationPoints));
     Waves(ii).waveTime = removeNaNRows(Waves(ii).waveTime);
+    Waves(ii).source = removeNaNRows(Waves(ii).source);
     % Removing duplicate detected waves
 %     Waves(ii).evaluationPoints = unique((Waves(ii).evaluationPoints)','rows','stable');
 %     Waves(ii).waveTime = unique(Waves(ii).waveTime,'rows','stable');
@@ -95,7 +84,9 @@ for ii=1:size(behaviourTrace,2)
                 Waves(ii).waveTime(kk,2) = Waves(ii).waveTime(kk+1,2); % Merge the two waves
             end
             Waves(ii).evaluationPoints(kk) = Waves(ii).waveTime(kk,1);
+            Waves(ii).source(kk,:) = round(mean(Waves(ii).source(kk:kk+1,:),1));
             Waves(ii).waveTime(kk+1,:) = [];
+            Waves(ii).source(kk+1,:) = [];
             Waves(ii).evaluationPoints(kk+1) = [];
             Waves(ii).nWaves = Waves(ii).nWaves-1;
         else
@@ -122,3 +113,18 @@ end
   
 end
 
+% Getting segments with cummulative sum of first differences less
+% than 15 degress
+%         for aa=1:size(waveClusters,1)
+%             dirSegments = segmentDirArray(dir(waveClusters(aa,1):waveClusters(aa,2)),15);
+%             dirSegSize = diff(dirSegments,1,2);
+%             [maxvalue, maxindex] = max(dirSegSize);
+%             %Rejecting segments that that less than 9 seconds long
+%             if maxvalue<=9
+%                 waveClusters(aa,:) = NaN;
+%                 continue  
+%             end
+%             %Updating the waveCluster start and stop points
+%             waveClusters(aa,1) = waveClusters(aa,1)+dirSegments(maxindex,1)-1;
+%             waveClusters(aa,2) = waveClusters(aa,1)+dirSegments(maxindex,2)-dirSegments(maxindex,1);
+%         end

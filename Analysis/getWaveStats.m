@@ -157,11 +157,9 @@ avgDir = mean(dirComb);
 dirCombMiss = horzcat(Waves.wavesMiss(1:end).waveDir);
 avgDirMiss = mean(dirCombMiss);
 
-[p, t] = ranksum(mapAngle360(rad2deg(dirComb)), mapAngle360(rad2deg(dirCombMiss)));
+[p,~,~] = circ_kuipertest(dirComb, dirCombMiss,60,0);
 % Print the results.
 disp('Wave Direction')
-disp('h-statistic:');
-disp(t);
 disp('p-value:');
 disp(p);
 
@@ -191,9 +189,9 @@ title('Wave Direction :  Misses');box off;
 
 
 % Wave source points stats
-sourceComb = horzcat(Waves.wavesHit(1:end).source);
+sourceComb = vertcat(Waves.wavesHit(1:end).source);
 sourceDen = zeros(rows,cols);
-sourceCombMiss = horzcat(Waves.wavesMiss(1:end).source);
+sourceCombMiss = vertcat(Waves.wavesMiss(1:end).source);
 sourceDenMiss = zeros(rows,cols);
 
 for j=1:size(sourceComb,2)

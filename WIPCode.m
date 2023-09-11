@@ -41,7 +41,7 @@ ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Tra
 
 %% Plotting histogram of reaction time
 figure();
-histogram(IntanBehaviour.reactionTime);
+histogram(IntanBehaviour.reactionTime,40);
 
 %% Sorting PA 
 a = reshape(PAHit,[],size(PAHitz,3));
@@ -138,17 +138,22 @@ h = colorbar; h.Label.String = 'Information (bits)';
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
 
 %%
-
+figure();
 for i = 1:4
     st = (i-1)*500;
     sp = (i)*500;
-    dirComb1 = horzcat(Waves.wavesHit(1:end).wavelength);
-    evalPointsHit = horzcat(Waves.wavesHit(1:end).evaluationPoints);
+    dirComb1 = horzcat(gammaWaves.wavesHit(1:end).waveDir);
+    evalPointsHit = horzcat(gammaWaves.wavesHit(1:end).evaluationPoints);
     WaveComb(i).Hit = dirComb1(evalPointsHit >=st & evalPointsHit <= sp);
 
-    dirCombMiss1 = horzcat(Waves.wavesMiss(1:end).wavelength);
-    evalPointsMiss = horzcat(Waves.wavesMiss(1:end).evaluationPoints);
+    dirCombMiss1 = horzcat(gammaWaves.wavesMiss(1:end).waveDir);
+    evalPointsMiss = horzcat(gammaWaves.wavesMiss(1:end).evaluationPoints);
     WaveComb(i).Miss = dirCombMiss1(evalPointsMiss >=st & evalPointsMiss <= sp);
+
+    subplot(2,4,i)
+    polarhistogram(WaveComb(i).Hit,60);
+    subplot(2,4,4+i)
+    polarhistogram(WaveComb(i).Miss,60);
 end
 
 
@@ -157,7 +162,7 @@ figure(); hold on;
 plot(1:4,arrayfun(@(s) mean(s.Hit,'all'), WaveComb));
 plot(1:4,arrayfun(@(s) mean(s.Miss,'all'), WaveComb));
 
-a = arrayfun(@(s) ranksum(s.Hit,s.Miss) , WaveComb);
+a = arrayfun(@(s) circ_kuipertest(s.Hit,s.Miss,60,0) , WaveComb);
 
 %% 
 for z = 1:10
@@ -166,3 +171,38 @@ for z = 1:10
         z = 2;
     end
 end
+
+%% Plot wave video 
+trial = 5;
+animateWaves(trial, Waves.wavesHit,0,2);
+
+%%
+IntanBehaviour.cueHitTrace(70:end) = [];
+
+figure('Name','Trial Averaged Wavelet Spectrogram for Hits & Misses');
+subplot(1,2,1);
+plotSpectrogram(10*log10((squeeze(hitAvgSpectrogram))),IntanBehaviour.cueHitTrace(1).time,fwt,'surf','Wavelet Based Spectrogram for Hits','Time (s)','Frequency (Hz)')
+caxis([-5 12]);
+hold on; yyaxis right; box off;
+plot(IntanBehaviour.cueHitTrace(1).time,AvgHitTrace,'-w','LineWidth',2.5);
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+ylabel('Lever deflection (mV)'); ylim([0 0.1]);
+
+%% test for direction
+dirComb = horzcat(Waves.wavesHit(1:end).waveDir);
+dirCombMiss = horzcat(Waves.wavesMiss(1:end).waveDir);
+
+[pval, ~, ~] = circ_kuipertest(dirComb, dirCombMiss, 100, 0)
+
+%%
+a = horzcat(Waves.wavesHit(:).nWaves);
+b = horzcat(Waves.wavesMiss(:).nWaves);
+
+p = ranksum(a,b)
+
+figure('Name','Number of detected waves   Hits and Misses');
+group = [ones(size(a')); 2.*ones(size(b'))];
+boxplot([a';b'],group,'BoxStyle','filled','PlotStyle','compact');box off;
+set(gca,'XTickLabel',{'Hits','Misses'});
+xlabel('Number of waves');
