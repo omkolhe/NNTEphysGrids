@@ -50,3 +50,21 @@ for i=1:size(IntanBehaviour.missTrace,2)
     IntanBehaviour.missTrace(i).xgpgamma = LFP.xgpgamma(:,:,IntanBehaviour.missTrace(i).LFPIndex(1):IntanBehaviour.missTrace(i).LFPIndex(end));
     IntanBehaviour.missTrace(i).wtgamma = LFP.wtgamma(:,:,IntanBehaviour.missTrace(i).LFPIndex(1):IntanBehaviour.missTrace(i).LFPIndex(end));
 end
+
+
+% Adding LFP an GP traces to hitTrace variable 
+for i=1:size(IntanBehaviour. hitTrace,2)
+    IntanBehaviour. hitTrace(i).rawLFP = LFP.LFPdatacube(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+    IntanBehaviour. hitTrace(i).xf = LFP.xf(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+    IntanBehaviour. hitTrace(i).xgp = LFP.xgp(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+    IntanBehaviour. hitTrace(i).wt = LFP.wt(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+    IntanBehaviour. hitTrace(i).xfbeta = LFP.xfbeta(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+    IntanBehaviour. hitTrace(i).xgpbeta = LFP.xgpbeta(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+    IntanBehaviour. hitTrace(i).wtbeta = LFP.wtbeta(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+    IntanBehaviour. hitTrace(i).xftheta = LFP.xftheta(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+    IntanBehaviour. hitTrace(i).xgptheta = LFP.xgptheta(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+    IntanBehaviour. hitTrace(i).wttheta = LFP.wttheta(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+    IntanBehaviour. hitTrace(i).xfgamma = LFP.xfgamma(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+    IntanBehaviour. hitTrace(i).xgpgamma = LFP.xgpgamma(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+    IntanBehaviour. hitTrace(i).wtgamma = LFP.wtgamma(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+end

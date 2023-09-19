@@ -31,7 +31,8 @@ for ii=1:size(behaviourTrace,2)
     % divergence calculation
 %     Waves(ii).source = find_source_points( Waves(ii).evaluationPoints, X, Y, Waves(ii).dx, Waves(ii).dy );
     % phase correlation with distance (\rho_{\phi,d} measure)
-    Waves(ii).rho = zeros( 1, length(Waves(ii).evaluationPoints) );
+%     Waves(ii).rho = zeros( 1, length(Waves(ii).evaluationPoints) );
+    Waves(ii).rho = {};
     for jj = 1:length(Waves(ii).evaluationPoints)
         st = Waves(ii).evaluationPoints(jj)-waveTimeWindow;
         if st<=0, st = 1; end  % adjusting is waves is detected at the start of window
@@ -49,14 +50,14 @@ for ii=1:size(behaviourTrace,2)
         waveClusters = findThresSeg(rho,rhoThres);
         % Rejecting segements less than 9ms
         clusterSize = diff(waveClusters,1,2);
-        rejectIndex = find(clusterSize<9);
+        rejectIndex = find(clusterSize<20);
         waveClusters(rejectIndex,:) = [];
         waveClusters = removeNaNRows(waveClusters);
         % Selecting the wavecluster with maximum duration 
         % This is done to have just one wave at each evaluation point
         if isempty(waveClusters)
             Waves(ii).evaluationPoints(jj) = NaN;
-            Waves(ii).rho(jj) = NaN;
+%             Waves(ii).rho(jj) = NaN;
             Waves(ii).waveTime(jj,:) = [NaN,NaN];
             Waves(ii).source(jj,:) = [NaN,NaN];
             continue
@@ -67,11 +68,13 @@ for ii=1:size(behaviourTrace,2)
         Waves(ii).evaluationPoints(jj) = Waves(ii).waveTime(jj,1);
         Waves(ii).source(jj,1) = round(mode(sourcepoint(1,waveClusters(clusterMaxIndx,1):waveClusters(clusterMaxIndx,2))));
         Waves(ii).source(jj,2) = round(mode(sourcepoint(1,waveClusters(clusterMaxIndx,1):waveClusters(clusterMaxIndx,2))));
+        Waves(ii).rho{jj} = rho(waveClusters(clusterMaxIndx,1):waveClusters(clusterMaxIndx,2));
     end
     % Removing evaluation points in which no wave was detected 
     Waves(ii).evaluationPoints = Waves(ii).evaluationPoints(~isnan(Waves(ii).evaluationPoints));
     Waves(ii).waveTime = removeNaNRows(Waves(ii).waveTime);
     Waves(ii).source = removeNaNRows(Waves(ii).source);
+    Waves(ii).rho = Waves(ii).rho(~cellfun(@isempty,Waves(ii).rho));
     % Removing duplicate detected waves
 %     Waves(ii).evaluationPoints = unique((Waves(ii).evaluationPoints)','rows','stable');
 %     Waves(ii).waveTime = unique(Waves(ii).waveTime,'rows','stable');
@@ -81,6 +84,7 @@ for ii=1:size(behaviourTrace,2)
     while kk < Waves(ii).nWaves
         if(Waves(ii).waveTime(kk,2) > Waves(ii).waveTime(kk+1,1)) % check there is a overlap
             if (Waves(ii).waveTime(kk,2) < Waves(ii).waveTime(kk+1,2))
+                Waves(ii).rho{kk} = [Waves(ii).rho{kk};Waves(ii).rho{kk+1}(Waves(ii).waveTime(kk,2)-Waves(ii).waveTime(kk+1,1)+1:end)];
                 Waves(ii).waveTime(kk,2) = Waves(ii).waveTime(kk+1,2); % Merge the two waves
             end
             Waves(ii).evaluationPoints(kk) = Waves(ii).waveTime(kk,1);
@@ -89,12 +93,13 @@ for ii=1:size(behaviourTrace,2)
             Waves(ii).source(kk+1,:) = [];
             Waves(ii).evaluationPoints(kk+1) = [];
             Waves(ii).nWaves = Waves(ii).nWaves-1;
+            Waves(ii).rho(kk+1) = [];
         else
             kk = kk+1;
         end
     end
     
-%     plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );
+    %plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );
     % Calculating the speed, amplitude and wave direction of the detected waves in
     % that trial window
     for kk = 1:Waves(ii).nWaves

@@ -13,9 +13,6 @@ addpath(genpath('Plotting'));
 addpath(genpath('Analysis'));
 addpath(genpath('Dependancies'));
 
-%% Loading previous workspace
-% loadPreviousWS
-
 %%  PreProcessing
 load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
 parameters.rows = 8;  % Number of rows of electrodes on the Grid
@@ -28,6 +25,7 @@ parameters.windowBeforeCue = 0.5; % in seconds
 parameters.windowAfterCue = 1.5; % in seconds 
 parameters.experiment = 'cue'; % self - internally generated, cue - cue initiated 
 parameters.opto = 0; % 1 - opto ON , 0 - opto OFF
+parameters.spacing = 0.1; % Grid spacing in mm
 
 IntanConcatenate
 fpath = Intan.path; % where on disk do you want the analysis? ideally and SSD...
@@ -56,28 +54,9 @@ figure('Name','Lever Trace');plot(Behaviour.time,Behaviour.leverTrace,'LineWidth
 xline(squeeze(Behaviour.hit(:,2)),'-.b',cellstr(num2str((1:1:Behaviour.nHit)')),'LabelVerticalAlignment','top');
 xline(squeeze(Behaviour.miss(:,2)),'-.r',cellstr(num2str((1:1:Behaviour.nMiss)')),'LabelVerticalAlignment','bottom'); xlim([410 470]); box off;
 
-% Plotting Lever traces for Hits and Misses
-figure('Name','Average Lever Traces for Hits & Misses');
-subplot(1,2,1);
-for i=1:Behaviour.nHit
-    plot(Behaviour.hitTrace(i).time-1,Behaviour.hitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
-    hold on;
-end
-plot(Behaviour.hitTrace(1).time-parameters.windowBeforePull,mean(horzcat(Behaviour.hitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
-yline(10,'--.b','Threshold','LabelHorizontalAlignment','left'); 
-ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Hits');box off;
-
-subplot(1,2,2);
-for i=1:Behaviour.nMiss
-    plot(Behaviour.missTrace(i).time-1,Behaviour.missTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
-    hold on;
-end
-plot(Behaviour.missTrace(1).time-parameters.windowBeforePull,mean(horzcat(Behaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
-yline(10,'--.b','Threshold','LabelHorizontalAlignment','left'); 
-ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Misses');box off;
-
 % Plotting Lever traces for Cue Hits and Cue miss 
-figure('Name','Average Lever Traces for Cue Hits');
+figure('Name','Average Lever Traces for Cue Hits and Cue Misses');
+subplot(2,1,1)
 for i=1:Behaviour.nCueHit
     plot(Behaviour.cueHitTrace(i).time-parameters.windowBeforeCue,Behaviour.cueHitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
     hold on;
@@ -88,27 +67,43 @@ xline(0,'--r','Cue','LabelVerticalAlignment','top');
 xline(mean(Behaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
 ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
 
+subplot(2,1,2)
+for i=1:Behaviour.nCueMiss
+    plot(Behaviour.cueMissTrace(i).time-parameters.windowBeforeCue,Behaviour.cueMissTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    hold on;
+end
+plot(Behaviour.cueMissTrace(1).time-parameters.windowBeforeCue,mean(horzcat(Behaviour.cueMissTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+yline(10,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Cue Misses');box off;
+
+
+% Plotting Lever traces for Hits (alligned with reward)
+figure('Name','Average Lever Traces for Hits and False Alarms');
+subplot(2,1,1);
+for i=1:Behaviour.nHit
+    plot(Behaviour.hitTrace(i).time-parameters.windowBeforePull,Behaviour.hitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    hold on;
+end
+plot(Behaviour.hitTrace(1).time-parameters.windowBeforePull,mean(horzcat(Behaviour.hitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+yline(10,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+xline(0,'--r','Reward','LabelVerticalAlignment','top');
+% xline(mean(Behaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Hits');box off;
+subplot(2,1,2);
+for i=1:Behaviour.nMiss
+    plot(Behaviour.missTrace(i).time-parameters.windowBeforePull,Behaviour.missTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+    hold on;
+end
+plot(Behaviour.missTrace(1).time-parameters.windowBeforePull,mean(horzcat(Behaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+yline(10,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+xline(0,'--r','Reward','LabelVerticalAlignment','top');
+% xline(mean(Behaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for False Alarms');box off;
+
+
 %% Reading behaviour data from Intan traces 
 IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan.dig_in_data,Behaviour);
-
-% Plotting Lever traces for Hits and Misses
-figure('Name','Average Lever Traces for Hits & Misses');
-subplot(1,2,1);
-for i=1:size(IntanBehaviour.cueHitTrace,2)
-    plot(IntanBehaviour.hitTrace(i).time,IntanBehaviour.hitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
-    hold on;
-end
-plot(IntanBehaviour.hitTrace(1).time,mean(horzcat(IntanBehaviour.hitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
-yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
-ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Hits');box off;
-subplot(1,2,2);
-for i=1:IntanBehaviour.nCueMiss
-    plot(IntanBehaviour.missTrace(i).time,IntanBehaviour.missTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
-    hold on;
-end
-plot(IntanBehaviour.missTrace(1).time,mean(horzcat(IntanBehaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
-yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
-ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Misses');box off;
 
 % Plotting Lever traces for Cue Hit 
 figure('Name','Average Lever Traces for Cue Hits');
@@ -133,6 +128,28 @@ yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','le
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
 ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Cue Misses');box off;
 
+% Plotting Lever traces for Hits and False Alarms
+figure('Name','Average Lever Traces for Hits and False Alarms');
+subplot(2,1,1);
+for i=1:size(IntanBehaviour.hitTrace,2)
+    plot(IntanBehaviour.hitTrace(i).time,IntanBehaviour.hitTrace(i).trace,'Color',[0 0 0 0.1],'LineWidth',1.5);
+    hold on;
+end
+plot(IntanBehaviour.hitTrace(1).time,mean(horzcat(IntanBehaviour.hitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+xline(0,'--r','Reward','LabelVerticalAlignment','top');ylim([0 0.1]);
+ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Hits');box off;
+
+subplot(2,1,2);
+for i=1:size(IntanBehaviour.missTrace,2)
+    plot(IntanBehaviour.missTrace(i).time,IntanBehaviour.missTrace(i).trace,'Color',[0 0 0 0.1],'LineWidth',1.5);
+    hold on;
+end
+plot(IntanBehaviour.missTrace(1).time,mean(horzcat(IntanBehaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+xline(0,'--r','False Alarm','LabelVerticalAlignment','top');ylim([0 0.1]);
+ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Hits');box off;
+
 %% Generalized Phase 
 LFP.xf = bandpass_filter(LFP.LFPdatacube,5,40,4,1000);
 [LFP.xgp, LFP.wt] = generalized_phase(LFP.xf,1000,0);
@@ -153,31 +170,46 @@ LFP.xfbetanarrow = bandpass_filter(LFP.LFPdatacube,6,9,4,1000);
 IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP);
 % Saving paramters, path, IntanBehaviour to bin file 
 savepath = uigetdir(path);
-sessionName = [savepath,'/','Day2ZipPowerThresAll.mat'];
+sessionName = [savepath,'/','Day2new1.mat'];
 % save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
-save(sessionName,"IntanBehaviour","fpath","parameters","Waves","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
+save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
 
 %% Combining  multiple Intanbehaviour structs from multiple sessions
 combIntanBehaviour = horzcat(IntanBehaviour1, IntanBehaviour2);
 IntanBehaviour.cueHitTrace = horzcat(combIntanBehaviour(1:end).cueHitTrace);
 IntanBehaviour.cueMissTrace = horzcat(combIntanBehaviour(1:end).cueMissTrace);
+IntanBehaviour.hitTrace = horzcat(combIntanBehaviour(1:end).hitTrace);
 IntanBehaviour.missTrace = horzcat(combIntanBehaviour(1:end).missTrace);
-IntanBehaviour.reactionTime = vertcat(combIntanBehaviour(1:end).reactionTime);
+IntanBehaviour.reactionTime = horzcat(combIntanBehaviour(1:end).reactionTime);
+
 clear combIntanBehaviour IntanBehaviour1 IntanBehaviour2;
 %% Power Spectrum during task across channels 
-[PSDChHit , f] = getAvgPSD(IntanBehaviour.cueHitTrace,parameters);
-[PSDChMiss , f] = getAvgPSD(IntanBehaviour.cueMissTrace,parameters);
+[PSD.ChHit , PSD.f] = getAvgPSD(IntanBehaviour.cueHitTrace,parameters);
+[PSD.ChMiss , PSD.f] = getAvgPSD(IntanBehaviour.cueMissTrace,parameters);
 
-avgPSDHit = squeeze(10*log10(mean(PSDChHit,[1 2])));
-trialPSDHit = squeeze(10*log10(mean(PSDChHit,2)));
-avgPSDMiss = squeeze(10*log10(mean(PSDChMiss,[1 2])));
-trialPSDMiss = squeeze(10*log10(mean(PSDChMiss,2)));
+PSD.trialPSDHit = squeeze(10*log10(mean(PSD.ChHit,2)));
+PSD.trialPSDMiss = squeeze(10*log10(mean(PSD.ChMiss,2)));
+
+% Removing trials with artifacts
+PSD.rejectThres = 39; % in db
+PSD.rejectFreq = 2; %  not Hz but index in PSD.f
+PSD.artifactTrialIndex = find(PSD.trialPSDHit(:,PSD.rejectFreq)>PSD.rejectThres);
+disp(['Number of Hit trials rejected ', num2str(size(PSD.artifactTrialIndex,1))]);
+PSD.trialPSDHit(PSD.artifactTrialIndex,:) = [];
+IntanBehaviour.cueHitTrace(PSD.artifactTrialIndex)=[];
+PSD.artifactTrialIndex = find(PSD.trialPSDMiss(:,PSD.rejectFreq)>PSD.rejectThres);
+disp(['Number of Miss trials rejected ', num2str(size(PSD.artifactTrialIndex,1))]);
+PSD.trialPSDMiss(PSD.artifactTrialIndex,:) = [];
+IntanBehaviour.cueMissTrace(PSD.artifactTrialIndex)=[];
+
+PSD.avgPSDHit = squeeze(10*log10(mean(PSD.ChHit,[1 2])));
+PSD.avgPSDMiss = squeeze(10*log10(mean(PSD.ChMiss,[1 2])));
 
 figure();
 subplot(1,2,1);
-plot(f(1:81),trialPSDHit(:,1:81),'Color', [0 0 1 0.1]);
+plot(PSD.f(1:81),PSD.trialPSDHit(:,1:81),'Color', [0 0 1 0.1]);
 hold on;
-plot(f(1:81),avgPSDHit(1:81),'Color', [0 0 1 1],'LineWidth',1.5);
+plot(PSD.f(1:81),PSD.avgPSDHit(1:81),'Color', [0 0 1 1],'LineWidth',1.5);
 ylim([0 50]);
 xlabel('Frequency (Hz)');
 ylabel('Power Spectral Density (dB/Hz)');
@@ -185,93 +217,38 @@ title('Average Power Spectral Density for HitTrials');
 box off;
 
 subplot(1,2,2);
-plot(f(1:81),trialPSDMiss(:,1:81),'Color', [1 0 0 0.1]);
+plot(PSD.f(1:81),PSD.trialPSDMiss(:,1:81),'Color', [1 0 0 0.1]);
 hold on;
-plot(f(1:81),avgPSDMiss(1:81),'Color', [1 0 0 1],'LineWidth',1.5);
+plot(PSD.f(1:81),PSD.avgPSDMiss(1:81),'Color', [1 0 0 1],'LineWidth',1.5);
 ylim([0 50]);
 xlabel('Frequency (Hz)');
 ylabel('Power Spectral Density (dB/Hz)');
 title('Average Power Spectral Density for MissTrials');
 box off;
 
-trialAvgPSD = 10*log10(squeeze(mean(PSDChHit,1)));
-figure();
-imagesc(trialAvgPSD(:,1:51)');
-colormap("jet");set(gca,'YDir','normal');
-
 %% Wavelet spectrogram
-[hitAvgSpectrogram, hitSpectrogramCWT,AvgHitTrace ,fwt] = getAvgSpectogram(IntanBehaviour.cueHitTrace,parameters,[5 50]);
-[missAvgSpectrogram, missSpectrogramCWT,AvgMissTrace,fwt] = getAvgSpectogram(IntanBehaviour.cueMissTrace,parameters,[5 50]);
-[FAAvgSpectrogram, FASpectrogramCWT,AvgFATrace,fwt] = getAvgSpectogram(IntanBehaviour.missTrace,parameters,[5 80]);
+[Spectrogram.hitAvgSpectrogram, Spectrogram.hitSpectrogramCWT,Spectrogram.AvgHitTrace ,Spectrogram.fwt] = getAvgSpectogram(IntanBehaviour.cueHitTrace,parameters,[5 50]);
+[Spectrogram.missAvgSpectrogram, Spectrogram.missSpectrogramCWT,Spectrogram.AvgMissTrace,Spectrogram.fwt] = getAvgSpectogram(IntanBehaviour.cueMissTrace,parameters,[5 50]);
+% [Spectrogram.FAAvgSpectrogram, Spectrogram.FASpectrogramCWT,Spectrogram.AvgFATrace,Spectrogram.fwt] = getAvgSpectogram(IntanBehaviour.missTrace,parameters,[5 80]);
 % Global average spectogram
 figure('Name','Trial Averaged Wavelet Spectrogram for Hits & Misses');
 subplot(1,2,1);
-plotSpectrogram(10*log10((squeeze(hitAvgSpectrogram))),IntanBehaviour.cueHitTrace(1).time,fwt,'surf','Wavelet Based Spectrogram for Hits','Time (s)','Frequency (Hz)')
+plotSpectrogram(10*log10((squeeze(Spectrogram.hitAvgSpectrogram))),IntanBehaviour.cueHitTrace(1).time,Spectrogram.fwt,'surf','Wavelet Based Spectrogram for Hits','Time (s)','Frequency (Hz)')
 caxis([-5 12]);
 hold on; yyaxis right; box off;
-plot(IntanBehaviour.cueHitTrace(1).time,AvgHitTrace,'-w','LineWidth',2.5);
+plot(IntanBehaviour.cueHitTrace(1).time,Spectrogram.AvgHitTrace,'-w','LineWidth',2.5);
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
 xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
 ylabel('Lever deflection (mV)'); ylim([0 0.1]);
 subplot(1,2,2);
-plotSpectrogram(10*log10((squeeze(missAvgSpectrogram))),IntanBehaviour.cueMissTrace(1).time,fwt,'surf','Wavelet Based Spectrogram for Misses','Time (s)','Frequency (Hz)')
+plotSpectrogram(10*log10((squeeze(Spectrogram.missAvgSpectrogram))),IntanBehaviour.cueMissTrace(1).time,Spectrogram.fwt,'surf','Wavelet Based Spectrogram for Misses','Time (s)','Frequency (Hz)')
 caxis([-5 12]);
 hold on; yyaxis right; box off;
-plot(IntanBehaviour.cueMissTrace(1).time,AvgMissTrace,'-w','LineWidth',2.5);
+plot(IntanBehaviour.cueMissTrace(1).time,Spectrogram.AvgMissTrace,'-w','LineWidth',2.5);
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
 ylabel('Lever deflection (mV)'); ylim([0 0.1]); box off;
 
-% Movement average spectogram 
-allAvgSpectogram = mean(cat(1,hitSpectrogramCWT,missSpectrogramCWT));
-allAvgLeverTrace = mean(cat(2,horzcat(IntanBehaviour.hitTrace(1:end).trace),horzcat(IntanBehaviour.missTrace(1:end).trace)),2);
-figure('Name','Trial Averaged Wavelet Spectrogram for Lever Pull');
-plotSpectrogram(squeeze(allAvgSpectogram),IntanBehaviour.hitTrace(1).time-parameters.windowBeforePull,fwt,'Wavelet Based Spectrogram for Lever Pull','Time (s)','Frequency (Hz)');
-hold on; yyaxis right; box off;
-plot(IntanBehaviour.hitTrace(1).time-parameters.windowBeforePull,allAvgLeverTrace,'-w','LineWidth',2.5);
-ylabel('Lever deflection (mV)'); box off;
-
-% Plotting for specific trial
-trialno = 48;
-figure('Name','Spatial Averaged Wavelet Spectrogram for Hits & Misses');
-subplot(2,1,1);
-plotSpectrogram(squeeze(hitSpectrogramCWT(trialno,:,:)),IntanBehaviour.hitTrace(trialno).time-parameters.windowBeforePull,fwt,'Wavelet based Average Spectogram for Hits','Time (s)','Frequency (Hz)');
-hold on; yyaxis right; box off;
-plot(IntanBehaviour.hitTrace(trialno).time-parameters.windowBeforePull,IntanBehaviour.hitTrace(trialno).trace,'-w','LineWidth',2.5);
-ylabel('Lever deflection (mV)'); 
-subplot(2,1,2);
-trialno = 11;
-plotSpectrogram(squeeze(missSpectrogramCWT(trialno,:,:)),IntanBehaviour.missTrace(trialno).time-parameters.windowBeforePull,fwt,'Wavelet based Average Spectogram for Misses','Time (s)','Frequency (Hz)');
-hold on; yyaxis right; box off;
-plot(IntanBehaviour.missTrace(trialno).time-parameters.windowBeforePull,IntanBehaviour.missTrace(trialno).trace,'-w','LineWidth',2.5);
-ylabel('Lever deflection (mV)'); box off;
-
-trialno = 1;
-figure('Name','Spatial Averaged Wavelet Spectrogram for Hits & Misses');
-subplot(2,1,1);
-plotSpectrogram((squeeze(hitSpectrogramCWT(trialno,:,:))),IntanBehaviour.cueHitTrace(trialno).time,fwt,'Wavelet based Average Spectogram for Hits','Time (s)','Frequency (Hz)');
-hold on; yyaxis right; box off;
-plot(IntanBehaviour.cueHitTrace(trialno).time,squeeze(mean(LFP.xf(:,:,IntanBehaviour.cueHitTrace(trialno).LFPIndex),[1 2])),'-w','LineWidth',1.5);
-plot(IntanBehaviour.cueHitTrace(trialno).time,squeeze(abs(mean(LFP.xgp(:,:,IntanBehaviour.cueHitTrace(trialno).LFPIndex),[1 2]))),'--w','LineWidth',1);
-ylabel('Amplitude (\mu V)'); 
-xline(0,'--r','Cue','LabelVerticalAlignment','top');
-xline(IntanBehaviour.reactionTime(trialno),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
-subplot(2,1,2);
-trialno = 11;
-plotSpectrogram(squeeze(missSpectrogramCWT(trialno,:,:)),IntanBehaviour.cueMissTrace(trialno).time,fwt,'Wavelet based Average Spectogram for Misses','Time (s)','Frequency (Hz)');
-hold on; yyaxis right; box off;
-plot(IntanBehaviour.cueMissTrace(trialno).time,squeeze(mean(LFP.xf(:,:,IntanBehaviour.cueMissTrace(trialno).LFPIndex),[1 2])),'-w','LineWidth',1.5);
-plot(IntanBehaviour.cueMissTrace(trialno).time,squeeze(abs(mean(LFP.xgp(:,:,IntanBehaviour.cueMissTrace(trialno).LFPIndex),[1 2]))),'--w','LineWidth',1);
-xline(0,'--r','Cue','LabelVerticalAlignment','top');
-ylabel('Amplitude (\mu V)');  box off;
-
-
-%% Initializing plotting options
-options.subject = 'W'; % this can be 'W' or 'T' (two marmoset subjects)
-options.plot = true; % this option turns plots ON or OFF
-options.plot_shuffled_examples = false; % example plots w/channels shuffled in space
-
 %% Wave detection in velocity triggered windows
-parameters.spacing = 0.1; % Grid spacing in mm
 nShuffle = 1000;
 threshold = 99;
 trialno = 30;
@@ -374,140 +351,58 @@ plotOption = 1;
 % For phase
 xgpHit = arrayfun(@(s) angle(s.xgp), IntanBehaviour.cueHitTrace, 'UniformOutput', false);
 xgpMiss = arrayfun(@(s) angle(s.xgp), IntanBehaviour.cueMissTrace, 'UniformOutput', false);
-[MIPhase] = getMutualInformation(xgpHit,xgpMiss,parameters);
+[MI.Phase] = getMutualInformation(xgpHit,xgpMiss,parameters);
 
 figure();
 title("Mututal Information across all electrodes - Phase")
-imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,peakSort2DArray(reshape(MIPhase,[],size(MIPhase,3)),'descend',2)); colormap(hot);
+imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,peakSort2DArray(reshape(MI.Phase,[],size(MI.Phase,3)),'descend',2)); colormap(hot);
 ylabel("Electrodes");xlabel("Time (s)"); 
 h = colorbar; h.Label.String = 'Information (bits)';
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
-xline(IntanBehaviour.reactionTime(trialno),'-w','Avg. Reaction Time','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.reactionTime,'all'),'-w','Avg. Reaction Time','LabelVerticalAlignment','top');
 
 % For amplitude
 xgpHit = arrayfun(@(s) abs(s.xgp), IntanBehaviour.cueHitTrace, 'UniformOutput', false);
 xgpMiss = arrayfun(@(s) abs(s.xgp), IntanBehaviour.cueMissTrace, 'UniformOutput', false);
-
-[MIAmp] = getMutualInformation(xgpHit,xgpMiss,parameters);
+[MI.Amp] = getMutualInformation(xgpHit,xgpMiss,parameters);
 
 figure();
 title("Mututal Information across all electrodes - Amplitude")
-imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,peakSort2DArray(reshape(MIAmp,[],size(MIAmp,3)),'descend',2)); colormap(hot);
+imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,peakSort2DArray(reshape(MI.Amp,[],size(MI.Amp,3)),'descend',2)); colormap(hot);
 ylabel("Electrodes");xlabel("Time (s)"); 
 h = colorbar; h.Label.String = 'Information (bits)';
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
 
 
 %% Average PGD 
-avgPGDHit = mean(vertcat(Waves.wavesHit.PGD),1);
-avgPGDMiss = mean(vertcat(Waves.wavesMiss.PGD),1);
-% avgPGDFA = mean(vertcat(Waves.wavesFA.PGD),1);
+PGD.avgPGDHit = mean(vertcat(Waves.wavesHit.PGD),1);
+PGD.avgPGDMiss = mean(vertcat(Waves.wavesMiss.PGD),1);
+% PGD.avgPGDFA = mean(vertcat(Waves.wavesFA.PGD),1);
 
 figure(); hold on;
-plot(IntanBehaviour.cueHitTrace(1).time,avgPGDHit,'-r','LineWidth',1.2); hold on;
-plot(IntanBehaviour.cueHitTrace(1).time,avgPGDMiss,'-k','LineWidth',1);
-% plot(IntanBehaviour.cueHitTrace(1).time,avgPGDFA,'-b','LineWidth',1);
+plot(IntanBehaviour.cueHitTrace(1).time,PGD.avgPGDHit,'-r','LineWidth',1.2); hold on;
+plot(IntanBehaviour.cueHitTrace(1).time,PGD.avgPGDMiss,'-k','LineWidth',1);
+% plot(IntanBehaviour.cueHitTrace(1).time,PGD.avgPGDFA,'-b','LineWidth',1);
 ylabel("PGD"); xlabel("Time (s)");
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
 xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
 title('Trial Averaged Phase Gradient  Directionality (PGD)');box off;  legend('Hits','Misses');%,'False Alarms');
 
 xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
-[avgPGDHit,avgPGDHitNull] = getAvgPGD(xgp,Waves.wavesHit,IntanBehaviour.cueHitTrace,1,parameters);
+[PGD.avgPGDHit,PGD.avgPGDHitNull] = getAvgPGD(xgp,Waves.wavesHit,IntanBehaviour.cueHitTrace,1,parameters);
 
 figure(); hold on;
-plot(IntanBehaviour.cueHitTrace(1).time,avgPGDHit,'-k','LineWidth',1.2); hold on;
-plot(IntanBehaviour.cueHitTrace(1).time,squeeze(avgPGDHitNull),'-r','LineWidth',1.2);
+plot(IntanBehaviour.cueHitTrace(1).time,PGD.avgPGDHit,'-k','LineWidth',1.2); hold on;
+plot(IntanBehaviour.cueHitTrace(1).time,squeeze(PGD.avgPGDHitNull),'-r','LineWidth',1.2);
 ylabel("PGD"); xlabel("Time (s)");
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
 xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
 title('Trial Averaged Phase Gradient  Directionality (PGD)');box off;  legend('Hits','Shuffled');
 
 %% Cross-Trial Phase Alignment
-xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
-PAHit = getPhaseAlignment(xgp,parameters);
-xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
-PAMiss = getPhaseAlignment(xgp,parameters);
-% xgp = arrayfun(@(s) s.xgp, IntanBehaviour.missTrace, 'UniformOutput', false);
-% PAFA = getPhaseAlignment(xgp,parameters);
-
-
-figure();
-subplot(2,1,1);
-title("Phase Alignment across all electrodes - Hits")
-imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PAHit,[],size(PAHit,3))); colormap(hot);
-ylabel("Electrodes");xlabel("Time (s)");
-xline(0,'-w','Cue','LabelVerticalAlignment','top');
-subplot(2,1,2);
-title("Phase Alignment across all electrodes - Misses")
-imagesc(IntanBehaviour.cueMissTrace(1).time,1:32,reshape(PAMiss,[],size(PAMiss,3))); colormap(hot);
-ylabel("Electrodes");xlabel("Time (s)");
-xline(0,'-w','Cue','LabelVerticalAlignment','top');
-% subplot(3,1,3);
-% title("Phase Alignment across all electrodes - False Alarms")
-% imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PAFA,[],size(PAFA,3))); colormap(hot);
-% ylabel("Electrodes");xlabel("Time (s)");
-% xline(0,'-w','Cue','LabelVerticalAlignment','top');
-
-figure();
-plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAHit,[1 2])),'-r','LineWidth',1.2); hold on;
-plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMiss,[1 2])),'-k','LineWidth',1);
-% plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAFA,[1 2])),'-k','LineWidth',1);
-ylabel("Phase Alignment"); xlabel("Time (s)");
-xline(0,'--r','Cue','LabelVerticalAlignment','top');
-xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
-title('Phase Alignment for Hits');box off;% legend('Hits','Miss');
-% z-scoring 
-PAHit1 = reshape(PAHit,[],size(PAHit,3));
-PAMiss1 = reshape(PAMiss,[],size(PAMiss,3));
+z_score = 0;
 nIterrate = 2000;
-xgpHit = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
-xgpMiss = arrayfun(@(s) s.xgp, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
-xgpComb = [xgpHit xgpMiss];
-nHit = size(xgpHit,2);
-nMiss = size(xgpMiss,2);
-nTot = nHit + nMiss;
-
-nullDistHit = zeros(parameters.rows,parameters.cols,size(PAHit,3),nIterrate);
-nullDistMiss = zeros(parameters.rows,parameters.cols,size(PAMiss,3),nIterrate);
-for j=1:nIterrate
-    randIndex = randperm(nTot);
-    xgpHitRand = xgpComb(randIndex(1:nHit));
-    xgpMissRand = xgpComb(randIndex(nHit+1:end));
-    nullDistHit(:,:,:,j) = getPhaseAlignment(xgpHitRand,parameters);
-    nullDistMiss(:,:,:,j) = getPhaseAlignment(xgpMissRand,parameters);
-    j
-end
-muHit = mean(nullDistHit,4); % Mean of the null distribution
-sigmaHit = std(nullDistHit,0,4); % Standard deviation of null distribution
-muMiss = mean(nullDistMiss,4); % Mean of the null distribution
-sigmaMiss = std(nullDistMiss,0,4); % Standard deviation of null distribution
-
-PAHitz = (PAHit-muHit)./sigmaHit;
-PAMissz = (PAMiss-muMiss)./sigmaMiss;
-
-figure();
-plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAHitz,[1 2])),'-r','LineWidth',1.2); hold on;
-% plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMiss,[1 2])),'-k','LineWidth',1);
-plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMissz,[1 2])),'-k','LineWidth',1);
-ylabel("z-score"); xlabel("Time (s)");
-xline(0,'--r','Cue','LabelVerticalAlignment','top');
-xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
-title('z-scored Phase Alignment for Hits');box off; legend('Hits','Miss');
-
-
-figure();
-subplot(2,1,1);
-title("Phase Alignment across all electrodes - Hits")
-imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PAHitz,[],size(PAHitz,3))); colormap(hot);
-ylabel("Electrodes");xlabel("Time (s)");
-xline(0,'-w','Cue','LabelVerticalAlignment','top');caxis([-4 8]);
-subplot(2,1,2);
-title("Phase Alignment across all electrodes - Misses")
-imagesc(IntanBehaviour.cueMissTrace(1).time,1:32,reshape(PAMissz,[],size(PAMissz,3))); colormap(hot);
-ylabel("Electrodes");xlabel("Time (s)");
-xline(0,'-w','Cue','LabelVerticalAlignment','top');caxis([-4 8]);
-yline(2.56);
+PA = getPA(IntanBehaviour,z_score,nIterrate,1,parameters);
 
 %% Percent Phase Locking
 xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);

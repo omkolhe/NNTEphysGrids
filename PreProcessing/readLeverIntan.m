@@ -69,63 +69,6 @@ for i=1:IntanBehaviour.nCueHit
     IntanBehaviour.hitTrace(i).LFPtime = IntanBehaviour.time(rewardIndex(i)-parameters.windowBeforePull*parameters.Fs:rewardIndex(i)+parameters.windowAfterPull*parameters.Fs)';
 end
 
-
-%% Getting miss traces and timings
-
-% figure();plot(1:1:10001,(5/1024)*Behaviour.leverTrace(Behaviour.miss(15,1)-5000:Behaviour.miss(15,1)+5000));hold on;
-% plot(0.1:0.1:10000.1,IntanBehaviour.leverTrace(Behaviour.miss(15,3)-50000:Behaviour.miss(15,3)+50000));
-correctionWindow = 800; % in number of points in LFPFs
-tol = 0.005;
-nDiffSlope = 10;
-disp('Finding miss trials in the Intan data ...');
-for i=1:Behaviour.nMiss
-    missIndexAr = Behaviour.miss(i,3);
-    st1 = missIndexAr-correctionWindow;
-    if st1 <= 0
-        disp("Short miss trial removed");
-        continue;
-    end
-    sp1 = missIndexAr+correctionWindow;
-    if sp1 >= size(IntanBehaviour.leverTrace,2)
-        disp("Short miss trial removed")
-        continue;
-    end
-    trace1 = IntanBehaviour.leverTrace(st1:sp1);
-    misstrigs1 = find(trace1 <IntanBehaviour.threshold+tol & trace1>IntanBehaviour.threshold-tol);  
-    if isempty(misstrigs1)
-        missIndex(i) = NaN;
-        disp('Suss miss trial removed');
-        continue;
-    end
-    % Checking slope 
-    for j=1:size(misstrigs1,2)
-        % Checking edge cases, rejects all the edge cases 
-        if((misstrigs1(j)+nDiffSlope >= (correctionWindow*2+1)) || (misstrigs1(j)-nDiffSlope <= 0)) 
-            misstrigs1(j) = NaN;
-            continue
-        end
-        % Checking slope, reject all negative slope 
-        slope = mean(trace1(misstrigs1(j):misstrigs1(j)+nDiffSlope)) - mean(trace1(misstrigs1(j)-nDiffSlope:misstrigs1(j)));
-        if slope < 0
-            misstrigs1(j) = NaN;
-        end
-    end
-    misstrigs1 = misstrigs1(~isnan(misstrigs1));
-    missIndex(i) =  missIndexAr - correctionWindow + min(misstrigs1);
-end
-
-missIndex = removeNaNRows(missIndex');
-
-IntanBehaviour.nMiss = size(missIndex,1);
-
-for i=1:IntanBehaviour.nMiss
-%     IntanBehaviour.hit(i) = [rewardIndex(i) lfpTime(rewardIndex(i)) rewardIndex(i) lfpTime(rewardIndex(i))];
-    IntanBehaviour.missTrace(i).trace = IntanBehaviour.leverTrace(missIndex(i)-parameters.windowBeforePull*parameters.Fs:missIndex(i)+parameters.windowAfterPull*parameters.Fs)';
-    IntanBehaviour.missTrace(i).time = (0:1/parameters.Fs:(size(IntanBehaviour.missTrace(i).trace,1)-1)*1/parameters.Fs)' - parameters.windowBeforeCue;
-    IntanBehaviour.missTrace(i).LFPIndex = ([missIndex(i)-parameters.windowBeforePull*parameters.Fs:1:missIndex(i)+parameters.windowAfterPull*parameters.Fs])';
-    IntanBehaviour.missTrace(i).LFPtime = IntanBehaviour.time(missIndex(i)-parameters.windowBeforePull*parameters.Fs:missIndex(i)+parameters.windowAfterPull*parameters.Fs)';
-end
-
 %% Getting cue Hit traces
 a = zeros(IntanBehaviour.nCueHit,1);
 shortTrialFlag = 0; % 0 - none, 1 - first, 2 = end , 3 = both
@@ -211,4 +154,60 @@ for i=1:IntanBehaviour.nCueMiss
     IntanBehaviour.cueMissTrace(i).time = (0:1/parameters.Fs:(size(IntanBehaviour.cueMissTrace(i).trace,1)-1)*1/parameters.Fs)' - parameters.windowBeforeCue;
     IntanBehaviour.cueMissTrace(i).LFPIndex = ([st:1:sp])';
     IntanBehaviour.cueMissTrace(i).LFPtime = IntanBehaviour.time(st:sp)';
+end
+
+%% Getting miss traces and timings
+
+% figure();plot(1:1:10001,(5/1024)*Behaviour.leverTrace(Behaviour.miss(15,1)-5000:Behaviour.miss(15,1)+5000));hold on;
+% plot(0.1:0.1:10000.1,IntanBehaviour.leverTrace(Behaviour.miss(15,3)-50000:Behaviour.miss(15,3)+50000));
+correctionWindow = 800; % in number of points in LFPFs
+tol = 0.005;
+nDiffSlope = 10;
+disp('Finding miss trials in the Intan data ...');
+for i=1:Behaviour.nMiss
+    missIndexAr = Behaviour.miss(i,3);
+    st1 = missIndexAr-correctionWindow;
+    if st1 <= 0
+        disp("Short miss trial removed");
+        continue;
+    end
+    sp1 = missIndexAr+correctionWindow;
+    if sp1 >= size(IntanBehaviour.leverTrace,2)
+        disp("Short miss trial removed")
+        continue;
+    end
+    trace1 = IntanBehaviour.leverTrace(st1:sp1);
+    misstrigs1 = find(trace1 <IntanBehaviour.threshold+tol & trace1>IntanBehaviour.threshold-tol);  
+    if isempty(misstrigs1)
+        missIndex(i) = NaN;
+        disp('Suss miss trial removed');
+        continue;
+    end
+    % Checking slope 
+    for j=1:size(misstrigs1,2)
+        % Checking edge cases, rejects all the edge cases 
+        if((misstrigs1(j)+nDiffSlope >= (correctionWindow*2+1)) || (misstrigs1(j)-nDiffSlope <= 0)) 
+            misstrigs1(j) = NaN;
+            continue
+        end
+        % Checking slope, reject all negative slope 
+        slope = mean(trace1(misstrigs1(j):misstrigs1(j)+nDiffSlope)) - mean(trace1(misstrigs1(j)-nDiffSlope:misstrigs1(j)));
+        if slope < 0
+            misstrigs1(j) = NaN;
+        end
+    end
+    misstrigs1 = misstrigs1(~isnan(misstrigs1));
+    missIndex(i) =  missIndexAr - correctionWindow + min(misstrigs1);
+end
+
+missIndex = removeNaNRows(missIndex');
+
+IntanBehaviour.nMiss = size(missIndex,1);
+
+for i=1:IntanBehaviour.nMiss
+%     IntanBehaviour.hit(i) = [rewardIndex(i) lfpTime(rewardIndex(i)) rewardIndex(i) lfpTime(rewardIndex(i))];
+    IntanBehaviour.missTrace(i).trace = IntanBehaviour.leverTrace(missIndex(i)-parameters.windowBeforePull*parameters.Fs:missIndex(i)+parameters.windowAfterPull*parameters.Fs)';
+    IntanBehaviour.missTrace(i).time = (0:1/parameters.Fs:(size(IntanBehaviour.missTrace(i).trace,1)-1)*1/parameters.Fs)' - parameters.windowBeforeCue;
+    IntanBehaviour.missTrace(i).LFPIndex = ([missIndex(i)-parameters.windowBeforePull*parameters.Fs:1:missIndex(i)+parameters.windowAfterPull*parameters.Fs])';
+    IntanBehaviour.missTrace(i).LFPtime = IntanBehaviour.time(missIndex(i)-parameters.windowBeforePull*parameters.Fs:missIndex(i)+parameters.windowAfterPull*parameters.Fs)';
 end

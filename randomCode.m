@@ -1,4 +1,39 @@
 %% Random code
+% Plotting for specific trial
+trialno = 48;
+figure('Name','Spatial Averaged Wavelet Spectrogram for Hits & Misses');
+subplot(2,1,1);
+plotSpectrogram(squeeze(hitSpectrogramCWT(trialno,:,:)),IntanBehaviour.hitTrace(trialno).time-parameters.windowBeforePull,fwt,'Wavelet based Average Spectogram for Hits','Time (s)','Frequency (Hz)');
+hold on; yyaxis right; box off;
+plot(IntanBehaviour.hitTrace(trialno).time-parameters.windowBeforePull,IntanBehaviour.hitTrace(trialno).trace,'-w','LineWidth',2.5);
+ylabel('Lever deflection (mV)'); 
+subplot(2,1,2);
+trialno = 11;
+plotSpectrogram(squeeze(missSpectrogramCWT(trialno,:,:)),IntanBehaviour.missTrace(trialno).time-parameters.windowBeforePull,fwt,'Wavelet based Average Spectogram for Misses','Time (s)','Frequency (Hz)');
+hold on; yyaxis right; box off;
+plot(IntanBehaviour.missTrace(trialno).time-parameters.windowBeforePull,IntanBehaviour.missTrace(trialno).trace,'-w','LineWidth',2.5);
+ylabel('Lever deflection (mV)'); box off;
+
+trialno = 1;
+figure('Name','Spatial Averaged Wavelet Spectrogram for Hits & Misses');
+subplot(2,1,1);
+plotSpectrogram((squeeze(hitSpectrogramCWT(trialno,:,:))),IntanBehaviour.cueHitTrace(trialno).time,fwt,'Wavelet based Average Spectogram for Hits','Time (s)','Frequency (Hz)');
+hold on; yyaxis right; box off;
+plot(IntanBehaviour.cueHitTrace(trialno).time,squeeze(mean(LFP.xf(:,:,IntanBehaviour.cueHitTrace(trialno).LFPIndex),[1 2])),'-w','LineWidth',1.5);
+plot(IntanBehaviour.cueHitTrace(trialno).time,squeeze(abs(mean(LFP.xgp(:,:,IntanBehaviour.cueHitTrace(trialno).LFPIndex),[1 2]))),'--w','LineWidth',1);
+ylabel('Amplitude (\mu V)'); 
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+xline(IntanBehaviour.reactionTime(trialno),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+subplot(2,1,2);
+trialno = 11;
+plotSpectrogram(squeeze(missSpectrogramCWT(trialno,:,:)),IntanBehaviour.cueMissTrace(trialno).time,fwt,'Wavelet based Average Spectogram for Misses','Time (s)','Frequency (Hz)');
+hold on; yyaxis right; box off;
+plot(IntanBehaviour.cueMissTrace(trialno).time,squeeze(mean(LFP.xf(:,:,IntanBehaviour.cueMissTrace(trialno).LFPIndex),[1 2])),'-w','LineWidth',1.5);
+plot(IntanBehaviour.cueMissTrace(trialno).time,squeeze(abs(mean(LFP.xgp(:,:,IntanBehaviour.cueMissTrace(trialno).LFPIndex),[1 2]))),'--w','LineWidth',1);
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+ylabel('Amplitude (\mu V)');  box off;
+
+
 % %% Plotting video of phase 
 % figure(); hold on;
 % map = colorcet( 'C2' ); colormap( circshift( map, [ 28, 0 ] ) );axis off;
