@@ -67,8 +67,8 @@ if z_score == 1
     nMiss = size(xgpMiss,2);
     nTot = nHit + nMiss;
     
-    nullDistHit = zeros(parameters.rows,parameters.cols,size(PA.Hit,3),nPerm);
-    nullDistMiss = zeros(parameters.rows,parameters.cols,size(PA.Miss,3),nPerm);
+    nullDistHit = zeros(parameters.rows,parameters.cols,size(PAHit,3),nIterrate);
+    nullDistMiss = zeros(parameters.rows,parameters.cols,size(PAMiss,3),nIterrate);
     for j=1:nPerm
         randIndex = randperm(nTot);
         xgpHitRand = xgpComb(randIndex(1:nHit));
@@ -113,8 +113,8 @@ if z_score == 1
     nMiss = size(xgpFA,2);
     nTot = nHit + nMiss;
     
-    nullDistHit = zeros(parameters.rows,parameters.cols,size(PA.HitReward,3),nPerm);
-    nullDistMiss = zeros(parameters.rows,parameters.cols,size(PA.FA,3),nPerm);
+    nullDistHit = zeros(parameters.rows,parameters.cols,size(PAHitReward,3),nIterrate);
+    nullDistMiss = zeros(parameters.rows,parameters.cols,size(PAFA,3),nIterrate);
     for j=1:nPerm
         randIndex = randperm(nTot);
         xgpHitRand = xgpComb(randIndex(1:nHit));
@@ -125,32 +125,32 @@ if z_score == 1
     end
     PA.muHitReward = mean(nullDistHit,4); % Mean of the null distribution
     PA.sigmaHitReward = std(nullDistHit,0,4); % Standard deviation of null distribution
-    PA.muFA = mean(nullDistMiss,4); % Mean of the null distribution
-    PA.sigmaFA = std(nullDistMiss,0,4); % Standard deviation of null distribution
+    PA.muMiss = mean(nullDistMiss,4); % Mean of the null distribution
+    PA.sigmaMiss = std(nullDistMiss,0,4); % Standard deviation of null distribution
     
-    PA.HitRewardz = (PA.HitReward-PA.muHitReward)./PA.sigmaHitReward;
-    PA.FAz = (PA.FA-PA.muFA)./PA.sigmaFA;
+    PA.Hitz = (PA.Hit-PA.muHit)./PA.sigmaHit;
+    PA.Missz = (PA.Miss-PA.muMiss)./PA.sigmaMiss;
     if plotFlag == 1
         figure();
-        plot(IntanBehaviour.hitTrace(1).time,squeeze(nanmean(PA.HitRewardz,[1 2])),'-r','LineWidth',1.2); hold on;
-        plot(IntanBehaviour.missTrace(1).time,squeeze(nanmean(PA.FAz,[1 2])),'-k','LineWidth',1);
+        plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PA.Hitz,[1 2])),'-r','LineWidth',1.2); hold on;
+        plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PA.Missz,[1 2])),'-k','LineWidth',1);
         ylabel("z-score"); xlabel("Time (s)");
-        xline(0,'--r','Reward','LabelVerticalAlignment','top');
-        xline(-mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Cue Time','LabelVerticalAlignment','top');
-        title('z-scored Phase Alignment averaged across electrodes');box off; legend('Hits','FA');  
+        xline(0,'--r','Cue','LabelVerticalAlignment','top');
+        xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+        title('z-scored Phase Alignment averaged across electrodes');box off; legend('Hits','Miss');  
         
         figure();
         subplot(2,1,1);
         title("Phase Alignment across all electrodes - Hits")
-        imagesc(IntanBehaviour.hitTrace(1).time,1:nElectrodes,reshape(PA.HitRewardz,[],size(PA.HitRewardz,3))); colormap(hot);
+        imagesc(IntanBehaviour.cueHitTrace(1).time,1:nElectrodes,reshape(PA.Hitz,[],size(PA.Hitz,3))); colormap(hot);
         ylabel("Electrodes");xlabel("Time (s)");
-        xline(0,'-w','Reward','LabelVerticalAlignment','top');caxis([-4 8]);
-        xline(-mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Cue Time','LabelVerticalAlignment','top');
+        xline(0,'-w','Cue','LabelVerticalAlignment','top');caxis([-4 8]);
+        xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
         subplot(2,1,2);
-        title("Phase Alignment across all electrodes - FA")
-        imagesc(IntanBehaviour.missTrace(1).time,1:nElectrodes,reshape(PA.FAz,[],size(PA.FAz,3))); colormap(hot);
+        title("Phase Alignment across all electrodes - Misses")
+        imagesc(IntanBehaviour.cueMissTrace(1).time,1:nElectrodes,reshape(PA.Missz,[],size(PA.Missz,3))); colormap(hot);
         ylabel("Electrodes");xlabel("Time (s)");
-        xline(0,'-w','No Reward','LabelVerticalAlignment','top');caxis([-4 8]);
+        xline(0,'-w','Cue','LabelVerticalAlignment','top');caxis([-4 8]);
         yline(2.56);
     end
 end
