@@ -206,7 +206,7 @@ hold on;
 arrayfun(@(s) plot(s.time, s.trace),IntanBehaviour.cueMissTrace,'UniformOutput',false);
 
 %% Plotting waves 
-a = Waves.wavesHit(14).xf(:,:,1100:1200);
+a = Waves.wavesHit(1).xf(:,:,1100:1200);
 a = reshape(a,[],size(a,3));
 [peak, peakIndex] = max(a,[],2);
 

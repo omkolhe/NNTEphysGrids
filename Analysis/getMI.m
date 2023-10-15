@@ -13,7 +13,7 @@ xgpMiss = arrayfun(@(s) angle(s.xgp), IntanBehaviour.cueMissTrace, 'UniformOutpu
 if plotFlag == 1
     figure();
     title("Mututal Information across all electrodes - Phase")
-    imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,peakSort2DArray(reshape(MI.PhaseCue,[],size(MI.PhaseCue,3)),'descend',2)); colormap(hot);
+    imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,peakSort2DArray(reshape(MI.PhaseCue,[],size(MI.PhaseCue,3)),'descend',2)); colormap(jet);
     ylabel("Electrodes");xlabel("Time (s)"); 
     h = colorbar; h.Label.String = 'Information (bits)';
     xline(0,'-w','Cue','LabelVerticalAlignment','top');
@@ -28,7 +28,7 @@ xgpFA = arrayfun(@(s) angle(s.xgp), IntanBehaviour.missTrace, 'UniformOutput', f
 if plotFlag == 1
     figure();
     title("Mututal Information (Reward) across all electrodes - Phase")
-    imagesc(IntanBehaviour.hitTrace(1).time,1:32,peakSort2DArray(reshape(MI.PhaseReward,[],size(MI.PhaseReward,3)),'descend',2)); colormap(hot);
+    imagesc(IntanBehaviour.hitTrace(1).time,1:32,peakSort2DArray(reshape(MI.PhaseReward,[],size(MI.PhaseReward,3)),'descend',2)); colormap(jet);
     ylabel("Electrodes");xlabel("Time (s)"); 
     h = colorbar; h.Label.String = 'Information (bits)';
     xline(0,'-w','Reward','LabelVerticalAlignment','top');

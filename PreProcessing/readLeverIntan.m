@@ -1,18 +1,18 @@
 function [IntanBehaviour] = readLeverIntan(parameters,lfpTime,leverTrace,dig_in_data,Behaviour)
 
 if strcmp(parameters.experiment,'self')
-    rewardTrace = dig_in_data(1,:);
+    rewardTrace = dig_in_data(2,:);
     disp('Experiment set to self initiated.');
     cue = 0;
 elseif strcmp(parameters.experiment,'cue')
-    rewardTrace = dig_in_data(1,:);
-    cueTrace = dig_in_data(2,:);
+    rewardTrace = dig_in_data(2,:);
+    cueTrace = dig_in_data(3,:);
     disp('Experiment set to cue initiated.');
     cue = 1;
 end
 
 if parameters.opto == 1
-    optoTrace = dig_in_data(3,:);
+    optoTrace = dig_in_data(4,:);
     disp('Experiment has opto trials.');
 else
     disp('Experiment has no opto trials.');
@@ -34,6 +34,8 @@ rewardIndex = find(diff(IntanBehaviour.rewardTrace)==1)+1;
 if cue == 1
     IntanBehaviour.cueTrace = downsample(cueTrace,round(intanFs/parameters.Fs),2); 
     cueIndex = find(diff(IntanBehaviour.cueTrace)==1)+1;
+    IntanBehaviour.nCueHit = size(rewardIndex,2);
+    IntanBehaviour.nCueMiss = Behaviour.nCueMiss;
 end
 if parameters.opto == 1
     IntanBehaviour.optoTrace = downsample(optoTrace,round(intanFs/parameters.Fs),2);
@@ -41,121 +43,131 @@ if parameters.opto == 1
     IntanBehaviour.nOpto = size(optoIndex,2);
 end
 
-IntanBehaviour.nCueHit = size(rewardIndex,2);
-IntanBehaviour.nCueMiss = Behaviour.nCueMiss;
+IntanBehaviour.nHit = size(rewardIndex,2);
+
 
 % Estimating the threshold for reward
 IntanBehaviour.threshold = mean(IntanBehaviour.leverTrace(rewardIndex),'all');
 
 %% Getting hit traces and timings
+
 st_hit1 = rewardIndex(1)-parameters.windowBeforePull*parameters.Fs;
 if st_hit1 <= 0
     disp('First cue hit rejected');
-    IntanBehaviour.nCueHit = Behaviour.nCueHit-1;
+    IntanBehaviour.nHit = Behaviour.nHit-1;
+    if cue == 1
+        IntanBehaviour.nCueHit = IntanBehaviour.nCueHit-1;
+    end
     rewardIndex(1) = [];
 end
 sp_hitend = rewardIndex(end)+parameters.windowAfterPull*parameters.Fs;
 if  sp_hitend > length(IntanBehaviour.time)
     disp('Last cue hit rejected');
-    IntanBehaviour.nCueHit = Behaviour.nCueHit-1;
+    IntanBehaviour.nHit = Behaviour.nHit-1;
+    if cue == 1
+        IntanBehaviour.nCueHit = IntanBehaviour.nCueHit-1;
+    end
     rewardIndex(end) = [];
 end 
 
-for i=1:IntanBehaviour.nCueHit
+for i=1:IntanBehaviour.nHit
 %     IntanBehaviour.hit(i) = [rewardIndex(i) lfpTime(rewardIndex(i)) rewardIndex(i) lfpTime(rewardIndex(i))];
     IntanBehaviour.hitTrace(i).trace = IntanBehaviour.leverTrace(rewardIndex(i)-parameters.windowBeforePull*parameters.Fs:rewardIndex(i)+parameters.windowAfterPull*parameters.Fs)';
-    IntanBehaviour.hitTrace(i).time = (0:1/parameters.Fs:(size(IntanBehaviour.cueHitTrace(i).trace,1)-1)*1/parameters.Fs)' - parameters.windowBeforePull;
+    IntanBehaviour.hitTrace(i).time = (0:1/parameters.Fs:(size(IntanBehaviour.hitTrace(i).trace,1)-1)*1/parameters.Fs)' - parameters.windowBeforePull;
     IntanBehaviour.hitTrace(i).LFPIndex = ([rewardIndex(i)-parameters.windowBeforePull*parameters.Fs:1:rewardIndex(i)+parameters.windowAfterPull*parameters.Fs])';
     IntanBehaviour.hitTrace(i).LFPtime = IntanBehaviour.time(rewardIndex(i)-parameters.windowBeforePull*parameters.Fs:rewardIndex(i)+parameters.windowAfterPull*parameters.Fs)';
 end
 
 %% Getting cue Hit traces
-a = zeros(IntanBehaviour.nCueHit,1);
-shortTrialFlag = 0; % 0 - none, 1 - first, 2 = end , 3 = both
-
-for i=1:IntanBehaviour.nCueHit
-    a(i) = max(find(cueIndex<=rewardIndex(i)));
-    IntanBehaviour.cueHit(i,1) = cueIndex(a(i)); % Cue index 
-    IntanBehaviour.cueHit(i,2) = rewardIndex(i); % pull index for hits
-    if parameters.opto == 1
-        if ~isempty(find(optoIndex == IntanBehaviour.cueHit(i,1))) 
-            IntanBehaviour.cueHitTrace(i).opto = 1;
-        else 
-            IntanBehaviour.cueHitTrace(i).opto = 0;
-        end 
-    end
-    st = IntanBehaviour.cueHit(i,1)-parameters.windowBeforeCue*parameters.Fs;
-    sp = IntanBehaviour.cueHit(i,1)+parameters.windowAfterCue*parameters.Fs;
-    if st <= 0
-        st = 1;
-        disp('Short Cue Hit trial Detected');
-        shortTrialFlag = 1;
-    end
-    if sp >= size(IntanBehaviour.leverTrace,2)
-        sp = size(IntanBehaviour.leverTrace,2);
-        disp('Short Cue Hit trial Detected');
-        if shortTrialFlag == 1 shortTrialFlag = 3, else shortTrialFlag = 2, end
-    end 
+if cue == 1
+    a = zeros(IntanBehaviour.nCueHit,1);
+    shortTrialFlag = 0; % 0 - none, 1 - first, 2 = end , 3 = both
     
-    IntanBehaviour.cueHitTrace(i).trace = IntanBehaviour.leverTrace(st:sp)';
-    IntanBehaviour.cueHitTrace(i).time = (0:1/parameters.Fs:(size(IntanBehaviour.cueHitTrace(i).trace,1)-1)*1/parameters.Fs)' - parameters.windowBeforeCue;
-    IntanBehaviour.cueHitTrace(i).LFPIndex = ([st:1:sp])';
-    IntanBehaviour.cueHitTrace(i).LFPtime = IntanBehaviour.time(st:sp)';
+    for i=1:IntanBehaviour.nCueHit
+        a(i) = max(find(cueIndex<=rewardIndex(i)));
+        IntanBehaviour.cueHit(i,1) = cueIndex(a(i)); % Cue index 
+        IntanBehaviour.cueHit(i,2) = rewardIndex(i); % pull index for hits
+        if parameters.opto == 1
+            if ~isempty(find(optoIndex == IntanBehaviour.cueHit(i,1))) 
+                IntanBehaviour.cueHitTrace(i).opto = 1;
+            else 
+                IntanBehaviour.cueHitTrace(i).opto = 0;
+            end 
+        end
+        st = IntanBehaviour.cueHit(i,1)-parameters.windowBeforeCue*parameters.Fs;
+        sp = IntanBehaviour.cueHit(i,1)+parameters.windowAfterCue*parameters.Fs;
+        if st <= 0
+            st = 1;
+            disp('Short Cue Hit trial Detected');
+            shortTrialFlag = 1;
+        end
+        if sp >= size(IntanBehaviour.leverTrace,2)
+            sp = size(IntanBehaviour.leverTrace,2);
+            disp('Short Cue Hit trial Detected');
+            if shortTrialFlag == 1 shortTrialFlag = 3, else shortTrialFlag = 2, end
+        end 
+        
+        IntanBehaviour.cueHitTrace(i).trace = IntanBehaviour.leverTrace(st:sp)';
+        IntanBehaviour.cueHitTrace(i).time = (0:1/parameters.Fs:(size(IntanBehaviour.cueHitTrace(i).trace,1)-1)*1/parameters.Fs)' - parameters.windowBeforeCue;
+        IntanBehaviour.cueHitTrace(i).LFPIndex = ([st:1:sp])';
+        IntanBehaviour.cueHitTrace(i).LFPtime = IntanBehaviour.time(st:sp)';
+    end
+    
+    if shortTrialFlag == 1
+        IntanBehaviour.cueHit(1,:) = [];
+        IntanBehaviour.cueHitTrace(1) = [];
+        IntanBehaviour.nCueHit = IntanBehaviour.nCueHit-1;
+    elseif shortTrialFlag == 2
+        IntanBehaviour.cueHit(end,:) = [];
+        IntanBehaviour.cueHitTrace(end) = [];
+        IntanBehaviour.nCueHit = IntanBehaviour.nCueHit-1;
+    elseif shortTrialFlag == 3
+        IntanBehaviour.cueHit(1,:) = [];
+        IntanBehaviour.cueHit(end,:) = [];
+        IntanBehaviour.cueHitTrace(1) = [];
+        IntanBehaviour.cueHitTrace(end) = [];
+        IntanBehaviour.nCueHit = IntanBehaviour.nCueHit-2;
+    end
+    
+    % Reaction Time 
+    IntanBehaviour.reactionTime = (diff(IntanBehaviour.cueHit,1,2)/parameters.Fs)'; % in seconds
 end
-
-if shortTrialFlag == 1
-    IntanBehaviour.cueHit(1,:) = [];
-    IntanBehaviour.cueHitTrace(1) = [];
-    IntanBehaviour.nCueHit = IntanBehaviour.nCueHit-1;
-elseif shortTrialFlag == 2
-    IntanBehaviour.cueHit(end,:) = [];
-    IntanBehaviour.cueHitTrace(end) = [];
-    IntanBehaviour.nCueHit = IntanBehaviour.nCueHit-1;
-elseif shortTrialFlag == 3
-    IntanBehaviour.cueHit(1,:) = [];
-    IntanBehaviour.cueHit(end,:) = [];
-    IntanBehaviour.cueHitTrace(1) = [];
-    IntanBehaviour.cueHitTrace(end) = [];
-    IntanBehaviour.nCueHit = IntanBehaviour.nCueHit-2;
-end
-
-% Reaction Time 
-IntanBehaviour.reactionTime = (diff(IntanBehaviour.cueHit,1,2)/parameters.Fs)'; % in seconds
 
 %% Getting cue Miss traces
-IntanBehaviour.cueMiss = cueIndex';
-IntanBehaviour.cueMiss(a) = [];
-IntanBehaviour.nCueMiss = size(IntanBehaviour.cueMiss,1);
-
-st1 = IntanBehaviour.cueMiss(1,1)-parameters.windowBeforeCue*parameters.Fs;
-spend = IntanBehaviour.cueMiss(end,1)+parameters.windowAfterCue*parameters.Fs;
-if st1 <= 0
-    disp('Short Cue Miss trial Detected');
-    IntanBehaviour.cueMiss(1) = [];
-    IntanBehaviour.nCueMiss = IntanBehaviour.nCueMiss-1;
-end
-if spend >= size(IntanBehaviour.leverTrace,2)
-    disp('Short Cue Miss trial Detected');
-    IntanBehaviour.cueMiss(end) = [];
-    IntanBehaviour.nCueMiss = IntanBehaviour.nCueMiss-1;
-end
-
-for i=1:IntanBehaviour.nCueMiss
-    if parameters.opto == 1
-        if ~isempty(find(optoIndex == IntanBehaviour.cueMiss(i,1))) 
-            IntanBehaviour.cueMissTrace(i).opto = 1;
-        else
-            IntanBehaviour.cueMissTrace(i).opto = 0;
-        end 
+if cue == 1
+    IntanBehaviour.cueMiss = cueIndex';
+    IntanBehaviour.cueMiss(a) = [];
+    IntanBehaviour.nCueMiss = size(IntanBehaviour.cueMiss,1);
+    
+    st1 = IntanBehaviour.cueMiss(1,1)-parameters.windowBeforeCue*parameters.Fs;
+    spend = IntanBehaviour.cueMiss(end,1)+parameters.windowAfterCue*parameters.Fs;
+    if st1 <= 0
+        disp('Short Cue Miss trial Detected');
+        IntanBehaviour.cueMiss(1) = [];
+        IntanBehaviour.nCueMiss = IntanBehaviour.nCueMiss-1;
     end
-    st = IntanBehaviour.cueMiss(i,1)-parameters.windowBeforeCue*parameters.Fs;
-    sp = IntanBehaviour.cueMiss(i,1)+parameters.windowAfterCue*parameters.Fs;
-    IntanBehaviour.cueMissTrace(i).trace = IntanBehaviour.leverTrace(st:sp)';
-    IntanBehaviour.cueMissTrace(i).time = (0:1/parameters.Fs:(size(IntanBehaviour.cueMissTrace(i).trace,1)-1)*1/parameters.Fs)' - parameters.windowBeforeCue;
-    IntanBehaviour.cueMissTrace(i).LFPIndex = ([st:1:sp])';
-    IntanBehaviour.cueMissTrace(i).LFPtime = IntanBehaviour.time(st:sp)';
+    if spend >= size(IntanBehaviour.leverTrace,2)
+        disp('Short Cue Miss trial Detected');
+        IntanBehaviour.cueMiss(end) = [];
+        IntanBehaviour.nCueMiss = IntanBehaviour.nCueMiss-1;
+    end
+    
+    for i=1:IntanBehaviour.nCueMiss
+        if parameters.opto == 1
+            if ~isempty(find(optoIndex == IntanBehaviour.cueMiss(i,1))) 
+                IntanBehaviour.cueMissTrace(i).opto = 1;
+            else
+                IntanBehaviour.cueMissTrace(i).opto = 0;
+            end 
+        end
+        st = IntanBehaviour.cueMiss(i,1)-parameters.windowBeforeCue*parameters.Fs;
+        sp = IntanBehaviour.cueMiss(i,1)+parameters.windowAfterCue*parameters.Fs;
+        IntanBehaviour.cueMissTrace(i).trace = IntanBehaviour.leverTrace(st:sp)';
+        IntanBehaviour.cueMissTrace(i).time = (0:1/parameters.Fs:(size(IntanBehaviour.cueMissTrace(i).trace,1)-1)*1/parameters.Fs)' - parameters.windowBeforeCue;
+        IntanBehaviour.cueMissTrace(i).LFPIndex = ([st:1:sp])';
+        IntanBehaviour.cueMissTrace(i).LFPtime = IntanBehaviour.time(st:sp)';
+    end
 end
-
 %% Getting miss traces and timings
 
 % figure();plot(1:1:10001,(5/1024)*Behaviour.leverTrace(Behaviour.miss(15,1)-5000:Behaviour.miss(15,1)+5000));hold on;

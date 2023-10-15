@@ -4,7 +4,12 @@ for trialno = 1:size(behaviourTrace,2)
     xf1 = behaviourTrace(trialno).rawLFP;
     for i=1:parameters.rows
         for j=1:parameters.cols
-            [PSDCh(trialno,(i-1)*parameters.cols + j,:) ,f] = pwelch(squeeze(xf1(parameters.rows,parameters.cols,:)),600,0,1000,parameters.Fs);
+            a = squeeze(xf1(i,j,:));
+            if sum(isnan(a))>0
+                PSDCh(trialno,(i-1)*parameters.cols + j,:) = NaN;
+            else
+                [PSDCh(trialno,(i-1)*parameters.cols + j,:) ,f] = pwelch(a,600,0,1000,parameters.Fs);
+            end
         end
     end
 end

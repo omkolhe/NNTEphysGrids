@@ -1,5 +1,5 @@
 function [pm,pd,dx,dy] = ...
-    phase_gradient_complex_multiplication( xph, pixel_spacing, varargin )
+    phase_gradient_complex_multiplication( xph, xpixel_spacing,ypixel_spacing, varargin )
 % *WAVE*
 %
 % PHASE GRADIENT COMPLEX MULTIPLICATION     take the gradient of the phase maps,
@@ -39,7 +39,7 @@ function [pm,pd,dx,dy] = ...
 assert( ndims(xph) >= 2, 'matrix/datacube input required' );
 
 % parse inputs
-if nargin < 3, signIF = 1;, else signIF = varargin{1}; end
+if nargin < 4, signIF = 1;, else signIF = varargin{1}; end
 
 % init
 pm = zeros( size(xph) ); pd = zeros( size(xph) );
@@ -52,12 +52,12 @@ for tt = 1:size(xph,3)
     tmp_dx = zeros( size(xph(:,:,1)) );
     
     % forward differences on left and right edges
-    tmp_dx(:,1) = angle( xph(:,2,tt) .* conj( xph(:,1,tt) ) ) ./ pixel_spacing; 
-    tmp_dx(:,dim(2)) = angle( xph(:,dim(2),tt) .* conj( xph(:,dim(2)-1,tt) ) ) ./ pixel_spacing; 
+    tmp_dx(:,1) = angle( xph(:,2,tt) .* conj( xph(:,1,tt) ) ) ./ xpixel_spacing; 
+    tmp_dx(:,dim(2)) = angle( xph(:,dim(2),tt) .* conj( xph(:,dim(2)-1,tt) ) ) ./ xpixel_spacing; 
     
     % centered differences on interior points
     tmp_dx(:,2:dim(2)-1) = ...
-        angle( xph(:,3:dim(2),tt) .* conj( xph(:,1:dim(2)-2,tt) ) ) ./ (2*pixel_spacing); 
+        angle( xph(:,3:dim(2),tt) .* conj( xph(:,1:dim(2)-2,tt) ) ) ./ (2*xpixel_spacing); 
     
     % save dx
     dx(:,:,tt) = -signIF .* tmp_dx;
@@ -66,11 +66,11 @@ for tt = 1:size(xph,3)
     tmp_dy = zeros( size(xph(:,:,1)) );
     
     % forward differences on top and bottom edges
-    tmp_dy(1,:) = angle( xph(2,:,tt) .* conj( xph(1,:,tt) ) ) ./ pixel_spacing; 
-    tmp_dy(dim(1),:) = angle( xph(dim(1),:,tt) .* conj( xph(dim(1)-1,:,tt) ) ) ./ pixel_spacing; 
+    tmp_dy(1,:) = angle( xph(2,:,tt) .* conj( xph(1,:,tt) ) ) ./ ypixel_spacing; 
+    tmp_dy(dim(1),:) = angle( xph(dim(1),:,tt) .* conj( xph(dim(1)-1,:,tt) ) ) ./ ypixel_spacing; 
     
     % centered differences on interior points
-    tmp_dy(2:dim(1)-1,:) = angle( xph(3:dim(1),:,tt) .* conj( xph(1:dim(1)-2,:,tt) ) ) ./ (2*pixel_spacing); 
+    tmp_dy(2:dim(1)-1,:) = angle( xph(3:dim(1),:,tt) .* conj( xph(1:dim(1)-2,:,tt) ) ) ./ (2*ypixel_spacing); 
 
     % save dy
     dy(:,:,tt) = -signIF .* tmp_dy;

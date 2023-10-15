@@ -49,7 +49,7 @@ for ii=1:size(behaviourTrace,2)
         for kk=1:(sp-st+1)
             ph = angle( Waves(ii).p(:,:,(st+kk-1)));
             sourcepoint(:,kk) = find_source_points(st+kk-1,X,Y,Waves(ii).dx, Waves(ii).dy );
-            [rho(kk,1),~,~] = phase_correlation_distance( ph,sourcepoint(:,kk), parameters.xspacing,parameters.yspacing );
+            [rho(kk,1),~,~] = phase_correlation_distance( ph,sourcepoint(:,kk), par );
             dir(kk) = rad2deg(Waves(ii).velDir(st+kk-1));
         end
         waveClusters = findThresSeg(rho,rhoThres);

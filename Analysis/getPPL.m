@@ -25,8 +25,13 @@ for t=1:size(time,2)
     for i=1:parameters.rows
         for j=1:parameters.cols
             x = cellfun(@(s) angle(s(i,j,t)),xgp);
-            H(i,j,t) = getShannonEntropy(x,N,-pi,pi);
-            PPL(i,j,t) = 100*(1-(H(i,j,t)/Hmax));
+            if sum(isnan(x))>0
+                PLL(i,j,t) = NaN;
+                H(i,j,t) = NaN;
+            else
+                H(i,j,t) = getShannonEntropy(x,N,-pi,pi);
+                PPL(i,j,t) = 100*(1-(H(i,j,t)/Hmax));
+            end
         end
     end
 end

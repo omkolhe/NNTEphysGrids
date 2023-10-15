@@ -14,18 +14,19 @@ addpath(genpath('Analysis'));
 addpath(genpath('Dependancies'));
 
 %%  PreProcessing
-load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
-parameters.rows = 8;  % Number of rows of electrodes on the Grid
-parameters.cols = 4;  % Number of colums of electrodes on the Grid
+load Widegrids9_chanmap.mat;  % load the channel map for the IntanConcatenate function
+parameters.rows = 6;  % Number of rows of electrodes on the Grid
+parameters.cols = 5;  % Number of colums of electrodes on the Grid
 parameters.Fs = 1000;
 parameters.ts = 1/parameters.Fs;
-parameters.windowBeforePull = 1; % in seconds
-parameters.windowAfterPull = 1; % in seconds
-parameters.windowBeforeCue = 0.5; % in seconds 
+parameters.windowBeforePull = 1.5; % in seconds
+parameters.windowAfterPull = 1.5; % in seconds
+parameters.windowBeforeCue = 1.5; % in seconds 
 parameters.windowAfterCue = 1.5; % in seconds 
 parameters.experiment = 'cue'; % self - internally generated, cue - cue initiated 
 parameters.opto = 0; % 1 - opto ON , 0 - opto OFF
-parameters.spacing = 0.1; % Grid spacing in mm
+parameters.xspacing = 0.3; % Grid spacing in mm between columns 
+parameters.yspacing = 0.2; % Grid spacing in mm between rows
 
 IntanConcatenate
 fpath = Intan.path; % where on disk do you want the analysis? ideally and SSD...
@@ -36,17 +37,17 @@ Intan.Tmax = Ts * size(Intan.allIntan,2);
 Intan.t = 0:Ts:Intan.Tmax-Ts;
 
 %% Removing bad channels from impedance values
-[Z,Intan.goodChMap,Intan.badChMap] = readImp(electrode_map,100e6);
+[Z,Intan.goodChMap,Intan.badChMap] = readImp(electrode_map,10e6);
 figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size(Z,1)));ylabel('Impedance (in \Omega)');set(gca,'xticklabel',{[]})
+% Intan.badChMap = [30];
 %Intan = removeBadCh(Intan,Intan.badCh);
-
 %% LFP
 set(0,'DefaultFigureWindowStyle','normal')
 LFP = fastpreprocess_filtering(Intan.allIntan,5000);
 % LFP = bestLFP(LFP);
 % LFP = bandFilter(LFP,'depth'); % Extract LFPs based on 'depth' or 'single'
 % LFPplot(LFP);
-LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.goodChMap); % Creating datacube
+LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.badChMap); % Creating datacube
 
 %% Loading Lever Data 
 [Behaviour] = readLever(parameters,LFP.times);
@@ -167,12 +168,12 @@ LFP.xfbetanarrow = bandpass_filter(LFP.LFPdatacube,6,9,4,1000);
 [LFP.xgpbetamean, ~] = generalized_phase(mean(LFP.xfbetanarrow,[1,2]),1000,0);
 
 %% Add trial segmented data to IntanBehaviour Variable
-IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP);
+IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters);
 % Saving paramters, path, IntanBehaviour to bin file 
 savepath = uigetdir(path);
-sessionName = [savepath,'/','Day2newComb.mat'];
+sessionName = [savepath,'/','GridsDay1Recording2.mat'];
 % save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
-save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
+save(sessionName,"IntanBehaviour","fpath","parameters","Waves","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
 
 %% Combining  multiple Intanbehaviour structs from multiple sessions
 combIntanBehaviour = horzcat(IntanBehaviour1, IntanBehaviour2);
@@ -191,10 +192,10 @@ clear combIntanBehaviour IntanBehaviour1 IntanBehaviour2;
 [PSD.ChFA , PSD.f] = getAvgPSD(IntanBehaviour.missTrace,parameters);
 
 
-PSD.trialPSDHit = squeeze(10*log10(mean(PSD.ChHit,2)));
-PSD.trialPSDMiss = squeeze(10*log10(mean(PSD.ChMiss,2)));
-PSD.trialPSDHitReward = squeeze(10*log10(mean(PSD.ChHitReward,2)));
-PSD.trialPSDFA = squeeze(10*log10(mean(PSD.ChFA,2)));
+PSD.trialPSDHit = squeeze(10*log10(mean(PSD.ChHit,2,"omitnan")));
+PSD.trialPSDMiss = squeeze(10*log10(mean(PSD.ChMiss,2,"omitnan")));
+PSD.trialPSDHitReward = squeeze(10*log10(mean(PSD.ChHitReward,2,"omitnan")));
+PSD.trialPSDFA = squeeze(10*log10(mean(PSD.ChFA,2,"omitnan")));
 
 % Removing trials with artifacts
 PSD.rejectThres = 39; % in db
@@ -224,10 +225,10 @@ PSD.trialPSDFA(PSD.artifactTrialIndex,:) = [];
 IntanBehaviour.missTrace(PSD.artifactTrialIndex)=[];
 PSD.ChFA(PSD.artifactTrialIndex,:,:) = [];
 
-PSD.avgPSDHit = squeeze(10*log10(mean(PSD.ChHit,[1 2])));
-PSD.avgPSDMiss = squeeze(10*log10(mean(PSD.ChMiss,[1 2])));
-PSD.avgPSDHitReward = squeeze(10*log10(mean(PSD.ChHitReward,[1 2])));
-PSD.avgPSDFA = squeeze(10*log10(mean(PSD.ChFA,[1 2])));
+PSD.avgPSDHit = squeeze(10*log10(mean(PSD.ChHit,[1 2],"omitnan")));
+PSD.avgPSDMiss = squeeze(10*log10(mean(PSD.ChMiss,[1 2],"omitnan")));
+PSD.avgPSDHitReward = squeeze(10*log10(mean(PSD.ChHitReward,[1 2],"omitnan")));
+PSD.avgPSDFA = squeeze(10*log10(mean(PSD.ChFA,[1 2],"omitnan")));
 
 figure();
 subplot(1,2,1);
@@ -319,11 +320,14 @@ trialno = 30;
 
 % Wave detection for wide band
 disp('Wave Detection for wide band ...')
-xf = arrayfun(@(s) s.xf, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
-xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
-wt = arrayfun(@(s) s.wt, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
-% parameters.rhoThres = getRhoThreshold(xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
-Waves.wavesHit = detectWaves(xf,xgp,wt,IntanBehaviour.cueHitTrace,parameters,parameters.rhoThres);
+xgp = arrayfun(@(s) s.xgp, IntanBehaviour.hitTrace, 'UniformOutput', false);
+parameters.rhoThres = getRhoThreshold(xgp,IntanBehaviour.hitTrace,parameters,nShuffle,trialno,threshold);
+if isfield(IntanBehaviour,'cueHitTrace')
+    xf = arrayfun(@(s) s.xf, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+    xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+    wt = arrayfun(@(s) s.wt, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
+    Waves.wavesHit = detectWaves(xf,xgp,wt,IntanBehaviour.cueHitTrace,parameters,parameters.rhoThres);
+end
 % Waves.wavesHit = detectPlanarWaves(xf,xgp,wt,IntanBehaviour.cueHitTrace,parameters,0.5);
 if isfield(IntanBehaviour,'cueMissTrace')
     xf = arrayfun(@(s) s.xf, IntanBehaviour.cueMissTrace, 'UniformOutput', false);
@@ -393,7 +397,10 @@ end
 %% Wave detecion for entire time 
 parameters.rhoThres= rhoThres;
 allwaves.LFPIndex = (1:1:size(LFP.LFP,2))';
-Wavesall = detectWaves(LFP.xf,LFP.xgp,LFP.wt,allwaves,parameters);
+xf{1,1} = LFP.xf;
+xgp{1,1} = LFP.xgp;
+wt{1,1} = LFP.wt;
+Wavesall = detectWaves(xf,xgp,wt,allwaves,parameters,0.6);
 WaveStatsSingle(Wavesall,parameters,1,size(LFP.LFP,2)/20);
 
 %% PLotting to check visually
@@ -418,9 +425,9 @@ plotOption = 1;
 [WaveStats2(4)] = getInitRewardStats(gammaWaves,parameters,plotOption);
 
 %% Mutual Information
-z_score = 1;
+z_score = 0;
 nIterrate = 100;
-Mi = getMI(IntanBehaviour,z_score,nIterrate,1,parameters);
+MI = getMI(IntanBehaviour,z_score,nIterrate,1,parameters);
 
 % For amplitude
 xgpHit = arrayfun(@(s) abs(s.xgp), IntanBehaviour.cueHitTrace, 'UniformOutput', false);
@@ -480,7 +487,7 @@ xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelV
 title('Trial Averaged Phase Gradient  Directionality (PGD)');box off;  legend('Hits','Shuffled');
 
 %% Cross-Trial Phase Alignment
-z_score = 1;
+z_score = 0;
 nIterrate = 2000;
 PA = getPA(IntanBehaviour,z_score,nIterrate,1,parameters);
 
@@ -523,15 +530,19 @@ xline(0,'-w','Cue','LabelVerticalAlignment','top');
 figure();
 subplot(2,1,1);
 title("Percentage Phase across all electrodes - Hits")
-imagesc(IntanBehaviour.hitTrace(1).time,1:32,reshape(PPLHitReward,[],size(PPLHitReward,3))); colormap(hot);
+imagesc(IntanBehaviour.hitTrace(1).time,1:32,reshape(PPLHitReward,[],size(PPLHitReward,3))); colormap(jet);
 ylabel("Electrodes");xlabel("Time (s)");
 xline(0,'-w','Threshold','LabelVerticalAlignment','top');
-xline(-mean(IntanBehaviour.reactionTime,'all'),'--w','Avg. Cue Time','LabelVerticalAlignment','top');
+yyaxis right; box off;
+plot(IntanBehaviour.hitTrace(1).time,squeeze(mean(PPLHitReward,[1 2],'omitnan')),'-r','Linewidth',0.8);
+% xline(-mean(IntanBehaviour.reactionTime,'all'),'--w','Avg. Cue Time','LabelVerticalAlignment','top');
 subplot(2,1,2);
 title("Percentage Phase across all electrodes - FA")
-imagesc(IntanBehaviour.missTrace(1).time,1:32,reshape(PPLFA,[],size(PPLFA,3))); colormap(hot);
+imagesc(IntanBehaviour.missTrace(1).time,1:32,reshape(PPLFA,[],size(PPLFA,3))); colormap(jet);
 ylabel("Electrodes");xlabel("Time (s)");
 xline(0,'-w','Threshold','LabelVerticalAlignment','top');
+yyaxis right; box off;
+plot(IntanBehaviour.missTrace(1).time,squeeze(mean(PPLFA,[1 2],'omitnan')),'-r','Linewidth',0.8);
 
 
 figure();
@@ -591,6 +602,32 @@ imagesc(IntanBehaviour.cueMissTrace(1).time,1:32,reshape(PPLMissz,[],size(PPLMis
 ylabel("Electrodes");xlabel("Time (s)");
 xline(0,'-w','Cue','LabelVerticalAlignment','top');
 
+nIterrate = 200;
+xgpHit = arrayfun(@(s) s.xgp, IntanBehaviour.hitTrace, 'UniformOutput', false);
+xgpMiss = arrayfun(@(s) s.xgp, IntanBehaviour.missTrace, 'UniformOutput', false);
+xgpComb = [xgpHit xgpMiss];
+nHit = size(xgpHit,2);
+nMiss = size(xgpMiss,2);
+nTot = nHit + nMiss;
+nullDistHit = zeros(parameters.rows,parameters.cols,size(PPLHitReward,3),nIterrate);
+nullDistMiss = zeros(parameters.rows,parameters.cols,size(PPLFA,3),nIterrate);
+for j=1:nIterrate
+    randIndex = randperm(nTot);
+    xgpHitRand = xgpComb(randIndex(1:nHit));
+    xgpMissRand = xgpComb(randIndex(nHit+1:end));
+    nullDistHit(:,:,:,j) = getPPL(xgpHitRand,parameters);
+    nullDistMiss(:,:,:,j) = getPPL(xgpMissRand,parameters);
+    j
+end
+muHitReward = mean(nullDistHit,4); % Mean of the null distribution
+sigmaHitReward = std(nullDistHit,0,4); % Standard deviation of null distribution
+muFA = mean(nullDistMiss,4); % Mean of the null distribution
+sigmaFA = std(nullDistMiss,0,4); % Standard deviation of null distribution
+
+PPLHitRewardz = (PPLHit-muHitReward)./sigmaHitReward;
+PPLFAz = (PPLMiss-muFA)./sigmaFA;
+
+
 %% Average LFP for Hits and Misses 
 LFPHit = arrayfun(@(s) reshape(s.xf,[],size(s.xf,3)), IntanBehaviour.cueHitTrace,"UniformOutput",false);
 LFPMiss = arrayfun(@(s) reshape(s.xf,[],size(s.xf,3)), IntanBehaviour.cueMissTrace,"UniformOutput",false);
@@ -605,25 +642,25 @@ avgLFPFA = zeros(parameters.rows*parameters.cols,size(LFPFA{1,1},2));
 % Getting trial averaged LFP for each channel for Hits
 a = cell2struct(LFPHit,'lfp',1);
 for i=1:(parameters.rows*parameters.cols)
-    avgLFPHit(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1);
+    avgLFPHit(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1,'omitnan');
 end
 
 % Getting trial averaged LFP for each channel for Miss
 a = cell2struct(LFPMiss,'lfp',1);
 for i=1:(parameters.rows*parameters.cols)
-    avgLFPMiss(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1);
+    avgLFPMiss(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1,'omitnan');
 end
 
 % Getting trial averaged LFP for each channel for Hits Rewards
 a = cell2struct(LFPHitReward,'lfp',1);
 for i=1:(parameters.rows*parameters.cols)
-    avgLFPHitReward(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1);
+    avgLFPHitReward(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1,'omitnan');
 end
 
 % Getting trial averaged LFP for each channel for False alarms
 a = cell2struct(LFPFA,'lfp',1);
 for i=1:(parameters.rows*parameters.cols)
-    avgLFPFA(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1);
+    avgLFPFA(i,:) = mean(cell2mat(arrayfun(@(s) s.lfp(i,:),a, 'UniformOutput',false)),1,'omitnan');
 end
 
 figure(); % Top half is hits and bottom half is misses
@@ -636,7 +673,7 @@ yline(32.5,'-k');caxis([-30 30]);
 % yline(64.5,'-k');caxis([-20 20]);
 
 figure(); % Top half is hits and bottom half is FA
-title("Trial Average LFP for Hits and Misses")
+title("Trial Average LFP for Hits and FA")
 imagesc(IntanBehaviour.hitTrace(1).time,1:64,[avgLFPHitReward;avgLFPFA]); colormap(jet);
 ylabel("Electrodes");xlabel("Time (s)"); 
 h = colorbar; h.Label.String = 'Amplitude (uV)';

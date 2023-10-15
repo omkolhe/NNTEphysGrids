@@ -3,13 +3,12 @@ function [rhoThres] = getRhoThreshold(xgp,behaviourTrace,parameters,nShuffle,tri
 % warningid = 'MATLAB:smoothn:SUpperBound';
 warning('off','all');
 
-spacing = parameters.spacing;
 X = parameters.X;
 Y = parameters.Y;
 
 ii = trialno;
 p = xgp{1,ii};
-evaluationPoints = find_evaluation_points(p,pi,spacing);
+evaluationPoints = find_evaluation_points(p,0,0.2);
 rho = zeros( nShuffle, length(evaluationPoints) );
 for kk=1:nShuffle
     if kk==1
@@ -17,11 +16,11 @@ for kk=1:nShuffle
     else
         pShuffle = shuffle_channels(p);
     end
-    [~,~,dx,dy] = phase_gradient_complex_multiplication( pShuffle, spacing );
+    [~,~,dx,dy] = phase_gradient_complex_multiplication( pShuffle, parameters.xspacing,parameters.yspacing );
     source = find_source_points( evaluationPoints, X, Y, dx, dy );
     for jj = 1:length(evaluationPoints)
         ph = angle( pShuffle(:,:,evaluationPoints(jj)) );
-        rho(kk,jj) = phase_correlation_distance( ph, source(:,jj), spacing );
+        rho(kk,jj) = phase_correlation_distance( ph, source(:,jj), parameters.xspacing,parameters.yspacing );
     end
 end
 
