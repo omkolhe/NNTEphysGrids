@@ -1,5 +1,7 @@
 function [PSDCh, f] = getAvgPSD(behaviourTrace,parameters)
 
+PSDCh = zeros(size(behaviourTrace,2),parameters.rows*parameters.cols,(parameters.Fs/2)+1);
+
 for trialno = 1:size(behaviourTrace,2)
     xf1 = behaviourTrace(trialno).rawLFP;
     for i=1:parameters.rows

@@ -9,10 +9,13 @@ Y = parameters.Y;
 waveTimeWindow = 40; % in points
 
 for ii=1:size(behaviourTrace,2)
+    
     Waves(ii).xf = xf{1,ii};
     Waves(ii).trialTime = behaviourTrace(ii).LFPIndex;
     Waves(ii).p = xgp{1,ii};
     Waves(ii).wt = wt{1,ii};
+    Waves(ii).wavePresent = zeros(1,size(Waves(ii).xf,3));
+    Waves(ii).waveStart = zeros(1,size(Waves(ii).xf,3));
     for ll=1:size(Waves(ii).p,3)
         Waves(ii).xf(:,:,ll) = inpaint_nans(Waves(ii).xf(:,:,ll),3);
         Waves(ii).p(:,:,ll) = inpaint_nans(Waves(ii).p(:,:,ll),3);
@@ -109,6 +112,8 @@ for ii=1:size(behaviourTrace,2)
     % that trial window
     for kk = 1:Waves(ii).nWaves
         %Waves(ii).speed(kk) = mean(abs(Waves(ii).insts(:,:,st:sp)),[1 2 3]); % speed in cm/s
+        Waves(ii).wavePresent(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)) = 1;
+        Waves(ii).waveStart(Waves(ii).waveTime(kk,1)) = 1;
         Waves(ii).speed(kk) = mean(abs(Waves(ii).s(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2))),'all'); % speed in cm/s
         Waves(ii).waveDir(kk) = mean(Waves(ii).velDir(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),'all'); 
         Waves(ii).wavelength(kk) = mean(Waves(ii).l(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),'all');

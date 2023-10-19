@@ -19,9 +19,15 @@ for t=1:size(xHit{1,1},3)
             xijtHit = cellfun(@(s) s(i,j,t),xHit);
             xijtMiss = cellfun(@(s) s(i,j,t),xMiss);
             xijtAll = horzcat(xijtHit,xijtMiss);
-            HX(i,j,t) = getShannonEntropy(xijtAll,Nbins,-pi,pi);
-            HXY(i,j,t) = getCondShannonEntropy(xijtHit,xijtMiss,Nbins,-pi,pi);
-            MI(i,j,t) = HX(i,j,t) - HXY(i,j,t);
+            if sum(isnan(xijtAll))>0
+                HX(i,j,t) = NaN;
+                HXY(i,j,t) = NaN;
+                MI(i,j,t) = NaN;
+            else
+                HX(i,j,t) = getShannonEntropy(xijtAll,Nbins,-pi,pi);
+                HXY(i,j,t) = getCondShannonEntropy(xijtHit,xijtMiss,Nbins,-pi,pi);
+                MI(i,j,t) = HX(i,j,t) - HXY(i,j,t);
+            end
         end
     end
 end

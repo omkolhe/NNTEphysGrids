@@ -219,3 +219,91 @@ xlabel( 'Time (ms)' ); ylabel( 'Amplitude (\muV)' );
 
 
 plot_evaluation_points( Waves.wavesHit(14).p, Waves.wavesHit(14).evaluationPoints );
+
+
+%% 
+animateWaves(13,Waves.wavesHitReward,0,2);
+
+figure,stack_plot(reshape(Waves.wavesHit(10).xf,[],3001),0,10,1000);
+
+figure,stack_plot(reshape(IntanBehaviour.hitTrace(7).xf,[],3001),1,4,1000);
+
+figure,stack_plot(reshape(LFP.xf(:,:,1:10000),[],10000),0,4,1000);
+
+
+%%
+wavesHitPresent = vertcat(Waves.wavesHit.wavePresent);
+wavesMissPresent = vertcat(Waves.wavesMiss.wavePresent);
+wavesHitStart = vertcat(Waves.wavesHit.waveStart);
+wavesMissStart = vertcat(Waves.wavesMiss.waveStart);
+
+wavesHitRewardPresent = vertcat(Waves.wavesHitReward.wavePresent);
+wavesFAPresent = vertcat(Waves.wavesFA.wavePresent);
+
+wavesHitRewardStart = vertcat(Waves.wavesHitReward.waveStart);
+wavesFAStart = vertcat(Waves.wavesFA.waveStart);
+
+figure();
+subplot(2,1,1);
+rasterPlot(wavesHitPresent);
+subplot(2,1,2);
+rasterPlot(wavesMissPresent);
+
+figure();
+subplot(2,1,1);
+rasterPlot(wavesHitStart);
+subplot(2,1,2);
+rasterPlot(wavesMissStart);
+
+figure();
+plot(smoothdata(sum(wavesHitPresent,1)));
+hold on;
+plot(smoothdata(sum(wavesMissPresent,1)));
+
+
+figure();
+subplot(2,1,1);
+rasterPlot(wavesHitRewardPresent);
+subplot(2,1,2);
+rasterPlot(wavesFAPresent);
+
+figure();
+subplot(2,1,1);
+rasterPlot(wavesHitRewardStart);
+subplot(2,1,2);
+rasterPlot(wavesFAStart);
+
+figure();
+plot(smoothn(sum(wavesHitRewardPresent,1)));
+hold on;
+plot(smoothn(sum(wavesFAPresent,1)));
+
+
+wavesMIHitPresent = vertcat(Waves.wavesMIHit.wavePresent);
+wavesMIFAPresent = vertcat(Waves.wavesMIFA.wavePresent);
+wavesMIHitStart = vertcat(Waves.wavesMIHit.waveStart);
+wavesMIFAStart = vertcat(Waves.wavesMIFA.waveStart);
+
+figure();
+subplot(2,1,1);
+rasterPlot(wavesMIHitPresent);
+subplot(2,1,2);
+rasterPlot(wavesMIFAPresent);
+
+figure();
+subplot(2,1,1);
+rasterPlot(wavesMIHitStart);
+subplot(2,1,2);
+rasterPlot(wavesMIFAStart);
+
+figure();
+plot(smoothdata(sum(wavesMIHitPresent,1)));
+hold on;
+plot(smoothdata(sum(wavesMIFAPresent,1)));
+
+figure();
+plot((sum(wavesMIHitPresent,1)));
+hold on;
+plot((sum(wavesMIFAPresent,1)));
+
+

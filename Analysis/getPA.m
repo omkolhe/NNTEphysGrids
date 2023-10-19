@@ -16,6 +16,12 @@ xgpFA = arrayfun(@(s) s.xgp, IntanBehaviour.missTrace, 'UniformOutput', false);
 PA.HitReward = calPhaseAlignment(xgpHitReward,parameters);
 PA.FA = calPhaseAlignment(xgpFA,parameters);
 
+xgpMIHit = arrayfun(@(s) s.xgp, IntanBehaviour.MIHitTrace, 'UniformOutput', false);
+xgpMIFA = arrayfun(@(s) s.xgp, IntanBehaviour.MIFATrace, 'UniformOutput', false);
+PA.MIHit = calPhaseAlignment(xgpMIHit,parameters);
+PA.MIFA = calPhaseAlignment(xgpMIFA,parameters);
+
+
 if plotFlag == 1
     if strcmp(parameters.experiment,'cue')
         figure();
@@ -42,6 +48,18 @@ if plotFlag == 1
     imagesc(IntanBehaviour.missTrace(1).time,1:nElectrodes,reshape(PA.FA,[],size(PA.FA,3))); colormap(hot);
     ylabel("Electrodes");xlabel("Time (s)");
     xline(0,'-w','No Reward','LabelVerticalAlignment','top');
+
+    figure();
+    title("Phase Alignment across all electrodes - Hit MI")
+    subplot(2,1,1);
+    imagesc(IntanBehaviour.MIHitTrace(1).time,1:nElectrodes,reshape(PA.MIHit,[],size(PA.MIHit,3))); colormap(hot);
+    ylabel("Electrodes");xlabel("Time (s)");
+    xline(0,'-w','MI','LabelVerticalAlignment','top');
+    subplot(2,1,2);
+    title("Phase Alignment across all electrodes - FA MI")
+    imagesc(IntanBehaviour.MIFATrace(1).time,1:nElectrodes,reshape(PA.MIFA,[],size(PA.MIFA,3))); colormap(hot);
+    ylabel("Electrodes");xlabel("Time (s)");
+    xline(0,'-w','MI','LabelVerticalAlignment','top');
     
     if strcmp(parameters.experiment,'cue')
         figure();
@@ -64,6 +82,14 @@ if plotFlag == 1
     xline(0,'--r','Reward','LabelVerticalAlignment','top');
     xline(-mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Cue Time','LabelVerticalAlignment','top');
     title('Phase Alignment for Hits');box off;legend('Hit Reward','FA');
+
+    figure();
+    title("Phase Alignment averaged across Electrodes")
+    plot(IntanBehaviour.MIHitTrace(1).time,squeeze(nanmean(PA.MIHit,[1 2])),'-r','LineWidth',1.2); hold on;
+    plot(IntanBehaviour.MIFATrace(1).time,squeeze(nanmean(PA.MIFA,[1 2])),'-k','LineWidth',1);
+    ylabel("Phase Alignment"); xlabel("Time (s)");
+    xline(0,'--r','MI','LabelVerticalAlignment','top');
+    title('Phase Alignment for Hits vs FA - Motion Initiation');box off;legend('Hits','FAs');
 end
 
 % z-scoring

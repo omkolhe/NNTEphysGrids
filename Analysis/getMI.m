@@ -13,7 +13,9 @@ xgpMiss = arrayfun(@(s) angle(s.xgp), IntanBehaviour.cueMissTrace, 'UniformOutpu
 if plotFlag == 1
     figure();
     title("Mututal Information across all electrodes - Phase")
-    imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,peakSort2DArray(reshape(MI.PhaseCue,[],size(MI.PhaseCue,3)),'descend',2)); colormap(jet);
+    a = peakSort2DArray(reshape(MI.PhaseCue,[],size(MI.PhaseCue,3)),'descend',2);
+    a = removeNaNRows(a);
+    imagesc(IntanBehaviour.cueHitTrace(1).time,1:size(a,1),a); colormap(hot);
     ylabel("Electrodes");xlabel("Time (s)"); 
     h = colorbar; h.Label.String = 'Information (bits)';
     xline(0,'-w','Cue','LabelVerticalAlignment','top');
@@ -28,11 +30,29 @@ xgpFA = arrayfun(@(s) angle(s.xgp), IntanBehaviour.missTrace, 'UniformOutput', f
 if plotFlag == 1
     figure();
     title("Mututal Information (Reward) across all electrodes - Phase")
-    imagesc(IntanBehaviour.hitTrace(1).time,1:32,peakSort2DArray(reshape(MI.PhaseReward,[],size(MI.PhaseReward,3)),'descend',2)); colormap(jet);
+    a = peakSort2DArray(reshape(MI.PhaseReward,[],size(MI.PhaseReward,3)),'descend',2);
+    a = removeNaNRows(a);
+    imagesc(IntanBehaviour.hitTrace(1).time,1:size(a,1),a); colormap(hot);
     ylabel("Electrodes");xlabel("Time (s)"); 
     h = colorbar; h.Label.String = 'Information (bits)';
     xline(0,'-w','Reward','LabelVerticalAlignment','top');
     xline(-1*mean(IntanBehaviour.reactionTime,'all'),'-w','Avg. Cue Time','LabelVerticalAlignment','top');
+end
+
+% For phase - Motion encoding
+xgpMIHit = arrayfun(@(s) angle(s.xgp), IntanBehaviour.MIHitTrace, 'UniformOutput', false);
+xgpMIFA = arrayfun(@(s) angle(s.xgp), IntanBehaviour.MIFATrace, 'UniformOutput', false);
+[MI.PhaseMI] = getMutualInformation(xgpMIHit,xgpMIFA,parameters);
+
+if plotFlag == 1
+    figure();
+    title("Mututal Information (Motion Initiation) across all electrodes - Phase")
+    a = peakSort2DArray(reshape(MI.PhaseMI,[],size(MI.PhaseMI,3)),'descend',2);
+    a = removeNaNRows(a);
+    imagesc(IntanBehaviour.MIHitTrace(1).time,1:size(a,1),a); colormap(hot);
+    ylabel("Electrodes");xlabel("Time (s)"); 
+    h = colorbar; h.Label.String = 'Information (bits)';
+    xline(0,'-w','MI','LabelVerticalAlignment','top');
 end
 
 if z_score == 1

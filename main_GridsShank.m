@@ -29,6 +29,7 @@ parameters.experiment = 'cue'; % self - internally generated, cue - cue initiate
 parameters.opto = 0; % 1 - opto ON , 0 - opto OFF
 parameters.xspacing = 0.06; % Grid spacing in mm between columns 
 parameters.yspacing = 0.06; % Grid spacing in mm between rows
+parameters.shank = 1; % 1 - if UCLA 64Ch single shank data is present
 
 IntanConcatenate
 fpath = Intan.path; % where on disk do you want the analysis? ideally and SSD...

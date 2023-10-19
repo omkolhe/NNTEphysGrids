@@ -1,20 +1,20 @@
-function [wavesStat] = getWaveStats(Waves,parameters,plot)
+function [wavesStat] = getWaveStats(Waves1,Waves2,parameters,plot)
 
 rows = parameters.rows;
 cols = parameters.cols;
 
 % Number of waves
-WavesPerTrial = mean( horzcat(Waves.wavesHit(1:end).nWaves),'all');
-totalWaves =  sum( horzcat(Waves.wavesHit(1:end).nWaves));
+WavesPerTrial = mean( horzcat(Waves1(1:end).nWaves),'all');
+totalWaves =  sum( horzcat(Waves1(1:end).nWaves));
 
-WavesPerTrialMiss = mean( horzcat(Waves.wavesMiss(1:end).nWaves),'all');
-totalWavesMiss =  sum( horzcat(Waves.wavesMiss(1:end).nWaves));
+WavesPerTrialMiss = mean( horzcat(Waves2(1:end).nWaves),'all');
+totalWavesMiss =  sum( horzcat(Waves2(1:end).nWaves));
 
 % Wave Speed stats
-speedComb = horzcat(Waves.wavesHit(1:end).speed);
+speedComb = horzcat(Waves1(1:end).speed);
 avgSpeed = mean(speedComb);
 
-speedCombMiss = horzcat(Waves.wavesMiss(1:end).speed);
+speedCombMiss = horzcat(Waves2(1:end).speed);
 avgSpeedMiss = mean(speedCombMiss);
 
 % Perform the t-test.
@@ -47,10 +47,10 @@ end
 
 
 % Wavelength stats
-lComb = horzcat(Waves.wavesHit(1:end).wavelength);
+lComb = horzcat(Waves1(1:end).wavelength);
 avgl = mean(lComb);
 
-lCombMiss = horzcat(Waves.wavesMiss(1:end).wavelength);
+lCombMiss = horzcat(Waves2(1:end).wavelength);
 avglMiss = mean(lCombMiss);
 
 % Perform the t-test.
@@ -82,10 +82,10 @@ if plot == 1
 end
 
 % Wave Duration stats
-tComb = horzcat(Waves.wavesHit(1:end).waveDuration);
+tComb = horzcat(Waves1(1:end).waveDuration);
 avgt = mean(tComb);
 
-tCombMiss = horzcat(Waves.wavesMiss(1:end).waveDuration);
+tCombMiss = horzcat(Waves2(1:end).waveDuration);
 avgtMiss = mean(tCombMiss);
 
 % Perform the t-test.
@@ -117,10 +117,10 @@ if plot == 1
 end
 
 % Wave Amplitude stats
-ampComb = horzcat(Waves.wavesHit(1:end).waveAmp);
+ampComb = horzcat(Waves1(1:end).waveAmp);
 avgAmp = mean(ampComb);
 
-ampCombMiss = horzcat(Waves.wavesMiss(1:end).waveAmp);
+ampCombMiss = horzcat(Waves2(1:end).waveAmp);
 avgAmpMiss = mean(ampCombMiss);
 
 % Perform the t-test.
@@ -152,9 +152,9 @@ if plot == 1
 end
 
 % Wave direction stats
-dirComb = horzcat(Waves.wavesHit(1:end).waveDir);
+dirComb = horzcat(Waves1(1:end).waveDir);
 avgDir = mean(dirComb);
-dirCombMiss = horzcat(Waves.wavesMiss(1:end).waveDir);
+dirCombMiss = horzcat(Waves2(1:end).waveDir);
 avgDirMiss = mean(dirCombMiss);
 
 [p,~,~] = circ_kuipertest(dirComb, dirCombMiss,60,0);
@@ -189,9 +189,9 @@ title('Wave Direction :  Misses');box off;
 
 
 % Wave source points stats
-sourceComb = vertcat(Waves.wavesHit(1:end).source);
+sourceComb = vertcat(Waves1(1:end).source);
 sourceDen = zeros(rows,cols);
-sourceCombMiss = vertcat(Waves.wavesMiss(1:end).source);
+sourceCombMiss = vertcat(Waves2(1:end).source);
 sourceDenMiss = zeros(rows,cols);
 
 for j=1:size(sourceComb,2)
@@ -214,8 +214,8 @@ if plot == 1
     title('Spatial map of sources points :   Misses'); colorbar;
 end 
 
-wavesStat.evaluationPoints =  vertcat(Waves.wavesHit(1:end).evaluationPoints);
-wavesStat.evaluationPointsMiss =  vertcat(Waves.wavesMiss(1:end).evaluationPoints);
+wavesStat.evaluationPoints =  horzcat(Waves1(1:end).evaluationPoints);
+wavesStat.evaluationPointsMiss =  horzcat(Waves2(1:end).evaluationPoints);
 wavesStat.speed = speedComb;
 wavesStat.avgSpeed = avgSpeed;
 wavesStat.speedMiss = speedCombMiss;
@@ -235,6 +235,11 @@ wavesStat.WavesPerTrial = WavesPerTrial;
 wavesStat.totalWaves = totalWaves;
 wavesStat.WavesPerTrialMiss = WavesPerTrialMiss;
 wavesStat.totalWavesMiss = totalWavesMiss;
+
+
+% Getting wave distribution 
+
+
 
 end
 

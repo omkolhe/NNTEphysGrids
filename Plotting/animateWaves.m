@@ -15,6 +15,7 @@ function animateWaves(trial, Waves,saveOption,waveID)
 %
 
 x = rad2deg(angle(Waves(trial).p));
+% x = abs(Waves(trial).p);
 evaluation_points = Waves(trial).evaluationPoints;
 source = Waves(trial).source;
 vx = Waves(trial).vx;
@@ -34,7 +35,7 @@ if saveOption == 1
 end
 
 ctr = 1; % wave detections counter
-for jj = 4% 1:length(evaluation_points)
+for jj = 1:length(evaluation_points)
     % get start and stop time, truncating if necessary
     st = Waves(trial).waveTime(jj,1) - plot_pre_time; sp = Waves(trial).waveTime(jj,2) + plot_pre_time;
     if ( st < 1 ), st = 1; end; if ( sp > size(x,3) ), sp = size(x,3); end
@@ -48,8 +49,8 @@ for jj = 4% 1:length(evaluation_points)
     figure; 
 %     title( sprintf( 'trial %d, wave example %d, 0 of %d ms', trial, ctr, size(x_plot,3) ) );
     title( sprintf( 'Detected Wave, 0 of %d ms', size(x_plot,3) ) );
-%     color_range = [ min(reshape(x_plot,[],1)) max(reshape(x_plot,[],1)) ];
-    color_range = [ -80 80 ];
+    color_range = [ min(reshape(x_plot,[],1)) max(reshape(x_plot,[],1)) ];
+%     color_range = [ -80 80 ];
     h = imagesc( x_plot(:,:,1) ); hold on; axis image;
     plot( source(jj,1), source(jj,2), '.', 'markersize', 35, 'color', [.7 .7 .7] );
     h2 = quiver(source(jj,1), source(jj,2),-vx_plot(1),-vy_plot(1));
@@ -67,6 +68,7 @@ for jj = 4% 1:length(evaluation_points)
     %set( cb, 'location', 'southoutside' )
     set( cb, 'location', 'east' )
     set( cb, 'position', [0.7    0.325   0.06   0.4] );
+    set( get(cb,'ylabel'), 'string', 'Amplitude (in \mu V)' ); set( cb, 'linewidth', 2 )
     set( get(cb,'ylabel'), 'string', 'Phase (in deg)' ); set( cb, 'linewidth', 2 )
     if (saveOption == 1 && jj == waveID)
         writeVideo(writerobj,getframe(gcf)); %grabs current fig frame

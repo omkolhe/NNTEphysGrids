@@ -9,6 +9,9 @@ function [globalAvgSpectrogram, avgSpectrogramCWT,globalAvgBehaviour,fwt] = getA
 % flimit - the frequency limits for the spectogram
 
 voicesPerOctave = 20;
+nFreqs = floor(voicesPerOctave*(log(flimit(2)/flimit(1))/log(2))) + 1;
+
+spectrogramCh = zeros(parameters.rows*parameters.cols,nFreqs,size(behaviourTrace(1).rawLFP,3));
 
 for trialno = 1:size(behaviourTrace,2)
     xf1 = behaviourTrace(trialno).rawLFP;
