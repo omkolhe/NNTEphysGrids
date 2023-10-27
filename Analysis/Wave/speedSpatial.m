@@ -16,4 +16,4 @@ function [s] = speedSpatial( wt, pm )
 assert( ( ndims(wt) == 3 ) & ( ndims(pm) == 3 ), 'datacube inputs required' );
 assert( isequal( size(wt), size(pm) ), 'datacube sizes must be equal' );
 
-s = 0.1*squeeze(mean(wt,[1 2]) ./ mean(abs(pm),[1 2]))'; % in cm/s
+s = 0.1*squeeze(mean(wt,[1 2],'omitnan') ./ mean(abs(pm),[1 2],'omitnan'))'; % in cm/s

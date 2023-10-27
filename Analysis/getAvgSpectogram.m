@@ -1,4 +1,4 @@
-function [globalAvgSpectrogram, avgSpectrogramCWT,globalAvgBehaviour,fwt] = getAvgSpectogram(behaviourTrace,parameters,flimit)
+function [globalAvgSpectrogram, avgSpectrogramCWT,globalAvgBehaviour,fwt] = getAvgSpectogram(behaviourTrace,parameters,flimit,shank)
 
 %% Inputs
 % xf - filtered signal in datacube format
@@ -7,20 +7,28 @@ function [globalAvgSpectrogram, avgSpectrogramCWT,globalAvgBehaviour,fwt] = getA
 % details arranged as trials
 % parameters - paramaters files
 % flimit - the frequency limits for the spectogram
+% shank = 1 - probe lfp is used 
+% shank = 0 - gird lfp is used
 
 voicesPerOctave = 20;
 nFreqs = floor(voicesPerOctave*(log(flimit(2)/flimit(1))/log(2))) + 1;
 
-spectrogramCh = zeros(parameters.rows*parameters.cols,nFreqs,size(behaviourTrace(1).rawLFP,3));
+if shank == 0
+    spectrogramCh = zeros(parameters.rows*parameters.cols,nFreqs,size(behaviourTrace(1).rawLFP,3));
+else
+    spectrogramCh = zeros(size(behaviourTrace(1).rawLFPProbe,1),nFreqs,size(behaviourTrace(1).rawLFPProbe,3));
+end
 
 for trialno = 1:size(behaviourTrace,2)
-    xf1 = behaviourTrace(trialno).rawLFP;
+    if shank == 0
+        xf1 = behaviourTrace(trialno).rawLFP;
+    else
+        xf1 = behaviourTrace(trialno).rawLFPProbe;
+    end
     relTime = behaviourTrace(trialno).time;
-%     xf1Avg = squeeze(mean(xf1,[1 2]));
-%     [avgSpectrogramCWT(trialno,:,:),fwt] = calCWTSpectogram(xf1Avg,relTime,LFPFs,voicesPerOctave,flimit,0);
     % Average spectrogram across all channels
-    for i=1:parameters.rows
-        for j=1:parameters.cols
+    for i=1:size(xf1,1)
+        for j=1:size(xf1,2)
             a = squeeze(xf1(i,j,:));
             if sum(isnan(a))>0
                 spectrogramCh((i-1)*parameters.cols + j,:,:) = NaN;
@@ -38,5 +46,10 @@ plotSpectrogram(10*log10(squeeze(globalAvgSpectrogram)),relTime,fwt,'surf');
 hold on; yyaxis right; box off;
 plot(relTime,globalAvgBehaviour,'-w','LineWidth',2.5);
 ylabel('Lever deflection (mV)');
+if shank == 0
+    title('Trial Averaged Wavelet Spectrogram - Grids');
+else
+    title('Trial Averaged Wavelet Spectrogram for - Shanks');
 end
+drawnow
 

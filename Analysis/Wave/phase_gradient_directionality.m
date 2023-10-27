@@ -15,8 +15,8 @@ function [PGD] = phase_gradient_directionality(pm,dx,dy)
 % OUTPUT
 % pdg - phase gradient directionality time series 
 %
-num = sqrt(mean(dx,[1 2]).^2 + mean(dy,[1 2]).^2);
-den = (2*pi).*mean(pm,[1 2]);
+num = sqrt(mean(dx,[1 2],'omitnan').^2 + mean(dy,[1 2],'omitnan').^2);
+den = (2*pi).*mean(pm,[1 2],'omitnan');
 PGD = squeeze(num./den)';
 end
 

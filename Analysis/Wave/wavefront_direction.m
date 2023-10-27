@@ -19,7 +19,7 @@ assert( isequal( size(pd), size(s) ), 'datacube sizes must be equal' );
 
 mag = -1;
 % mag = -abs(s)/10; %in cm/s
-vx = squeeze(mean(cos(pd),[1 2]).*mag)' ;
-vy = squeeze(mean(sin(pd),[1 2]).*mag)';
+vx = squeeze(mean(cos(pd),[1 2],'omitnan').*mag)' ;
+vy = squeeze(mean(sin(pd),[1 2],'omitnan').*mag)';
 end
 

@@ -23,7 +23,7 @@ Gamma.missAvgPhase = mean(cat(4,Gamma.hitPhase{:}),4);
 figure();
 subplot(2,1,1);hold on;title('Average Beta band power for Hits');xlabel('Time (s)');ylabel('Power (in dB)');
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
-xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.RT,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
 plot(IntanBehaviour.cueHitTrace(1).time,10*log10(reshape(Beta.hitAvgPower,[],size(Beta.hitAvgPower,3))),'Color', [0 0 1 0.1],'LineWidth',1.5);
 h(1)=plot(IntanBehaviour.cueHitTrace(1).time,10*log10(mean(reshape(Beta.hitAvgPower,[],size(Beta.hitAvgPower,3)),1)),'Color', [0 0 1 1],'LineWidth',1.5);
 plot(IntanBehaviour.cueMissTrace(1).time,10*log10(reshape(Beta.missAvgPower,[],size(Beta.missAvgPower,3))),'Color', [1 0 0 0.1],'LineWidth',1.5);
@@ -31,7 +31,7 @@ h(2)=plot(IntanBehaviour.cueMissTrace(1).time,10*log10(mean(reshape(Beta.missAvg
 legend(h,'Hits','Misses');
 subplot(2,1,2);hold on;title('Average Gamma band power for Hits');xlabel('Time (s)');ylabel('Power (in dB)');
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
-xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top')
+xline(mean(IntanBehaviour.RT,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top')
 plot(IntanBehaviour.cueHitTrace(1).time,10*log10(reshape(Gamma.hitAvgPower,[],size(Gamma.hitAvgPower,3))),'Color', [0 0 1 0.1],'LineWidth',1.5);
 plot(IntanBehaviour.cueHitTrace(1).time,10*log10(mean(reshape(Gamma.hitAvgPower,[],size(Gamma.hitAvgPower,3)),1)),'Color', [0 0 1 1],'LineWidth',1.5);
 plot(IntanBehaviour.cueMissTrace(1).time,10*log10(reshape(Gamma.missAvgPower,[],size(Gamma.missAvgPower,3))),'Color', [1 0 0 0.1],'LineWidth',1.5);
@@ -54,7 +54,7 @@ Gamma.missAvgPowerz = (Gamma.missAvgPower - Gamma.muMiss)./Gamma.sigmaMiss;
 figure();
 subplot(2,1,1);hold on;title('z-scored average Beta band power for Hits');xlabel('Time (s)');ylabel('Power (in dB)');
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
-xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.RT,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
 plot(IntanBehaviour.cueHitTrace(1).time,reshape(Beta.hitAvgPowerz,[],size(Beta.hitAvgPowerz,3)),'Color', [0 0 1 0.1],'LineWidth',1.5);
 h(1)=plot(IntanBehaviour.cueHitTrace(1).time,mean(reshape(Beta.hitAvgPowerz,[],size(Beta.hitAvgPowerz,3)),1),'Color', [0 0 1 1],'LineWidth',1.5);
 plot(IntanBehaviour.cueMissTrace(1).time,reshape(Beta.missAvgPowerz,[],size(Beta.missAvgPowerz,3)),'Color', [1 0 0 0.1],'LineWidth',1.5);
@@ -62,7 +62,7 @@ h(2)=plot(IntanBehaviour.cueMissTrace(1).time,mean(reshape(Beta.missAvgPowerz,[]
 legend(h,'Hits','Misses');
 subplot(2,1,2);title('z-scored average Gamma band power for Hits');xlabel('Time (s)');ylabel('Power (in dB)');
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
-xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.RT,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
 plot(IntanBehaviour.cueHitTrace(1).time,reshape(Gamma.hitAvgPowerz,[],size(Gamma.hitAvgPowerz,3)),'Color', [0 0 1 0.1],'LineWidth',1.5);
 hold on; plot(IntanBehaviour.cueHitTrace(1).time,mean(reshape(Gamma.hitAvgPowerz,[],size(Gamma.hitAvgPowerz,3)),1),'Color', [0 0 1 1],'LineWidth',1.5);
 plot(IntanBehaviour.cueMissTrace(1).time,reshape(Gamma.missAvgPowerz,[],size(Gamma.missAvgPowerz,3)),'Color', [1 0 0 0.1],'LineWidth',1.5);
@@ -135,7 +135,7 @@ plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PGAHit,[1 2])),'-r','Lin
 plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PGAMiss,[1 2])),'-k','LineWidth',1);
 ylabel("Phase Gradient Alignment"); xlabel("Time (s)");
 xline(0,'--r','Cue','LabelVerticalAlignment','top');
-xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.RT,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
 title('Phase Gradient Alignment for Hits');box off;% legend('Hits','Miss');
 
 %%
@@ -143,12 +143,12 @@ figure();
 for i = 1:4
     st = (i-1)*500;
     sp = (i)*500;
-    dirComb1 = horzcat(gammaWaves.wavesHit(1:end).waveDir);
-    evalPointsHit = horzcat(gammaWaves.wavesHit(1:end).evaluationPoints);
+    dirComb1 = horzcat(Waves.wavesHit(1:end).waveDir);
+    evalPointsHit = horzcat(Waves.wavesHit(1:end).evaluationPoints);
     WaveComb(i).Hit = dirComb1(evalPointsHit >=st & evalPointsHit <= sp);
 
-    dirCombMiss1 = horzcat(gammaWaves.wavesMiss(1:end).waveDir);
-    evalPointsMiss = horzcat(gammaWaves.wavesMiss(1:end).evaluationPoints);
+    dirCombMiss1 = horzcat(Waves.wavesMiss(1:end).waveDir);
+    evalPointsMiss = horzcat(Waves.wavesMiss(1:end).evaluationPoints);
     WaveComb(i).Miss = dirCombMiss1(evalPointsMiss >=st & evalPointsMiss <= sp);
 
     subplot(2,4,i)
@@ -162,8 +162,8 @@ plot(1:4,arrayfun(@(s) mean(s.Hit,'all'), WaveComb));
 plot(1:4,arrayfun(@(s) mean(s.Miss,'all'), WaveComb));
 a = arrayfun(@(s) circ_kuipertest(s.Hit,s.Miss,60,0) , WaveComb);
 %%
-figure();
-for i = 1:20
+
+for i = 1:30
     st = (i-1)*100;
     sp = (i)*100;
     dirComb1 = horzcat(Waves.wavesHit(1:end).speed);
@@ -176,10 +176,146 @@ for i = 1:20
 end
 
 figure(); hold on;
-plot(100:100:2000,arrayfun(@(s) mean(s.Hit,'all'), WaveComb));
-plot(100:100:2000,arrayfun(@(s) mean(s.Miss,'all'), WaveComb));
-
+avgVarHit = arrayfun(@(s) mean(s.Hit,'all'), WaveComb);
+maxVarHit = max(avgVarHit);
+avgVarMiss = arrayfun(@(s) mean(s.Miss,'all'), WaveComb);
+maxVarMiss = max(avgVarMiss);
 a = arrayfun(@(s) ranksum(s.Hit,s.Miss) , WaveComb);
+pVal = (a<0.01);
+significanceX = find(pVal)*100;
+significanceY = 1.1*max(maxVarHit,maxVarMiss)*ones(1,length(significanceX));
+h1 = plot(100:100:3000,avgVarHit,'Color', [0 0 0 1],'LineWidth',1.5);
+h2 = plot(100:100:3000,avgVarMiss,'Color', [0 0 0 0.2],'LineWidth',1.5);
+xline(1501,'--r','Cue');xlabel('Time (ms)')
+plot(significanceX,significanceY,'r*');
+legend([h1 h2],'Hits','Miss','Location','best');
+
+% figure,plot(100:100:3000,a);
+
+%%
+figure();
+for i = 1:30
+    st = (i-1)*100;
+    sp = (i)*100;
+    dirComb1 = horzcat(Waves.wavesHitReward(1:end).speed);
+    evalPointsHit = horzcat(Waves.wavesHitReward(1:end).evaluationPoints);
+    WaveComb(i).Hit = dirComb1(evalPointsHit >=st & evalPointsHit <= sp);
+
+    dirCombMiss1 = horzcat(Waves.wavesFA(1:end).speed);
+    evalPointsMiss = horzcat(Waves.wavesFA(1:end).evaluationPoints);
+    WaveComb(i).Miss = dirCombMiss1(evalPointsMiss >=st & evalPointsMiss <= sp);
+end
+
+figure(); hold on;
+avgVarHit = arrayfun(@(s) mean(s.Hit,'all'), WaveComb);
+maxVarHit = max(avgVarHit);
+avgVarMiss = arrayfun(@(s) mean(s.Miss,'all'), WaveComb);
+maxVarMiss = max(avgVarMiss);
+a = arrayfun(@(s) ranksum(s.Hit,s.Miss) , WaveComb);
+pVal = (a<0.05);
+significanceX = find(pVal)*100;
+significanceY = 1.1*max(maxVarHit,maxVarMiss)*ones(1,length(significanceX));
+h1 = plot(100:100:3000,avgVarHit,'Color', [0 0 0 1],'LineWidth',1.5);
+h2 = plot(100:100:3000,avgVarMiss,'Color', [0 0 0 0.2],'LineWidth',1.5);
+xline(1501,'--r','Reward','LabelVerticalAlignment','top');
+ylabel('Speed (cm/s)');xlabel('Time (ms)')
+plot(significanceX,significanceY,'r*');
+legend([h1 h2],'Hits','FAs');
+
+% figure,plot(100:100:3000,a);
+
+%%
+for i = 1:30
+    st = (i-1)*100;
+    sp = (i)*100;
+    dirComb1 = horzcat(Waves.wavesMIHit(1:end).speed);
+    evalPointsHit = horzcat(Waves.wavesMIHit(1:end).evaluationPoints);
+    WaveComb(i).Hit = dirComb1(evalPointsHit >=st & evalPointsHit <= sp);
+
+    dirCombMiss1 = horzcat(Waves.wavesMIFA(1:end).speed);
+    evalPointsMiss = horzcat(Waves.wavesMIFA(1:end).evaluationPoints);
+    WaveComb(i).Miss = dirCombMiss1(evalPointsMiss >=st & evalPointsMiss <= sp);
+end
+
+figure(); hold on;
+avgVarHit = arrayfun(@(s) mean(s.Hit,'all'), WaveComb);
+maxVarHit = max(avgVarHit);
+avgVarMiss = arrayfun(@(s) mean(s.Miss,'all'), WaveComb);
+maxVarMiss = max(avgVarMiss);
+a = arrayfun(@(s) ranksum(s.Hit,s.Miss) , WaveComb);
+pVal = (a<0.05);
+significanceX = find(pVal)*100;
+significanceY = 1.1*max(maxVarHit,maxVarMiss)*ones(1,length(significanceX));
+h1 = plot(100:100:3000,avgVarHit,'Color', [0 0 0 1],'LineWidth',1.5);
+h2 = plot(100:100:3000,avgVarMiss,'Color', [0 0 0 0.2],'LineWidth',1.5);
+xline(1501,'--r','MI');xlabel('Time (ms)')
+plot(significanceX,significanceY,'r*');
+legend([h1 h2],'Hits','FAs');
+
+% figure,plot(100:100:3000,a);
+
+
+%%
+for i = 1:6
+    st = (i-1)*500;
+    sp = (i)*500;
+    dirComb1 = horzcat(Waves.wavesHit(1:end).waveDir);
+    evalPointsHit = horzcat(Waves.wavesHit(1:end).evaluationPoints);
+    WaveComb(i).Hit = dirComb1(evalPointsHit >=st & evalPointsHit <= sp);
+
+    dirCombMiss1 = horzcat(Waves.wavesMiss(1:end).waveDir);
+    evalPointsMiss = horzcat(Waves.wavesMiss(1:end).evaluationPoints);
+    WaveComb(i).Miss = dirCombMiss1(evalPointsMiss >=st & evalPointsMiss <= sp);
+end
+
+figure(); hold on;
+for i=1:6
+    subplot(2,6,i);
+    polarhistogram(WaveComb(i).Hit,60);
+    subplot(2,6,6+i);
+    polarhistogram(WaveComb(i).Miss,60);
+end
+
+for i = 1:6
+    st = (i-1)*500;
+    sp = (i)*500;
+    dirComb1 = horzcat(Waves.wavesHitReward(1:end).waveDir);
+    evalPointsHit = horzcat(Waves.wavesHitReward(1:end).evaluationPoints);
+    WaveComb(i).Hit = dirComb1(evalPointsHit >=st & evalPointsHit <= sp);
+
+    dirCombMiss1 = horzcat(Waves.wavesFA(1:end).waveDir);
+    evalPointsMiss = horzcat(Waves.wavesFA(1:end).evaluationPoints);
+    WaveComb(i).Miss = dirCombMiss1(evalPointsMiss >=st & evalPointsMiss <= sp);
+end
+
+figure(); hold on;
+for i=1:6
+    subplot(2,6,i);
+    polarhistogram(WaveComb(i).Hit,60);
+    subplot(2,6,6+i);
+    polarhistogram(WaveComb(i).Miss,60);
+end
+
+
+for i = 1:6
+    st = (i-1)*500;
+    sp = (i)*500;
+    dirComb1 = horzcat(Waves.wavesMIHit(1:end).waveDir);
+    evalPointsHit = horzcat(Waves.wavesMIHit(1:end).evaluationPoints);
+    WaveComb(i).Hit = dirComb1(evalPointsHit >=st & evalPointsHit <= sp);
+
+    dirCombMiss1 = horzcat(Waves.wavesMIFA(1:end).waveDir);
+    evalPointsMiss = horzcat(Waves.wavesMIFA(1:end).evaluationPoints);
+    WaveComb(i).Miss = dirCombMiss1(evalPointsMiss >=st & evalPointsMiss <= sp);
+end
+
+figure(); hold on;
+for i=1:6
+    subplot(2,6,i);
+    polarhistogram(WaveComb(i).Hit,60);
+    subplot(2,6,6+i);
+    polarhistogram(WaveComb(i).Miss,60);
+end
 
 %% test for direction
 dirComb = horzcat(Waves.wavesHit(1:end).waveDir);
@@ -222,11 +358,11 @@ plot_evaluation_points( Waves.wavesHit(14).p, Waves.wavesHit(14).evaluationPoint
 
 
 %% 
-animateWaves(13,Waves.wavesHitReward,0,2);
+animateWaves(3,Waves.wavesHit,0,2);
 
-figure,stack_plot(reshape(Waves.wavesHit(10).xf,[],3001),0,10,1000);
+figure,stack_plot(reshape(Waves.wavesHit(58).xf(5,3,:),[],3001),1,4,1000);
 
-figure,stack_plot(reshape(IntanBehaviour.hitTrace(7).xf,[],3001),1,4,1000);
+figure,stack_plot(reshape(IntanBehaviour.cueHitTrace(50).xf,[],3001),1,4,1000);
 
 figure,stack_plot(reshape(LFP.xf(:,:,1:10000),[],10000),0,4,1000);
 
@@ -237,47 +373,63 @@ wavesMissPresent = vertcat(Waves.wavesMiss.wavePresent);
 wavesHitStart = vertcat(Waves.wavesHit.waveStart);
 wavesMissStart = vertcat(Waves.wavesMiss.waveStart);
 
+RTTraceTime = (IntanBehaviour.reactionTime*parameters.Fs) +(parameters.windowBeforeCue*parameters.Fs);
+
+figure();
+subplot(4,1,1);
+title('Waves During Hit Trials')
+rasterPlot(wavesHitPresent);hold on;
+xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','Cue','LabelVerticalAlignment','top');
+plot(RTTraceTime,1:size(IntanBehaviour.cueHitTrace,2),'.r');
+xline((mean(IntanBehaviour.reactionTime,'all')*parameters.Fs + parameters.windowBeforeCue*parameters.Fs+1),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+ylabel('Trials');xlabel('Time (in ms)');xlim([1 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs]);
+subplot(4,1,2)
+bar((sum(wavesHitPresent,1)/size(IntanBehaviour.cueHitTrace,2)));
+xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','Cue','LabelVerticalAlignment','top');
+xline((mean(IntanBehaviour.reactionTime,'all')*parameters.Fs + parameters.windowBeforeCue*parameters.Fs+1),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+ylim([0 0.3]);
+ylabel('Wave probability');xlabel('Time (in ms)')
+subplot(4,1,3);
+title('Waves During Miss Trials')
+rasterPlot(wavesMissPresent);hold on;
+xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','Cue','LabelVerticalAlignment','top');
+ylabel('Trials');xlabel('Time (in ms)');xlim([1 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs]);
+subplot(4,1,4)
+bar((sum(wavesMissPresent,1)/size(IntanBehaviour.cueMissTrace,2)));
+xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','Cue','LabelVerticalAlignment','top');
+ylim([0 0.3]);
+ylabel('Wave probability');xlabel('Time (in ms)')
+
+
+
 wavesHitRewardPresent = vertcat(Waves.wavesHitReward.wavePresent);
 wavesFAPresent = vertcat(Waves.wavesFA.wavePresent);
-
 wavesHitRewardStart = vertcat(Waves.wavesHitReward.waveStart);
 wavesFAStart = vertcat(Waves.wavesFA.waveStart);
 
 figure();
-subplot(2,1,1);
-rasterPlot(wavesHitPresent);
-subplot(2,1,2);
-rasterPlot(wavesMissPresent);
+subplot(4,1,1);
+title('Waves During Hit Trials')
+rasterPlot(wavesHitRewardPresent);hold on;
+xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','Reward','LabelVerticalAlignment','top');
+ylabel('Trials');xlabel('Time (in ms)');xlim([1 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs]);
+subplot(4,1,2)
+bar((sum(wavesHitRewardPresent,1)/size(IntanBehaviour.hitTrace,2)));
+xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','Reward','LabelVerticalAlignment','top');
+ylim([0 0.2]);
+ylabel('Wave probability');xlabel('Time (in ms)')
+subplot(4,1,3);
+title('Waves During FA Trials')
+rasterPlot(wavesFAPresent);hold on;
+xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','No Reward','LabelVerticalAlignment','top');
+ylabel('Trials');xlabel('Time (in ms)');xlim([1 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs]);
+subplot(4,1,4)
+bar((sum(wavesFAPresent,1)/size(IntanBehaviour.missTrace,2)));
+xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','No Reward','LabelVerticalAlignment','top');
+ylim([0 0.2]);
+ylabel('Wave probability');xlabel('Time (in ms)')
 
-figure();
-subplot(2,1,1);
-rasterPlot(wavesHitStart);
-subplot(2,1,2);
-rasterPlot(wavesMissStart);
-
-figure();
-plot(smoothdata(sum(wavesHitPresent,1)));
-hold on;
-plot(smoothdata(sum(wavesMissPresent,1)));
-
-
-figure();
-subplot(2,1,1);
-rasterPlot(wavesHitRewardPresent);
-subplot(2,1,2);
-rasterPlot(wavesFAPresent);
-
-figure();
-subplot(2,1,1);
-rasterPlot(wavesHitRewardStart);
-subplot(2,1,2);
-rasterPlot(wavesFAStart);
-
-figure();
-plot(smoothn(sum(wavesHitRewardPresent,1)));
-hold on;
-plot(smoothn(sum(wavesFAPresent,1)));
-
+%%
 
 wavesMIHitPresent = vertcat(Waves.wavesMIHit.wavePresent);
 wavesMIFAPresent = vertcat(Waves.wavesMIFA.wavePresent);
@@ -285,25 +437,282 @@ wavesMIHitStart = vertcat(Waves.wavesMIHit.waveStart);
 wavesMIFAStart = vertcat(Waves.wavesMIFA.waveStart);
 
 figure();
-subplot(2,1,1);
-rasterPlot(wavesMIHitPresent);
-subplot(2,1,2);
-rasterPlot(wavesMIFAPresent);
+subplot(4,1,1);
+title('Waves During Hit Trials')
+rasterPlot(wavesMIHitPresent);hold on;
+xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','MI','LabelVerticalAlignment','top');
+ylabel('Trials');xlabel('Time (in ms)');xlim([1 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs]);
+subplot(4,1,2)
+bar((sum(wavesMIHitPresent,1)/size(IntanBehaviour.MIHitTrace,2)));
+xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','MI','LabelVerticalAlignment','top');
+ylim([0 0.2]);
+ylabel('Wave probability');xlabel('Time (in ms)')
+subplot(4,1,3);
+title('Waves During FA Trials')
+rasterPlot(wavesMIFAPresent);hold on;
+xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','MI','LabelVerticalAlignment','top');
+ylabel('Trials');xlabel('Time (in ms)');xlim([1 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs]);
+subplot(4,1,4)
+bar((sum(wavesMIFAPresent,1)/size(IntanBehaviour.MIFATrace,2)));
+xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','MI','LabelVerticalAlignment','top');
+ylim([0 0.2]);
+ylabel('Wave probability');xlabel('Time (in ms)')
+
+
+%%
+LFP.xf(4,2,:) = NaN;
+LFP.xgp(4,2,:) = NaN;
+LFP.wt(4,2,:) = NaN;
+LFP.xf(5,1,:) = NaN;
+LFP.xgp(5,1,:) = NaN;
+LFP.wt(5,1,:) = NaN;
+
+%% 
+m = matfile('D:\Om\GridsShanksDay4.mat');
+fpath = m.fpath;
+parameters = m.parameters;
+
+IntanBehaviour.cueHitTrace = m.IntanBehaviour.cueHitTrace;
+
+%%
+betaBurstAllHit = vertcat(BetaEventHit.betaBurstPresent);
+betaBurstAllMiss = vertcat(BetaEventMiss.betaBurstPresent);
+figure();
+subplot(411);
+rasterPlot(betaBurstAllHit);
+xline(1501,'--r','MI','LabelVerticalAlignment','top');
+% xline((mean(IntanBehaviour.RT,'all')*parameters.Fs + 1501),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+ylabel('Beta Burst');xlabel('Time (ms)');xlim([1 3001]);
+subplot(412);
+bar(sum(betaBurstAllHit,1)/size(IntanBehaviour.cueHitTrace,2));
+ylabel('Beta Burst Probability');xlabel('Time (ms)');
+xline(1501,'--r','MI','LabelVerticalAlignment','top');
+subplot(413);
+rasterPlot(betaBurstAllMiss);
+xline(1501,'--r','MI','LabelVerticalAlignment','top');
+ylabel('Beta Burst');xlabel('Time (ms)');xlim([1 3001]);
+subplot(414);
+bar(sum(betaBurstAllMiss,1)/size(IntanBehaviour.cueMissTrace,2));
+ylabel('Beta Burst Probability');xlabel('Time (ms)');
+xline(1501,'--r','MI','LabelVerticalAlignment','top');
+
+
+betaBurstAllHit = vertcat(GammaEventHit.betaBurstPresent);
+betaBurstAllMiss = vertcat(GammaEventMiss.betaBurstPresent);
 
 figure();
-subplot(2,1,1);
-rasterPlot(wavesMIHitStart);
-subplot(2,1,2);
-rasterPlot(wavesMIFAStart);
+subplot(411);
+rasterPlot(betaBurstAllHit);
+xline(1501,'--r','MI','LabelVerticalAlignment','top');
+% xline((mean(IntanBehaviour.RT,'all')*parameters.Fs + 1501),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+ylabel('Gamma Burst');xlabel('Time (ms)');xlim([1 3001]);
+subplot(412);
+bar(sum(betaBurstAllHit,1)/size(IntanBehaviour.cueHitTrace,2));
+ylabel('Gamma Burst Probability');xlabel('Time (ms)');
+xline(1501,'--r','MI','LabelVerticalAlignment','top');
+subplot(413);
+rasterPlot(betaBurstAllMiss);
+xline(1501,'--r','MI','LabelVerticalAlignment','top');
+ylabel('Gamma Burst');xlabel('Time (ms)');xlim([1 3001]);
+subplot(414);
+bar(sum(betaBurstAllMiss,1)/size(IntanBehaviour.cueMissTrace,2));
+ylabel('Gamma Burst Probability');xlabel('Time (ms)');
+xline(1501,'--r','MI','LabelVerticalAlignment','top');
 
-figure();
-plot(smoothdata(sum(wavesMIHitPresent,1)));
+%% Granger Causality
+datGrid = vertcat(cell2mat(arrayfun(@(x) reshape(x.rawLFP,32,[]), IntanBehaviour.cueHitTrace, 'UniformOutput', false)));
+datGrid = removeNaNRows(datGrid);
+datGrid = reshape(datGrid,30,3001,[]);
+datProbe = vertcat(cell2mat(arrayfun(@(x) reshape(x.rawLFPProbe,64,[]), IntanBehaviour.cueHitTrace, 'UniformOutput', false)));
+datProbe = removeNaNRows(datProbe);
+datProbe = reshape(datProbe,64,3001,[]);
+
+dat =vertcat(datGrid,datProbe);
+GCM22M1 = mvgcstate(dat); %dat structured as (node,samples,trials)
+%%
+ % Plot spectral causal graph.
+ figure(); clf;
+ sgtitlex('Pairwise-conditional Granger causality - frequency domain');
+ plot_spw(output.P(1:3,1:3,:),output.ops.fs);
+
+
+%%
+for i = 1:20
+    st = (i-1)*100;
+    sp = (i)*100;
+    dirComb1 = horzcat(Waves.wavesHitReward(1:end).speed);
+    evalPointsHit = horzcat(Waves.wavesHitReward(1:end).evaluationPoints);
+    WaveComb(i).Hit = dirComb1(evalPointsHit >=st & evalPointsHit <= sp);
+
+    dirCombMiss1 = horzcat(Waves.wavesFA(1:end).speed);
+    evalPointsMiss = horzcat(Waves.wavesFA(1:end).evaluationPoints);
+    WaveComb(i).Miss = dirCombMiss1(evalPointsMiss >=st & evalPointsMiss <= sp);
+end
+
+% figure(); 
+subplot(1,2,1)
 hold on;
-plot(smoothdata(sum(wavesMIFAPresent,1)));
+plot(100:100:2000,arrayfun(@(s) mean(s.Hit,'all'), WaveComb),'Color', [0 0 0 1],'LineWidth',1.5);
+plot(100:100:2000,arrayfun(@(s) mean(s.Miss,'all'), WaveComb),'Color', [0 0 0 0.2],'LineWidth',1.5);
+xline(501,'--r','Cue','LabelVerticalAlignment','top');
+legend('Hits','Misses');
+ylabel('Speed (cm/s)');xlabel('Time (ms)')
+
+
+a = arrayfun(@(s) ranksum(s.Hit,s.Miss) , WaveComb);
+figure,plot(100:100:2000,a);
+
+%%
+IntanBehaviour.RT = arrayfun(@(s) s.reactionTime, IntanBehaviour.cueHitTrace);
+
+figure,histogram(IntanBehaviour.RT,20);
+
+%% 
+
+xgp = reshape(IntanBehaviour.cueHitTrace(60).xgp,32,[]);
+phase = angle(xgp);
+figure,stack_plot(phase,0,10,1000);hold on; xline(1.501)
+
+PR = zeros(size(IntanBehaviour.cueHitTrace,2),size(IntanBehaviour.cueHitTrace(1).xgp,3));
+for i=1:size(IntanBehaviour.cueHitTrace,2)
+    xgp = reshape(IntanBehaviour.cueHitTrace(i).xgp,32,[]);
+    xgpnorm = xgp./abs(xgp);
+    xgpnorm = removeNaNRows(xgpnorm);     
+    for j=1:size(xgpnorm,2)
+        PR(i,j) = abs(sum(xgpnorm(:,j))/size(xgpnorm,1));
+    end
+end
+
+%% 
+avgSpeedRT = zeros(1,size(IntanBehaviour.cueHitTrace,2));
+for i=1:size(IntanBehaviour.cueHitTrace,2)
+    evalpoints = Waves.wavesHit(i).evaluationPoints;
+    a = find(evalpoints>1500 & evalpoints<1700);
+    b = find(evalpoints>0000 & evalpoints<1500);
+    avgSpeedRT(i) = mean(Waves.wavesHit(i).speed(a),'all','omitnan') - mean(Waves.wavesHit(i).speed(b),'all','omitnan');;
+end
+
+mdl = fitlm(avgSpeedRT,IntanBehaviour.RT)
+figure,plot(mdl);
+
+%%
+firstWave = zeros(1,size(IntanBehaviour.cueHitTrace,2));
+for i=1:size(IntanBehaviour.cueHitTrace,2)
+    a = find(Waves.wavesHit(i).wavePresent(1501:end),1);
+    if isempty(a)
+        firstWave(i) = NaN;
+    else
+        firstWave(i) = a;
+    end
+end
+
+mdl = fitlm(firstWave,IntanBehaviour.RT)
+figure,plot(mdl);
+
+
+%% 
+pgdTrial = vertcat(Waves.wavesHit.PGD);
+figure,imagesc(IntanBehaviour.cueHitTrace(1).time,1:size(Waves.wavesHit,2),pgdTrial);
+colormap(hot);axis xy;
+
+
+%%
+i = 1;
+j = 1;
+badIndex = [];
+while i<=121
+    if IntanBehaviour.cueHitTrace(i).LFPIndex(1) == cueHitTraceLFP(j).LFPIndex(1)
+        i = i+1;
+        j = j+1;
+    else
+        badIndex = [badIndex;j];
+        j = j+1;
+    end
+end
+
+cueHitTraceLFP(badIndex) = [];
+
+
+for i=1:121
+    IntanBehaviour.cueHitTrace(i).rawLFPProbe = cueHitTraceLFP(i).rawLFPProbe;
+    IntanBehaviour.cueHitTrace(i).xfProbe = cueHitTraceLFP(i).xfProbe;
+    IntanBehaviour.cueHitTrace(i).xgpProbe = cueHitTraceLFP(i).xgpProbe;
+    IntanBehaviour.cueHitTrace(i).wtProbe = cueHitTraceLFP(i).wtProbe;
+end
+
+
+for i=1:70
+    IntanBehaviour.cueMissTrace(i).rawLFPProbe = cueMissTraceLFP(i).rawLFPProbe;
+    IntanBehaviour.cueMissTrace(i).xfProbe = cueMissTraceLFP(i).xfProbe;
+    IntanBehaviour.cueMissTrace(i).xgpProbe = cueMissTraceLFP(i).xgpProbe;
+    IntanBehaviour.cueMissTrace(i).wtProbe = cueMissTraceLFP(i).wtProbe;
+end
+
+%%
+i = 1;
+j = 1;
+badIndex = [];
+while i<=120
+    if IntanBehaviour.MIHitTrace(i).LFPIndex(1) == MIHitTraceProbe(j).LFPIndex(1)
+        i = i+1;
+        j = j+1;
+    else
+        badIndex = [badIndex;j];
+        j = j+1;
+    end
+end
+
+MIHitTraceLFP(badIndex) = [];
+
+
+for i=1:121
+    IntanBehaviour.MIHitTrace(i).rawLFPProbe = MIHitTraceLFP(i).rawLFPProbe;
+    IntanBehaviour.MIHitTrace(i).xfProbe = MIHitTraceLFP(i).xfProbe;
+    IntanBehaviour.MIHitTrace(i).xgpProbe = MIHitTraceLFP(i).xgpProbe;
+    IntanBehaviour.MIHitTrace(i).wtProbe = MIHitTraceLFP(i).wtProbe;
+end
+
+%%
+hitProbeXGP = cell(1,size(IntanBehaviour.cueHitTrace,2));
+for i=1:size(IntanBehaviour.cueHitTrace,2)
+    probeAngle = angle(IntanBehaviour.cueHitTrace(i).xgpProbe(linearProbe,:));
+    gridAngle = angle(squeeze(IntanBehaviour.cueHitTrace(i).xgp(5,3,:)))';
+    hitProbeXGP{1,i} = reshape(exp(1i*(probeAngle-repmat(gridAngle,length(linearProbe),1))),length(linearProbe),1,[]);
+end
+
+missProbeXGP = cell(1,size(IntanBehaviour.cueMissTrace,2));
+for i=1:size(IntanBehaviour.cueMissTrace,2)
+    probeAngle = angle(IntanBehaviour.cueMissTrace(i).xgpProbe(linearProbe,:));
+    gridAngle = angle(squeeze(IntanBehaviour.cueMissTrace(i).xgp(5,3,:)))';
+    missProbeXGP{1,i} = reshape(exp(1i*(probeAngle-repmat(gridAngle,length(linearProbe),1))),length(linearProbe),1,[]);
+end
+MIHitProbeXGP = cell(1,size(IntanBehaviour.MIHitTrace,2));
+for i=1:size(IntanBehaviour.MIHitTrace,2)
+    probeAngle = angle(IntanBehaviour.MIHitTrace(i).xgpProbe(linearProbe,:));
+    gridAngle = angle(squeeze(IntanBehaviour.MIHitTrace(i).xgp(5,2,:)))';
+    MIHitProbeXGP{1,i} = reshape(exp(1i*(probeAngle-repmat(gridAngle,length(linearProbe),1))),length(linearProbe),1,[]);
+end
+
+MIFAProbeXGP = cell(1,size(IntanBehaviour.MIFATrace,2));
+for i=1:size(IntanBehaviour.MIFATrace,2)
+    probeAngle = angle(IntanBehaviour.MIFATrace(i).xgpProbe(linearProbe,:));
+    gridAngle = angle(squeeze(IntanBehaviour.MIFATrace(i).xgp(5,2,:)))';
+    MIFAProbeXGP{1,i} = reshape(exp(1i*(probeAngle-repmat(gridAngle,length(linearProbe),1))),length(linearProbe),1,[]);
+end
+
+ISPC.Hit = calPhaseAlignment(hitProbeXGP,parameters);
+ISPC.Miss = calPhaseAlignment(missProbeXGP,parameters);
+ISPC.Hit = calPhaseAlignment(MIHitProbeXGP,parameters);
+ISPC.Miss = calPhaseAlignment(miProbeXGP,parameters);
 
 figure();
-plot((sum(wavesMIHitPresent,1)));
-hold on;
-plot((sum(wavesMIFAPresent,1)));
-
-
+title("Inter-site Phase Clustering")
+subplot(2,1,1);
+imagesc(IntanBehaviour.cueHitTrace(1).time,1:length(linearProbe),reshape(ISPC.Hit,[],size(ISPC.Hit,3))); colormap(sky);
+ylabel("Electrodes");xlabel("Time (s)");
+xline(0,'-w','Cue','LabelVerticalAlignment','top');clim([0.45 1]);
+subplot(2,1,2);
+title("Phase Alignment across all electrodes - Misses")
+imagesc(IntanBehaviour.cueMissTrace(1).time,1:length(linearProbe),reshape(ISPC.Miss,[],size(ISPC.Miss,3))); colormap(sky);
+ylabel("Electrodes");xlabel("Time (s)");
+xline(0,'-w','Cue','LabelVerticalAlignment','top');clim([0.45 1]);

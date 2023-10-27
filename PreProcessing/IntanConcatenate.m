@@ -30,7 +30,7 @@ Intan.analog_adc_data = single(Intan.analog_adc_data);
 Intan.dig_in_data = single(Intan.dig_in_data);
 % Adjust electrode order by depth
 % UCLA_probe_map %legacy file call
-Intan.allIntan  = Intan.allIntan(electrode_map,:);
+Intan.allIntan  = Intan.allIntan(finalElectrodeMap,:);
 % Fix recording offset
 Intan.offset = 1; % second
 Intan.offsetSample = targetedFs*Intan.offset;

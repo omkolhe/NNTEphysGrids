@@ -14,9 +14,9 @@ addpath(genpath('Analysis'));
 addpath(genpath('Dependancies'));
 
 %%  PreProcessing
-load Widegrids9_chanmap.mat;  % load the channel map for the IntanConcatenate function
-parameters.rows = 6;  % Number of rows of electrodes on the Grid
-parameters.cols = 5;  % Number of colums of electrodes on the Grid
+load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
+parameters.rows = 8;  % Number of rows of electrodes on the Grid
+parameters.cols = 4;  % Number of colums of electrodes on the Grid
 parameters.Fs = 1000;
 parameters.ts = 1/parameters.Fs;
 parameters.windowBeforePull = 1.5; % in seconds
@@ -29,6 +29,16 @@ parameters.experiment = 'cue'; % self - internally generated, cue - cue initiate
 parameters.opto = 0; % 1 - opto ON , 0 - opto OFF
 parameters.xspacing = 0.06; % Grid spacing in mm between columns 
 parameters.yspacing = 0.06; % Grid spacing in mm between rows
+parameters.shank = 0; % 1 - if UCLA 64Ch single shank data is present
+
+if parameters.shank == 1
+    load UCLASingle64Ch_chanmap.mat; % load the channel map for the the shank data
+    UCLAProbeMap = UCLAProbeMap + size(electrode_map,1);
+    finalElectrodeMap = [electrode_map;UCLAProbeMap];
+    parameters.nShank = size(UCLAProbeMap,1);
+else
+    finalElectrodeMap = electrode_map;
+end
 
 IntanConcatenate
 fpath = Intan.path; % where on disk do you want the analysis? ideally and SSD...
@@ -41,7 +51,7 @@ Intan.t = 0:Ts:Intan.Tmax-Ts;
 %% Removing bad channels from impedance values
 [Z,Intan.goodChMap,Intan.badChMap] = readImp(electrode_map,10e6);
 figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size(Z,1)));ylabel('Impedance (in \Omega)');set(gca,'xticklabel',{[]})
-% Intan.badChMap = [1;2;7];
+% Intan.badChMap =[]; [1;2;7];
 %Intan = removeBadCh(Intan,Intan.badCh);
 %% LFP
 set(0,'DefaultFigureWindowStyle','normal')
@@ -66,7 +76,7 @@ LFP.xfbeta = bandpass_filter(LFP.LFPdatacube,10,30,4,1000);
 [LFP.xgpbeta, LFP.wtbeta] = generalized_phase(LFP.xfbeta,1000,0);
 LFP.xftheta = bandpass_filter(LFP.LFPdatacube,4,10,4,1000);
 [LFP.xgptheta, LFP.wttheta]  = generalized_phase(LFP.xftheta,1000,0);
-LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,80,4,1000);
+LFP.xfgamma = bandpass_filter(LFP.LFPdatacube,30,40,4,1000);
 [LFP.xgpgamma, LFP.wtgamma]  = generalized_phase(LFP.xfgamma,1000,0);
 [parameters.X,parameters.Y] = meshgrid( 1:parameters.cols, 1:parameters.rows );
 LFP.xfwide = bandpass_filter(LFP.LFPdatacube,5,90,4,1000);
@@ -79,7 +89,7 @@ LFP.xfbetanarrow = bandpass_filter(LFP.LFPdatacube,6,9,4,1000);
 IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters);
 % Saving paramters, path, IntanBehaviour to bin file 
 savepath = uigetdir(path);
-sessionName = [savepath,'/','GridsDay1Comb.mat'];
+sessionName = [savepath,'/','GridsDay2Comb.mat'];
 % save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
 save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
 
@@ -90,6 +100,8 @@ IntanBehaviour.cueMissTrace = horzcat(combIntanBehaviour(1:end).cueMissTrace);
 IntanBehaviour.hitTrace = horzcat(combIntanBehaviour(1:end).hitTrace);
 IntanBehaviour.missTrace = horzcat(combIntanBehaviour(1:end).missTrace);
 IntanBehaviour.reactionTime = horzcat(combIntanBehaviour(1:end).reactionTime);
+IntanBehaviour.MIHitTrace = horzcat(combIntanBehaviour(1:end).MIHitTrace);
+IntanBehaviour.MIFATrace = horzcat(combIntanBehaviour(1:end).MIFATrace);
 
 clear combIntanBehaviour IntanBehaviour1 IntanBehaviour2;
 %% Power Spectrum during task across channels 
@@ -111,14 +123,14 @@ PSD.trialPSDFAMI = squeeze(10*log10(mean(PSD.ChFAMI,2,"omitnan")));
 remove_artifact = 1;
 if remove_artifact == 1
     % Removing trials with artifacts
-    PSD.rejectThres = 42; % in db
-    PSD.rejectFreq = 4; %  not Hz but index in PSD.f
+    PSD.rejectThres = 39; % in db
+    PSD.rejectFreq = 3; %  not Hz but index in PSD.f
     PSD.artifactTrialIndex = find(PSD.trialPSDHit(:,PSD.rejectFreq)>PSD.rejectThres);
     disp(['Number of Hit trials rejected ', num2str(size(PSD.artifactTrialIndex,1))]);
     PSD.trialPSDHit(PSD.artifactTrialIndex,:) = [];
     IntanBehaviour.cueHitTrace(PSD.artifactTrialIndex)=[];
     PSD.ChHit(PSD.artifactTrialIndex,:,:) = [];
-    IntanBehaviour.reactionTime(PSD.artifactTrialIndex,:,:) = [];
+%     IntanBehaviour.reactionTime(PSD.artifactTrialIndex,:,:) = [];
     
     PSD.artifactTrialIndex = find(PSD.trialPSDMiss(:,PSD.rejectFreq)>PSD.rejectThres);
     disp(['Number of Miss trials rejected ', num2str(size(PSD.artifactTrialIndex,1))]);
@@ -287,18 +299,6 @@ if isfield(IntanBehaviour,'cueMissTrace')
     Waves.wavesMiss = detectWaves(xf,xgp,wt,IntanBehaviour.cueMissTrace,parameters,parameters.rhoThres);
 %     Waves.wavesMiss = detectPlanarWaves(xf,xgp,wt,IntanBehaviour.cueMissTrace,parameters,0.5);
 end
-if isfield(IntanBehaviour,'missTrace')
-    xf = arrayfun(@(s) s.xf, IntanBehaviour.missTrace, 'UniformOutput', false);
-    xgp = arrayfun(@(s) s.xgp, IntanBehaviour.missTrace, 'UniformOutput', false);
-    wt = arrayfun(@(s) s.wt, IntanBehaviour.missTrace, 'UniformOutput', false);
-    Waves.wavesFA = detectWaves(xf,xgp,wt,IntanBehaviour.missTrace,parameters,parameters.rhoThres);
-end
-if isfield(IntanBehaviour,'hitTrace')
-    xf = arrayfun(@(s) s.xf, IntanBehaviour.hitTrace, 'UniformOutput', false);
-    xgp = arrayfun(@(s) s.xgp, IntanBehaviour.hitTrace, 'UniformOutput', false);
-    wt = arrayfun(@(s) s.wt, IntanBehaviour.hitTrace, 'UniformOutput', false);
-    Waves.wavesHitReward = detectWaves(xf,xgp,wt,IntanBehaviour.hitTrace,parameters,parameters.rhoThres);
-end
 if isfield(IntanBehaviour,'MIHitTrace')
     xf = arrayfun(@(s) s.xf, IntanBehaviour.MIHitTrace, 'UniformOutput', false);
     xgp = arrayfun(@(s) s.xgp, IntanBehaviour.MIHitTrace, 'UniformOutput', false);
@@ -310,6 +310,18 @@ if isfield(IntanBehaviour,'MIFATrace')
     xgp = arrayfun(@(s) s.xgp, IntanBehaviour.MIFATrace, 'UniformOutput', false);
     wt = arrayfun(@(s) s.wt, IntanBehaviour.MIFATrace, 'UniformOutput', false);
     Waves.wavesMIFA = detectWaves(xf,xgp,wt,IntanBehaviour.MIFATrace,parameters,parameters.rhoThres);
+end
+if isfield(IntanBehaviour,'missTrace')
+    xf = arrayfun(@(s) s.xf, IntanBehaviour.missTrace, 'UniformOutput', false);
+    xgp = arrayfun(@(s) s.xgp, IntanBehaviour.missTrace, 'UniformOutput', false);
+    wt = arrayfun(@(s) s.wt, IntanBehaviour.missTrace, 'UniformOutput', false);
+    Waves.wavesFA = detectWaves(xf,xgp,wt,IntanBehaviour.missTrace,parameters,parameters.rhoThres);
+end
+if isfield(IntanBehaviour,'hitTrace')
+    xf = arrayfun(@(s) s.xf, IntanBehaviour.hitTrace, 'UniformOutput', false);
+    xgp = arrayfun(@(s) s.xgp, IntanBehaviour.hitTrace, 'UniformOutput', false);
+    wt = arrayfun(@(s) s.wt, IntanBehaviour.hitTrace, 'UniformOutput', false);
+    Waves.wavesHitReward = detectWaves(xf,xgp,wt,IntanBehaviour.hitTrace,parameters,parameters.rhoThres);
 end
 
 % Wave detection for theta band

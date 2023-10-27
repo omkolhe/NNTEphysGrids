@@ -34,7 +34,7 @@ xline(rhoThres,'-r',{num2str(threshold) ' Percentile'});
 xlabel(rho);
 ylabel('Frequency');
 title('Histogram of rho values for spatial shuffled electrodes');
-
+drawnow
 warning('on','all');
 
 end

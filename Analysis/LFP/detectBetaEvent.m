@@ -10,15 +10,15 @@ if numel(dimension)==2
     meanLFP = mean(abs(LFP),1);
     disp('Shank data passed');
 elseif numel(dimension)==3
-    meanLFP = mean(abs(LFP),[1,2]);
+    meanLFP = mean(abs(LFP),[1,2],'omitnan');
     disp('Grid data passed');
 end
 
 betaBurstThres = 1.5; % 2.5 * std dev 
 betaAttenThres = 1.5; % -2.5 * std dev
 minInterRippleInterval = 10 * parameters.Fs/1000; % in points
-minBetaDuration = 50 * parameters.Fs/1000; % in points
-maxBetaDuration = 200 * parameters.Fs/1000; % in points
+minBetaDuration = 30 * parameters.Fs/1000; % in points
+maxBetaDuration = 210 * parameters.Fs/1000; % in points
 
 %% Getting LFP for each trial and channels 
 rows = size(LFP,1);
@@ -36,11 +36,11 @@ normByTrial = 1; % 1 - normalize power by noise in each trial, 0 - normalize pow
 
 if normByTrial == 1
     for i=1:nTrials
-        BetaEvent(i).xnorm = (BetaEvent(i).xpow - mean(BetaEvent(i).xpow,'all'))/std(BetaEvent(i).xpow);
+        BetaEvent(i).xnorm = (BetaEvent(i).xpow - mean(BetaEvent(i).xpow,'all','omitnan'))/std(BetaEvent(i).xpow,'omitnan');
     end
 else
-    meanPower = mean(horzcat(BetaEvent(1:end).xpow),'all');
-    stdPower = std(horzcat(BetaEvent(1:end).xpow),'all');
+    meanPower = mean(horzcat(BetaEvent(1:end).xpow),'all','omitnan');
+    stdPower = std(horzcat(BetaEvent(1:end).xpow),'omitnan');
     for i=1:nTrials
         BetaEvent(i).xnorm = (BetaEvent(i).xpow - meanPower)/stdPower;
     end
@@ -50,7 +50,7 @@ end
 for i=1:nTrials
     burstSegments = findThresSeg(BetaEvent(i).xnorm,betaBurstThres);
     attenSegments = findThresSeg(-1*BetaEvent(i).xnorm,betaAttenThres);
-    
+    BetaEvent(i).betaBurstPresent = zeros(1,size(BetaEvent(i).xnorm,2));
     % rejecting segments that are less then minimum time and more than
     % maximum time
     segmentSize = diff(burstSegments,1,2);
@@ -77,6 +77,9 @@ for i=1:nTrials
         end
     end
     BetaEvent(i).bursts = burstSegments;
+    for jj=1:size(burstSegments,1)
+        BetaEvent(i).betaBurstPresent(burstSegments(jj,1):burstSegments(jj,2)) = 1;
+    end
 
     segmentSize = diff(attenSegments,1,2);
     rejectIndex1 = find(segmentSize<minBetaDuration); % minimum duration
@@ -84,7 +87,7 @@ for i=1:nTrials
     rejectIndex = [rejectIndex1;rejectIndex2];
     attenSegments(rejectIndex,:) = [];
     if isempty(attenSegments)
-        disp(['No beta attenuations detect for Trial ' num2str(i)])
+        % disp(['No beta attenuations detect for Trial ' num2str(i)])
     else
         % Joining segments if minimum interval between segments is less
         % than minInterRippleInterval

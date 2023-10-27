@@ -35,7 +35,7 @@ nlength = round(parameters.windowBeforePull/parameters.ts + parameters.windowAft
 nlengthBeforeCue = round(parameters.windowBeforeCue/parameters.ts);
 nlengthCue = round(parameters.windowBeforeCue/parameters.ts + parameters.windowAfterCue/parameters.ts + 1);
 
-B = readmatrix([enpath,'/',enfile]);
+B = readmatrix([enpath,'\',enfile]);
 Behaviour.leverTrace = (B(2:end,1) - resting_position)*flip;
 Behaviour.time = (B(2:end,2) - B(2,2))/1e6; % time in seconds
 Behaviour.nHit = B(end,3);

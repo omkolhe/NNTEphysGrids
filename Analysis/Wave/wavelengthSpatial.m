@@ -15,4 +15,4 @@ function [l] = wavelengthSpatial( pm )
 %
 
 assert(( ndims(pm) == 3 ), 'datacube inputs required' );
-l = mean((0.1./pm),[1 2]); % in cm/s
+l = mean((0.1./pm),[1 2],'omitnan'); % in cm/s

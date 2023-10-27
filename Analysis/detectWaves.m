@@ -1,6 +1,5 @@
-function [Waves] = detectWaves(xf,xgp,wt,behaviourTrace,parameters,threshold)
+function [Waves] = detectWaves(xf,xgp,wt1,behaviourTrace,parameters,threshold)
 
-spacing = parameters.xspacing;
 rhoThres = threshold;
 dirThres = 15; %in degrees
 X = parameters.X;
@@ -8,34 +7,31 @@ Y = parameters.Y;
 
 waveTimeWindow = 40; % in points
 
-for ii=1:size(behaviourTrace,2)
-    
-    Waves(ii).xf = xf{1,ii};
-    Waves(ii).trialTime = behaviourTrace(ii).LFPIndex;
-    Waves(ii).p = xgp{1,ii};
-    Waves(ii).wt = wt{1,ii};
-    Waves(ii).wavePresent = zeros(1,size(Waves(ii).xf,3));
-    Waves(ii).waveStart = zeros(1,size(Waves(ii).xf,3));
-    for ll=1:size(Waves(ii).p,3)
-        Waves(ii).xf(:,:,ll) = inpaint_nans(Waves(ii).xf(:,:,ll),3);
-        Waves(ii).p(:,:,ll) = inpaint_nans(Waves(ii).p(:,:,ll),3);
-        Waves(ii).wt(:,:,ll) = inpaint_nans(Waves(ii).wt(:,:,ll),3);
-    end
+for ii=1:size(behaviourTrace,2)    
+    p = xgp{1,ii};
+    wt = wt1{1,ii};
+    Waves(ii).wavePresent = zeros(1,size(xf{1,ii},3));
+    Waves(ii).waveStart = zeros(1,size(xf{1,ii},3));
+%     for ll=1:size(Waves(ii).p,3)
+%         xf{1,ii}(:,:,ll) = inpaint_nans(xf{1,ii}(:,:,ll),3);
+%         Waves(ii).p(:,:,ll) = inpaint_nans(Waves(ii).p(:,:,ll),3);
+%         Waves(ii).wt(:,:,ll) = inpaint_nans(Waves(ii).wt(:,:,ll),3);
+%     end
 %     p = arrayfun(@(jj) inpaint_nans(p(:,:,jj)),1:size(p,3));
-    Waves(ii).evaluationPoints = find_evaluation_points(Waves(ii).p,0,0.2);
+    Waves(ii).evaluationPoints = find_evaluation_points(p,0,0.2);
 %     plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );
-    [Waves(ii).pm,Waves(ii).pd,Waves(ii).dx,Waves(ii).dy] = phase_gradient_complex_multiplication( Waves(ii).p, parameters.xspacing, parameters.yspacing );
+    [pm,pd,dx,dy] = phase_gradient_complex_multiplication(p, parameters.xspacing, parameters.yspacing );
     % Phase gradient directionality 
-    [Waves(ii).PGD] = phase_gradient_directionality(Waves(ii).pm,Waves(ii).dx,Waves(ii).dy);
+    [Waves(ii).PGD] = phase_gradient_directionality(pm,dx,dy);
     % Wavelength
-    Waves(ii).wl = 1./abs(Waves(ii).pm);
+    wl = 1./abs(pm);
     % Instantaneous speed
-    Waves(ii).insts = instantaneous_speed(Waves(ii).wt,Waves(ii).pm);
-    Waves(ii).s = speedSpatial(Waves(ii).wt,Waves(ii).pm);
-    Waves(ii).l = wavelengthSpatial(Waves(ii).pm);
+    insts = instantaneous_speed(wt,pm);
+    s = speedSpatial(wt,pm);
+    l = wavelengthSpatial(pm);
     % Velcity direction unit vector
-    [Waves(ii).vx, Waves(ii).vy] = wavefront_direction(Waves(ii).pd,Waves(ii).insts);
-    Waves(ii).velDir = atan2(Waves(ii).vy,Waves(ii).vx);
+    [vx, vy] = wavefront_direction(pd,insts);
+    velDir = atan2(vy,vx);
     % divergence calculation
 %     Waves(ii).source = find_source_points( Waves(ii).evaluationPoints, X, Y, Waves(ii).dx, Waves(ii).dy );
     % phase correlation with distance (\rho_{\phi,d} measure)
@@ -45,15 +41,15 @@ for ii=1:size(behaviourTrace,2)
         st = Waves(ii).evaluationPoints(jj)-waveTimeWindow;
         if st<=0, st = 1; end  % adjusting is waves is detected at the start of window
         sp = Waves(ii).evaluationPoints(jj)+waveTimeWindow;
-        if sp>size(Waves(ii).p,3), sp = Waves(ii).evaluationPoints(jj); end % adjusting is waves is detected at the end of window
+        if sp>size(p,3), sp = Waves(ii).evaluationPoints(jj); end % adjusting is waves is detected at the end of window
         rho = zeros(sp-st+1,1);
         sourcepoint = zeros(2,sp-st+1);
         dir = zeros(sp-st+1,1);
         for kk=1:(sp-st+1)
-            ph = angle( Waves(ii).p(:,:,(st+kk-1)));
-            sourcepoint(:,kk) = find_source_points(st+kk-1,X,Y,Waves(ii).dx, Waves(ii).dy );
+            ph = angle( p(:,:,(st+kk-1)));
+            sourcepoint(:,kk) = find_source_points(st+kk-1,X,Y,dx, dy );
             [rho(kk,1),~,~] = phase_correlation_distance( ph,sourcepoint(:,kk), parameters.xspacing,parameters.yspacing );
-            dir(kk) = rad2deg(Waves(ii).velDir(st+kk-1));
+            dir(kk) = rad2deg(velDir(st+kk-1));
         end
         waveClusters = findThresSeg(rho,rhoThres);
         % Rejecting segements less than 9ms
@@ -114,11 +110,11 @@ for ii=1:size(behaviourTrace,2)
         %Waves(ii).speed(kk) = mean(abs(Waves(ii).insts(:,:,st:sp)),[1 2 3]); % speed in cm/s
         Waves(ii).wavePresent(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)) = 1;
         Waves(ii).waveStart(Waves(ii).waveTime(kk,1)) = 1;
-        Waves(ii).speed(kk) = mean(abs(Waves(ii).s(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2))),'all'); % speed in cm/s
-        Waves(ii).waveDir(kk) = mean(Waves(ii).velDir(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),'all'); 
-        Waves(ii).wavelength(kk) = mean(Waves(ii).l(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),'all');
+        Waves(ii).speed(kk) = mean(abs(s(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2))),'all','omitnan'); % speed in cm/s
+        Waves(ii).waveDir(kk) = atan2(mean(vy(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),"all",'omitnan'),mean(vx(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),"all",'omitnan'));
+        Waves(ii).wavelength(kk) = mean(l(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),'all','omitnan');
         Waves(ii).waveDuration(kk) = Waves(ii).waveTime(kk,2)-Waves(ii).waveTime(kk,1)+1;
-        Waves(ii).waveAmp(kk) = max(abs(Waves(ii).p(:,:,Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2))),[],"all");
+        Waves(ii).waveAmp(kk) = max(abs(p(:,:,Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2))),[],"all",'omitnan')-min(abs(p(:,:,Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2))),[],"all",'omitnan');
     end
     %Waves(ii).speedpdg = pgdMean(Waves(ii).PGD,Waves(ii).s,0.51);
     %Waves(ii).dirpdg = pgdMean(Waves(ii).PGD,Waves(ii).velDir,0.51);
