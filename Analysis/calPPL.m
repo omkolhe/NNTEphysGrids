@@ -12,7 +12,8 @@ nTrials = size(xgp,2);
 %     allXGP(trialno,:) = angle(xgp{1,trialno});
 % end
 
-N = ceil(exp(0.626 + (0.4*log(nTrials-1)))); % number of bins
+% N = ceil(exp(0.626 + (0.4*log(nTrials-1)))); % number of bins
+N = 18;
 % Ref - Comparison of Hilbert transform and wavelet methods for the
 %       analysis of neuronal synchrony, JNeuroMethods, 2001
 

@@ -12,7 +12,7 @@ addpath(genpath('PreProcessing'));
 addpath(genpath('Plotting'));
 addpath(genpath('Analysis'));
 addpath(genpath('Dependancies'));
-
+rmpath(genpath('Dependancies/MVGC1'));
 %%  PreProcessing
 load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
 parameters.rows = 8;  % Number of rows of electrodes on the Grid
@@ -89,9 +89,9 @@ LFP.xfbetanarrow = bandpass_filter(LFP.LFPdatacube,6,9,4,1000);
 IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters);
 % Saving paramters, path, IntanBehaviour to bin file 
 savepath = uigetdir(path);
-sessionName = [savepath,'/','GridsDay2Comb.mat'];
+sessionName = [savepath,'/','M2WavesComb.mat'];
 % save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
-save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
+save(sessionName,"IntanBehaviour","fpath","parameters","Waves","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
 
 %% Combining  multiple Intanbehaviour structs from multiple sessions
 combIntanBehaviour = horzcat(IntanBehaviour1, IntanBehaviour2);
@@ -103,7 +103,15 @@ IntanBehaviour.reactionTime = horzcat(combIntanBehaviour(1:end).reactionTime);
 IntanBehaviour.MIHitTrace = horzcat(combIntanBehaviour(1:end).MIHitTrace);
 IntanBehaviour.MIFATrace = horzcat(combIntanBehaviour(1:end).MIFATrace);
 
-clear combIntanBehaviour IntanBehaviour1 IntanBehaviour2;
+WavesComb = horzcat(Waves1,Waves2);
+Waves.wavesHit = horzcat(WavesComb(1:end).wavesHit);
+Waves.wavesMiss = horzcat(WavesComb(1:end).wavesMiss);
+Waves.wavesHitReward = horzcat(WavesComb(1:end).wavesHitReward);
+Waves.wavesFA = horzcat(WavesComb(1:end).wavesFA);
+Waves.wavesMIHit = horzcat(WavesComb(1:end).wavesMIHit);
+Waves.wavesMIFA = horzcat(WavesComb(1:end).wavesMIFA);
+
+clear combIntanBehaviour IntanBehaviour1 IntanBehaviour2 WavesComb Waves1 Waves2;
 %% Power Spectrum during task across channels 
 [PSD.ChHit , PSD.f] = getAvgPSD(IntanBehaviour.cueHitTrace,parameters);
 [PSD.ChMiss , PSD.f] = getAvgPSD(IntanBehaviour.cueMissTrace,parameters);

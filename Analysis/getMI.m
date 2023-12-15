@@ -49,7 +49,7 @@ if plotFlag == 1
     title("Mututal Information (Motion Initiation) across all electrodes - Phase")
     a = peakSort2DArray(reshape(MI.PhaseMI,[],size(MI.PhaseMI,3)),'descend',2);
     a = removeNaNRows(a);
-    imagesc(IntanBehaviour.MIHitTrace(1).time,1:size(a,1),a); colormap(hot);
+    imagesc(IntanBehaviour.MIHitTrace(1).time,1:size(a,1),a); colormap(sky);
     ylabel("Electrodes");xlabel("Time (s)"); 
     h = colorbar; h.Label.String = 'Information (bits)';
     xline(0,'-w','MI','LabelVerticalAlignment','top');

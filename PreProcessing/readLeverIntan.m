@@ -20,7 +20,7 @@ end
 
 intanFs = 5000;
 
-resting_position = 241*5/1024;
+resting_position = 285*5/1024;
 flip = 1;
 nlengthBeforePull = round(parameters.windowAfterPull/parameters.ts);
 nlength = round(parameters.windowAfterPull/parameters.ts + parameters.windowAfterPull/parameters.ts + 1);
@@ -88,7 +88,7 @@ if cue == 1
         IntanBehaviour.cueHit(i,1) = cueIndex(a(i)); % Cue index 
         IntanBehaviour.cueHit(i,2) = rewardIndex(i); % pull index for hits
         if parameters.opto == 1
-            if ~isempty(find(optoIndex == IntanBehaviour.cueHit(i,1))) 
+            if IntanBehaviour.optoTrace(IntanBehaviour.cueHit(i,1)) == 1   %~isempty(find(optoIndex == IntanBehaviour.cueHit(i,1))) 
                 IntanBehaviour.cueHitTrace(i).opto = 1;
             else 
                 IntanBehaviour.cueHitTrace(i).opto = 0;
@@ -154,7 +154,7 @@ if cue == 1
     
     for i=1:IntanBehaviour.nCueMiss
         if parameters.opto == 1
-            if ~isempty(find(optoIndex == IntanBehaviour.cueMiss(i,1))) 
+            if IntanBehaviour.optoTrace(IntanBehaviour.cueMiss(i,1)) == 1  %~isempty(find(optoIndex == IntanBehaviour.cueMiss(i,1))) 
                 IntanBehaviour.cueMissTrace(i).opto = 1;
             else
                 IntanBehaviour.cueMissTrace(i).opto = 0;
@@ -172,9 +172,9 @@ end
 
 % figure();plot(1:1:10001,(5/1024)*Behaviour.leverTrace(Behaviour.miss(15,1)-5000:Behaviour.miss(15,1)+5000));hold on;
 % plot(0.1:0.1:10000.1,IntanBehaviour.leverTrace(Behaviour.miss(15,3)-50000:Behaviour.miss(15,3)+50000));
-correctionWindow = 1000; % in number of points in LFPFs
-tol = 0.01;
-nDiffSlope = 10;
+correctionWindow = 1800; % in number of points in LFPFs
+tol = 0.04;
+nDiffSlope = 5;
 disp('Finding miss trials in the Intan data ...');
 for i=1:Behaviour.nMiss
     missIndexAr = Behaviour.miss(i,3);
@@ -209,7 +209,12 @@ for i=1:Behaviour.nMiss
         end
     end
     misstrigs1 = misstrigs1(~isnan(misstrigs1));
-    missIndex(i) =  missIndexAr - correctionWindow + min(misstrigs1);
+    if ~isnan(misstrigs1)
+        missIndex(i) =  missIndexAr - correctionWindow + min(misstrigs1);
+    else
+        missIndex(i) = NaN;
+        disp('Correction failed. Trial removed');
+    end
 end
 
 missIndex = removeNaNRows(missIndex');

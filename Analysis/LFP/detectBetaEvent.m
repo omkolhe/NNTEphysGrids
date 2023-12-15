@@ -14,8 +14,8 @@ elseif numel(dimension)==3
     disp('Grid data passed');
 end
 
-betaBurstThres = 1.5; % 2.5 * std dev 
-betaAttenThres = 1.5; % -2.5 * std dev
+betaBurstThres = 2.5; % 2.5 * std dev 
+betaAttenThres = 2.5; % -2.5 * std dev
 minInterRippleInterval = 10 * parameters.Fs/1000; % in points
 minBetaDuration = 30 * parameters.Fs/1000; % in points
 maxBetaDuration = 210 * parameters.Fs/1000; % in points

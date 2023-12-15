@@ -43,13 +43,15 @@ if plotFlag == 1
     figure();
     subplot(2,1,1);
     title("Percentage Phase across all electrodes - Hits")
-    imagesc(IntanBehaviour.cueHitTrace(1).time,1:nElectrodes,peakSort2DArray(reshape(PPL.PPLHit,[],size(PPL.PPLHit,3)),'descend',2)); colormap(hot);
+    data = removeNaNRows(peakSort2DArray(reshape(PPL.PPLHit,[],size(PPL.PPLHit,3)),'descend',2));
+    imagesc(IntanBehaviour.cueHitTrace(1).time,1:size(data,1),data); colormap(hot);
     ylabel("Electrodes");xlabel("Time (s)");
     xline(0,'-w','Cue','LabelVerticalAlignment','top');
     xline(mean(IntanBehaviour.reactionTime,'all'),'--w','Avg. Reaction Time','LabelVerticalAlignment','top');
     subplot(2,1,2);
     title("Percentage Phase across all electrodes - Misses")
-    imagesc(IntanBehaviour.cueMissTrace(1).time,1:nElectrodes,peakSort2DArray(reshape(PPL.PPLMiss,[],size(PPL.PPLMiss,3)),'descend',2)); colormap(hot);
+    data = removeNaNRows(peakSort2DArray(reshape(PPL.PPLMiss,[],size(PPL.PPLMiss,3)),'descend',2));
+    imagesc(IntanBehaviour.cueMissTrace(1).time,1:size(data,1),data); colormap(hot);
     ylabel("Electrodes");xlabel("Time (s)");
     xline(0,'-w','Cue','LabelVerticalAlignment','top');
 

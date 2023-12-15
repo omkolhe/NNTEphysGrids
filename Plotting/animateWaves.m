@@ -22,7 +22,7 @@ vx = Waves(trial).vx;
 vy = Waves(trial).vy;
 
 % parameters
-plot_pre_time = 0; pause_length = 0.3; 
+plot_pre_time = 0; pause_length = 0.03; 
 
 % init
 M = load( 'myMap.mat' );
@@ -30,12 +30,12 @@ M = load( 'myMap.mat' );
 if saveOption == 1
     fn = 'WaveAnimation';
     writerobj = VideoWriter([fn '.avi'],"Uncompressed AVI"); % Initialize movie file
-    writerobj.FrameRate = 5;
+    writerobj.FrameRate = 30;
     open(writerobj);
 end
 
 ctr = 1; % wave detections counter
-for jj = 1:length(evaluation_points)
+for jj =waveID %1:length(evaluation_points)
     % get start and stop time, truncating if necessary
     st = Waves(trial).waveTime(jj,1) - plot_pre_time; sp = Waves(trial).waveTime(jj,2) + plot_pre_time;
     if ( st < 1 ), st = 1; end; if ( sp > size(x,3) ), sp = size(x,3); end
@@ -44,11 +44,27 @@ for jj = 1:length(evaluation_points)
     x_plot = x(:,:,st:sp);
     vx_plot = vx(1,st:sp);
     vy_plot = vy(1,st:sp);
+    
+    t1 = st:1:sp;
+    t2 = st:0.25:sp;
+    xplotnew = [];
+    vxplotnew = [];
+    vyplotnew = [];
+    for iii = 1:size(x_plot,1)
+        for jjj = 1:size(x_plot,2)
+            xplotnew(iii,jjj,:) = interp1(t1,squeeze(x_plot(iii,jjj,:)),t2);
+        end 
+    end
+    vxplotnew = interp1(t1,vx_plot,t2);
+    vyplotnew = interp1(t1,vy_plot,t2);
+    x_plot = xplotnew;
+    vx_plot = vxplotnew;
+    vy_plot = vyplotnew;
 
     % create plot
     figure; 
 %     title( sprintf( 'trial %d, wave example %d, 0 of %d ms', trial, ctr, size(x_plot,3) ) );
-    title( sprintf( 'Detected Wave, 0 of %d ms', size(x_plot,3) ) );
+%     title( sprintf( 'Detected Wave, 0 of %d ms', size(x_plot,3) ) );
     color_range = [ min(reshape(x_plot,[],1)) max(reshape(x_plot,[],1)) ];
 %     color_range = [ -80 80 ];
     h = imagesc( x_plot(:,:,1) ); hold on; axis image;
