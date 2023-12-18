@@ -15,6 +15,7 @@ end
 ranksum(optoRT,noOptoRT)
 
 data = optoRT;
+% manually copy noOptoRT into data
 
 figure,customBoxplot(data);
 
