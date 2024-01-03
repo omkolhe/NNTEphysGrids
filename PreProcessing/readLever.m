@@ -142,6 +142,8 @@ if isempty(st_hit1)
     disp('First hit rejected');
     Behaviour.nHit = Behaviour.nHit-1;
     Behaviour.hit(1,:) = [];
+%     Behaviour.hit(1,:) = [];
+%     Behaviour.nHit = Behaviour.nHit-1;
 end 
 sp_hitend =  max(find(Behaviour.time < Behaviour.hit(end,2)+parameters.windowAfterPull));
 if isempty(sp_hitend) 
@@ -181,6 +183,8 @@ if isempty(st_miss1)
     disp('First miss rejected');
     Behaviour.nMiss = Behaviour.nMiss-1;
     Behaviour.miss(1,:) = [];
+%     Behaviour.nMiss = Behaviour.nMiss-1;
+%     Behaviour.miss(1,:) = [];
 end 
 sp_missend =  max(find(Behaviour.time < Behaviour.miss(end,2)+parameters.windowAfterPull));
 if isempty(sp_missend)
@@ -221,6 +225,8 @@ if cue == 1
         disp('First cue hit rejected');
         Behaviour.nCueHit = Behaviour.nCueHit-1;
         Behaviour.cueHit(1,:) = [];
+%         Behaviour.nCueHit = Behaviour.nCueHit-1;
+%         Behaviour.cueHit(1,:) = [];
     end 
     sp_cuehitend =  max(find(Behaviour.time < Behaviour.cueHit(end,2)+parameters.windowAfterCue));
     if isempty(sp_cuehitend)

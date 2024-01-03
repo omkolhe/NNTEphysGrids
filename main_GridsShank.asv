@@ -25,11 +25,10 @@ parameters.windowBeforeCue = 1.5; % in seconds
 parameters.windowAfterCue = 1.5; % in seconds 
 parameters.windowBeforeMI = 1.5; % in seconds 
 parameters.windowAfterMI = 1.5; % in seconds 
-parameters.experiment = 'cue'; % self - internally generated, cue - cue initiated 
-parameters.cool = 1; % 1 - cooling , 0 - no cooling 
+parameters.experiment = 'c'; % self - internally generated, cue - cue initiated 
 parameters.opto = 0; % 1 - opto ON , 0 - opto OFF
-parameters.xspacing = 0.1; % Grid spacing in mm between columns 
-parameters.yspacing = 0.1; % Grid spacing in mm between rows
+parameters.xspacing = 0.06; % Grid spacing in mm between columns 
+parameters.yspacing = 0.06; % Grid spacing in mm between rows
 parameters.shank = 0; % 1 - if UCLA 64Ch single shank data is present
 
 if parameters.shank == 1
@@ -110,7 +109,7 @@ LFP.xfbetanarrow = bandpass_filter(LFP.LFPdatacube,6,9,4,1000);
 IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters);
 % Saving paramters, path, IntanBehaviour to bin file 
 savepath = uigetdir(path);
-sessionName = [savepath,'/','Day3CoolingM2GridsM1.mat'];
+sessionName = [savepath,'/','m2MuscimolM1Grids.mat'];
 % save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
 save(sessionName,"IntanBehaviour","fpath","parameters","Waves","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
 
