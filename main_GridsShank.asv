@@ -25,10 +25,11 @@ parameters.windowBeforeCue = 1.5; % in seconds
 parameters.windowAfterCue = 1.5; % in seconds 
 parameters.windowBeforeMI = 1.5; % in seconds 
 parameters.windowAfterMI = 1.5; % in seconds 
-parameters.experiment = 'c'; % self - internally generated, cue - cue initiated 
+parameters.experiment = 'cue'; % self - internally generated, cue - cue initiated 
+parameters.cool = 1; % 1 - cooling , 0 - no cooling 
 parameters.opto = 0; % 1 - opto ON , 0 - opto OFF
-parameters.xspacing = 0.06; % Grid spacing in mm between columns 
-parameters.yspacing = 0.06; % Grid spacing in mm between rows
+parameters.xspacing = 0.1; % Grid spacing in mm between columns 
+parameters.yspacing = 0.1; % Grid spacing in mm between rows
 parameters.shank = 0; % 1 - if UCLA 64Ch single shank data is present
 
 if parameters.shank == 1
@@ -109,7 +110,7 @@ LFP.xfbetanarrow = bandpass_filter(LFP.LFPdatacube,6,9,4,1000);
 IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters);
 % Saving paramters, path, IntanBehaviour to bin file 
 savepath = uigetdir(path);
-sessionName = [savepath,'/','m2MuscimolM1Grids.mat'];
+sessionName = [savepath,'/','Day3CoolingM2GridsM1.mat'];
 % save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
 save(sessionName,"IntanBehaviour","fpath","parameters","Waves","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
 
@@ -335,7 +336,7 @@ trialno = 58;
 % Wave detection for wide band
 disp('Wave Detection for wide band ...')
 xgp = arrayfun(@(s) s.xgp, IntanBehaviour.hitTrace, 'UniformOutput', false);
-parameters.rhoThres= 0.7;% = getRhoThreshold(xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
+parameters.rhoThres= 0.65;% = getRhoThreshold(xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 if isfield(IntanBehaviour,'cueHitTrace')
     xf = arrayfun(@(s) s.xf, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
     xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);

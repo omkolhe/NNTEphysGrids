@@ -336,7 +336,7 @@ trialno = 58;
 % Wave detection for wide band
 disp('Wave Detection for wide band ...')
 xgp = arrayfun(@(s) s.xgp, IntanBehaviour.hitTrace, 'UniformOutput', false);
-parameters.rhoThres= 0.7;% = getRhoThreshold(xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
+parameters.rhoThres= 0.65;% = getRhoThreshold(xgp,IntanBehaviour.cueHitTrace,parameters,nShuffle,trialno,threshold);
 if isfield(IntanBehaviour,'cueHitTrace')
     xf = arrayfun(@(s) s.xf, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
     xgp = arrayfun(@(s) s.xgp, IntanBehaviour.cueHitTrace, 'UniformOutput', false);
