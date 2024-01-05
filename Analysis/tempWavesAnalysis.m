@@ -45,7 +45,6 @@ ylabel('Wave probability');xlabel('Time (in ms)')
 set(gca,'TickDir','out','fontsize',14'); box off;
 
 %% Hit waves comparison 
-
 baselineSpeed = [];
 cooledSpeed = [];
 
