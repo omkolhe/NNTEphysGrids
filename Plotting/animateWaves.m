@@ -1,4 +1,4 @@
-function animateWaves(trial, Waves,saveOption,waveID)
+function animateWaves(trial,behaviourTrace,Waves,saveOption,waveID)
 % *SPONTANEOUS WAVES DEMO*
 %
 % PLOT WAVE EXAMPLES     plot specific examples of spontaneous waves based
@@ -14,7 +14,8 @@ function animateWaves(trial, Waves,saveOption,waveID)
 % animated spatiotemporal plot
 %
 
-x = rad2deg(angle(Waves(trial).p));
+% x = rad2deg(angle(Waves(trial).p));
+x = rad2deg(angle(behaviourTrace(trial).xgp));
 % x = abs(Waves(trial).p);
 evaluation_points = Waves(trial).evaluationPoints;
 source = Waves(trial).source;
@@ -40,7 +41,6 @@ for jj =waveID %1:length(evaluation_points)
     st = Waves(trial).waveTime(jj,1) - plot_pre_time; sp = Waves(trial).waveTime(jj,2) + plot_pre_time;
     if ( st < 1 ), st = 1; end; if ( sp > size(x,3) ), sp = size(x,3); end
 
-    % get data to plot, shuffle if option is chosen
     x_plot = x(:,:,st:sp);
     vx_plot = vx(1,st:sp);
     vy_plot = vy(1,st:sp);

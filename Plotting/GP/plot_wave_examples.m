@@ -1,4 +1,4 @@
-function plot_wave_examples( x, options, trial, Waves,rhoThres)
+function plot_wave_examples( x, trial, Waves,rhoThres)
 % *SPONTANEOUS WAVES DEMO*
 %
 % PLOT WAVE EXAMPLES     plot specific examples of spontaneous waves based
@@ -35,7 +35,7 @@ open(writerobj);
 
 
 ctr = 1; % wave detections counter
-for jj = 6:length(evaluation_points)
+for jj = 1:length(evaluation_points)
     
     % animated wave plot
     if ( rho(jj) > plot_rho_value )
@@ -47,8 +47,7 @@ for jj = 6:length(evaluation_points)
         % get data to plot, shuffle if option is chosen
         x_plot = x(:,:,st:sp); 
         vx_plot = vx(1,st:sp);
-        vy_plot = vy(1,st:sp);
-        if ( options.plot_shuffled_examples == true ), x_plot = shuffle_channels( x_plot ); end        
+        vy_plot = vy(1,st:sp);     
         
         % create plot
         figure; title( sprintf( 'trial %d, wave example %d, 0 of %d ms', trial, ctr, size(x_plot,3) ) );
@@ -63,12 +62,8 @@ for jj = 6:length(evaluation_points)
         
         % create colorbar
         cb = colorbar();
-        if strcmp( options.subject, 'W' ) == true
-            set( cb, 'location', 'southoutside' )
-            set( cb, 'position', [0.6661    0.1674    0.2429    0.0588] );
-        elseif strcmp( options.subject, 'T' ) == true
-            set( cb, 'position', [0.8509    0.3857    0.0330    0.3167] );
-        end
+        set( cb, 'location', 'southoutside' )
+        set( cb, 'position', [0.6661    0.1674    0.2429    0.0588] );
         set( get(cb,'ylabel'), 'string', 'Amplitude (\muV)' ); set( cb, 'linewidth', 2 )
         writeVideo(writerobj,getframe(gcf)); %grabs current fig frame
 

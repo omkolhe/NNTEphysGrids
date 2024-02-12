@@ -28,7 +28,7 @@ else
    disp(['User selected ', fullfile(enpath,enfile)]);
 end
 
-resting_position = 241;
+resting_position = 284;
 flip = 1;
 nlengthBeforePull = round(parameters.windowBeforePull/parameters.ts);
 nlength = round(parameters.windowBeforePull/parameters.ts + parameters.windowAfterPull/parameters.ts + 1);
@@ -61,7 +61,6 @@ if expFlag == 1
 else
     Behaviour.hit = [hitIndex hitTime];
 end
-
 
 
 missIndex = find(diff(B(:,4)) == 1) + 1;
@@ -308,29 +307,30 @@ end
 % xline(squeeze(Behaviour.miss(:,2)),'-.r',cellstr(num2str((1:1:Behaviour.nMiss)')),'LabelVerticalAlignment','bottom'); xlim([410 470]); box off;
 
 if plotOption == 1
-    % Plotting Lever traces for Cue Hits and Cue miss 
-    figure('Name','Average Lever Traces for Cue Hits and Cue Misses');
-    subplot(2,1,1)
-    for i=1:Behaviour.nCueHit
-        plot(Behaviour.cueHitTrace(i).time-parameters.windowBeforeCue,Behaviour.cueHitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
-        hold on;
+    if cue == 1
+        % Plotting Lever traces for Cue Hits and Cue miss 
+        figure('Name','Average Lever Traces for Cue Hits and Cue Misses');
+        subplot(2,1,1)
+        for i=1:Behaviour.nCueHit
+            plot(Behaviour.cueHitTrace(i).time-parameters.windowBeforeCue,Behaviour.cueHitTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+            hold on;
+        end
+        plot(Behaviour.cueHitTrace(1).time-parameters.windowBeforeCue,mean(horzcat(Behaviour.cueHitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+        yline(10,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+        xline(0,'--r','Cue','LabelVerticalAlignment','top');
+        xline(mean(Behaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+        ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
+        
+        subplot(2,1,2)
+        for i=1:Behaviour.nCueMiss
+            plot(Behaviour.cueMissTrace(i).time-parameters.windowBeforeCue,Behaviour.cueMissTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+            hold on;
+        end
+        plot(Behaviour.cueMissTrace(1).time-parameters.windowBeforeCue,mean(horzcat(Behaviour.cueMissTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+        yline(10,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+        xline(0,'--r','Cue','LabelVerticalAlignment','top');
+        ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Cue Misses');box off;
     end
-    plot(Behaviour.cueHitTrace(1).time-parameters.windowBeforeCue,mean(horzcat(Behaviour.cueHitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
-    yline(10,'--.b','Threshold','LabelHorizontalAlignment','left'); 
-    xline(0,'--r','Cue','LabelVerticalAlignment','top');
-    xline(mean(Behaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
-    ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
-    
-    subplot(2,1,2)
-    for i=1:Behaviour.nCueMiss
-        plot(Behaviour.cueMissTrace(i).time-parameters.windowBeforeCue,Behaviour.cueMissTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
-        hold on;
-    end
-    plot(Behaviour.cueMissTrace(1).time-parameters.windowBeforeCue,mean(horzcat(Behaviour.cueMissTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
-    yline(10,'--.b','Threshold','LabelHorizontalAlignment','left'); 
-    xline(0,'--r','Cue','LabelVerticalAlignment','top');
-    ylabel('Lever deflection (in mV)');xlabel('Time (in s)');title('Average Lever Traces for Cue Misses');box off;
-    
     
     % Plotting Lever traces for Hits (alligned with reward)
     figure('Name','Average Lever Traces for Hits and False Alarms');

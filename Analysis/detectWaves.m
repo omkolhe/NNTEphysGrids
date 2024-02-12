@@ -31,6 +31,8 @@ for ii=1:size(behaviourTrace,2)
     l = wavelengthSpatial(pm);
     % Velcity direction unit vector
     [vx, vy] = wavefront_direction(pd,insts);
+    Waves(ii).vx = vx;
+    Waves(ii).vy = vy;
     velDir = atan2(vy,vx);
     % divergence calculation
 %     Waves(ii).source = find_source_points( Waves(ii).evaluationPoints, X, Y, Waves(ii).dx, Waves(ii).dy );

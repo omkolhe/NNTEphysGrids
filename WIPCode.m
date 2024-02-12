@@ -363,11 +363,11 @@ plot_evaluation_points( Waves.wavesHit(14).p, Waves.wavesHit(14).evaluationPoint
 
 
 %% 
-animateWaves(20,Waves.wavesHit,1,2);
+animateWaves(42,IntanBehaviour.cueHitTrace,Waves.wavesHit,0,13);
 
-figure,stack_plot(reshape(Waves.wavesHit(58).xf(5,3,:),[],3001),1,4,1000);
+figure,stack_plot(reshape(IntanBehaviour.cueHitTrace(56).xf,[],3001),0,4,1000);
 
-figure,stack_plot(reshape(IntanBehaviour.cueHitTrace(153).xf,[],3001),1,4,1000);
+figure,stack_plot(reshape(IntanBehaviour.hitTrace(23).xf,[],3001),1,4,1000);
 
 figure,stack_plot(reshape(LFP.xf(:,:,1:10000),[],10000),0,4,1000);
 

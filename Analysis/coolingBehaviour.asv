@@ -7,11 +7,11 @@ recoveryRT = [];
 recoveryFlag = 0; % Run before loop; recoveryFlag = 0 - Baseline, = 1 - Recovery
 % only works for 1 baseline, cool and recovery cycle
 for i=1:size(IntanBehaviour.cueHitTrace,2)  
-    if IntanBehaviour.cueHitTrace(i).temp <= 17
+    if IntanBehaviour.cueHitTrace(i).temp <= 20 
         coolRT = [coolRT;IntanBehaviour.cueHitTrace(i).reactionTime];
         %recoveryFlag = 1;
         recoveryFlag = 0;
-    elseif IntanBehaviour.cueHitTrace(i).temp >= 30 && recoveryFlag == 0
+    elseif IntanBehaviour.cueHitTrace(i).temp >= 25 && recoveryFlag == 0
         baselineRT= [baselineRT;IntanBehaviour.cueHitTrace(i).reactionTime];
     elseif IntanBehaviour.cueHitTrace(i).temp >= 25 && recoveryFlag == 1
         recoveryRT= [recoveryRT;IntanBehaviour.cueHitTrace(i).reactionTime];
@@ -46,11 +46,11 @@ hitTime = cell2mat(arrayfun(@(s) s.LFPtime(1501), IntanBehaviour.cueHitTrace, 'U
 RT = cell2mat(arrayfun(@(s) s.reactionTime, IntanBehaviour.cueHitTrace, 'UniformOutput', false));
 
 figure();
-plot(IntanBehaviour.time/60,lowpass(IntanBehaviour.tempTrace,0.1,parameters.Fs));
+plot(IntanBehaviour.time/60,IntanBehaviour.tempTrace);
 ylabel('Temperature (in $^\circ$ C)','Interpreter','latex');
 xlabel('Time (in min)')
 hold on; yyaxis right; box off;
 plot(hitTime/60,RT*1000,'r*');
-ylabel('Reaction Time (in ms)');
+ylabel('Reaction Time (in ms)')
 
 

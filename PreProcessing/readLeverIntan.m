@@ -269,10 +269,14 @@ for i=1:IntanBehaviour.nHit
 %         IntanBehaviour.MIHitTrace(i).LFPtime = IntanBehaviour.time(IntanBehaviour.MIHitTrace(i).MIIndex-parameters.windowBeforeMI*parameters.Fs:IntanBehaviour.MIHitTrace(i).MIIndex+parameters.windowAfterMI*parameters.Fs)';
     else
         IntanBehaviour.MIHitTrace(i).MIIndex = IntanBehaviour.hitTrace(i).LFPIndex(fCross(end));
-        IntanBehaviour.MIHitTrace(i).cueIndex = IntanBehaviour.cueHitTrace(i).LFPIndex(parameters.windowBeforeCue*parameters.Fs+1);
+        if cue == 1
+            IntanBehaviour.MIHitTrace(i).cueIndex = IntanBehaviour.cueHitTrace(i).LFPIndex(parameters.windowBeforeCue*parameters.Fs+1);
+            IntanBehaviour.MIHitTrace(i).reactionTime = (1/parameters.Fs)*(IntanBehaviour.MIHitTrace(i).MIIndex-IntanBehaviour.MIHitTrace(i).cueIndex);
+            IntanBehaviour.cueHitTrace(i).reactionTime = IntanBehaviour.MIHitTrace(i).reactionTime;
+        end
         IntanBehaviour.MIHitTrace(i).rewardIndex = IntanBehaviour.hitTrace(i).LFPIndex(parameters.windowBeforePull*parameters.Fs+1);
-        IntanBehaviour.MIHitTrace(i).reactionTime = (1/parameters.Fs)*(IntanBehaviour.MIHitTrace(i).MIIndex-IntanBehaviour.MIHitTrace(i).cueIndex);
-        IntanBehaviour.cueHitTrace(i).reactionTime = IntanBehaviour.MIHitTrace(i).reactionTime;
+%         IntanBehaviour.MIHitTrace(i).reactionTime = (1/parameters.Fs)*(IntanBehaviour.MIHitTrace(i).MIIndex-IntanBehaviour.MIHitTrace(i).cueIndex);
+%         IntanBehaviour.cueHitTrace(i).reactionTime = IntanBehaviour.MIHitTrace(i).reactionTime;
         IntanBehaviour.cueHitTrace(i).rewardIndex = IntanBehaviour.MIHitTrace(i).rewardIndex;
         IntanBehaviour.MIHitTrace(i).trace = IntanBehaviour.leverTrace(IntanBehaviour.MIHitTrace(i).MIIndex-parameters.windowBeforeMI*parameters.Fs:IntanBehaviour.MIHitTrace(i).MIIndex+parameters.windowAfterMI*parameters.Fs)';
         IntanBehaviour.MIHitTrace(i).time = (0:1/parameters.Fs:(size(IntanBehaviour.MIHitTrace(i).trace,1)-1)*1/parameters.Fs)' - parameters.windowBeforeMI;
@@ -318,29 +322,31 @@ for i=1:IntanBehaviour.nMiss
 end
 
 if plotOption == 1
-    % Plotting Lever traces for Cue Hit 
-    figure('Name','Average Lever Traces for Cue Hits and Misses');
-    subplot(211);
-    for i=1:size(IntanBehaviour.cueHitTrace,2)
-        plot(IntanBehaviour.cueHitTrace(i).time,IntanBehaviour.cueHitTrace(i).trace,'Color',[0 0 0 0.1],'LineWidth',1.5);
-        hold on;
+    % Plotting Lever traces for Cue Hit
+    if cue == 1
+        figure('Name','Average Lever Traces for Cue Hits and Misses');
+        subplot(211);
+        for i=1:size(IntanBehaviour.cueHitTrace,2)
+            plot(IntanBehaviour.cueHitTrace(i).time,IntanBehaviour.cueHitTrace(i).trace,'Color',[0 0 0 0.1],'LineWidth',1.5);
+            hold on;
+        end
+        plot(IntanBehaviour.cueHitTrace(1).time,mean(horzcat(IntanBehaviour.cueHitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+        yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+        xline(0,'--r','Cue','LabelVerticalAlignment','top');ylim([0 0.1]);
+        xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+        ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
+        
+        % Plotting Lever traces for Cue Miss 
+        subplot(212);
+        for i=1:size(IntanBehaviour.cueMissTrace,2)
+            plot(IntanBehaviour.cueMissTrace(i).time,IntanBehaviour.cueMissTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
+            hold on;
+        end
+        plot(IntanBehaviour.cueMissTrace(1).time,mean(horzcat(IntanBehaviour.cueMissTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
+        yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
+        xline(0,'--r','Cue','LabelVerticalAlignment','top');
+        ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Cue Misses');box off;
     end
-    plot(IntanBehaviour.cueHitTrace(1).time,mean(horzcat(IntanBehaviour.cueHitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
-    yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
-    xline(0,'--r','Cue','LabelVerticalAlignment','top');ylim([0 0.1]);
-    xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
-    ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
-    
-    % Plotting Lever traces for Cue Miss 
-    subplot(212);
-    for i=1:size(IntanBehaviour.cueMissTrace,2)
-        plot(IntanBehaviour.cueMissTrace(i).time,IntanBehaviour.cueMissTrace(i).trace,'Color',[0 0 0 0.2],'LineWidth',1.5);
-        hold on;
-    end
-    plot(IntanBehaviour.cueMissTrace(1).time,mean(horzcat(IntanBehaviour.cueMissTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
-    yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
-    xline(0,'--r','Cue','LabelVerticalAlignment','top');
-    ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Cue Misses');box off;
     
     % Plotting Lever traces for Hits and False Alarms
     figure('Name','Average Lever Traces for Hits and False Alarms');
@@ -362,7 +368,7 @@ if plotOption == 1
     plot(IntanBehaviour.missTrace(1).time,mean(horzcat(IntanBehaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
     yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
     xline(0,'--r','False Alarm','LabelVerticalAlignment','top');ylim([0 0.1]);
-    ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Hits');box off;
+    ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for False Alarms');box off;
     
     % Plotting Lever traces for MI alligned cue Hit Trails 
     figure('Name','Average Lever Traces for Cue Hits and FAs with allignment at MI');
