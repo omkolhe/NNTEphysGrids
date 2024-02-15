@@ -26,7 +26,7 @@ parameters.windowAfterCue = 1.5; % in seconds
 parameters.windowBeforeMI = 1.5; % in seconds 
 parameters.windowAfterMI = 1.5; % in seconds 
 parameters.experiment = 'cue'; % self - internally generated, cue - cue initiated 
-parameters.cool = 1; % 1 - cooling , 0 - no cooling 
+parameters.cool = 0; % 1 - cooling , 0 - no cooling 
 parameters.opto = 0; % 1 - opto ON , 0 - opto OFF
 parameters.xspacing = 0.1; % Grid spacing in mm between columns 
 parameters.yspacing = 0.1; % Grid spacing in mm between rows
@@ -55,6 +55,8 @@ figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size
 % Intan.badChMap =[21,22];[1,2];[6,31];[5,10,21]; ;2;7];
 %Intan = removeBadCh(Intan,Intan.badCh);
 IntanBehaviour.badChMap =[21,22];
+IntanBehaviour.badChMap =[31,32];
+IntanBehaviour.badChMap =[24,25,26];
 IntanBehaviour.badChMap =[];
 %% LFP
 set(0,'DefaultFigureWindowStyle','normal')
@@ -110,9 +112,9 @@ LFP.xfbetanarrow = bandpass_filter(LFP.LFPdatacube,6,9,4,1000);
 IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters);
 % Saving paramters, path, IntanBehaviour to bin file 
 savepath = uigetdir(path);
-sessionName = [savepath,'/','Day6baselineNoLFP.mat'];
+sessionName = [savepath,'/','Day1_EOPN.mat'];
 % save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
-save(sessionName,"IntanBehaviour","fpath","parameters","Waves","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
+save(sessionName,"IntanBehaviour","fpath","parameters","Waves","LFP","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
 
 %% Combining  multiple Intanbehaviour structs from multiple sessions
 combIntanBehaviour = horzcat(IntanBehaviour1, IntanBehaviour2);

@@ -365,7 +365,7 @@ plot_evaluation_points( Waves.wavesHit(14).p, Waves.wavesHit(14).evaluationPoint
 %% 
 animateWaves(42,IntanBehaviour.cueHitTrace,Waves.wavesHit,0,13);
 
-figure,stack_plot(reshape(IntanBehaviour.cueHitTrace(56).xf,[],3001),0,4,1000);
+figure,stack_plot(reshape(IntanBehaviour.cueHitTrace(23).xf,[],3001),0,4,1000);
 
 figure,stack_plot(reshape(IntanBehaviour.hitTrace(23).xf,[],3001),1,4,1000);
 
