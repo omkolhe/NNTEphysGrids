@@ -57,7 +57,7 @@ figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size
 IntanBehaviour.badChMap =[21,22];
 IntanBehaviour.badChMap =[31,32];
 IntanBehaviour.badChMap =[24,25,26];
-IntanBehaviour.badChMap =[];
+IntanBehaviour.badChMap =[29];
 %% LFP
 set(0,'DefaultFigureWindowStyle','normal')
 LFP = fastpreprocess_filtering(Intan.allIntan,5000);
@@ -112,7 +112,7 @@ LFP.xfbetanarrow = bandpass_filter(LFP.LFPdatacube,6,9,4,1000);
 IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters);
 % Saving paramters, path, IntanBehaviour to bin file 
 savepath = uigetdir(path);
-sessionName = [savepath,'/','Day1_EOPN.mat'];
+sessionName = [savepath,'/','Day2_EOPN_Baseline.mat'];
 % save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
 save(sessionName,"IntanBehaviour","fpath","parameters","Waves","LFP","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
 

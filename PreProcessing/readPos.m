@@ -14,8 +14,8 @@ end
 A = readmatrix([enpath,'/',enfile]);
 
 if reward == 0
-    pos = A(:,2);
-    time = A(:,3)/1e3;       % time from arduino converted to seconds
+    pos = A(:,1);
+    time = A(:,2)/1e3;       % time from arduino converted to seconds
     fsAr = 1/(time(2)-time(1));
     vel = zeros(1,numel(time));
     vel(2:end) = movmean(diff(pos)*fsAr,fsAr);

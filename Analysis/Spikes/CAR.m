@@ -1,7 +1,7 @@
 function [Spikes] = CAR(Spikes)
 %common average referencing 
 
-    Spikes.commAvgRef = mean(Spikes.hpSpikes,1);
-    Spikes.hpSpikes = Spikes.hpSpikes - Spikes.commAvgRef;
+    Spikes.commAvgRef = mean(Spikes.hpSignal,1,"omitnan");
+    Spikes.hpSpikes = Spikes.hpSignal - Spikes.commAvgRef;
 end
 
