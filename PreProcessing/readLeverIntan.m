@@ -186,7 +186,7 @@ end
 
 % figure();plot(1:1:10001,(5/1024)*Behaviour.leverTrace(Behaviour.miss(15,1)-5000:Behaviour.miss(15,1)+5000));hold on;
 % plot(0.1:0.1:10000.1,IntanBehaviour.leverTrace(Behaviour.miss(15,3)-50000:Behaviour.miss(15,3)+50000));
-correctionWindow = 1800; % in number of points in LFPFs
+correctionWindow = 1000; % in number of points in LFPFs
 tol = 0.04;
 nDiffSlope = 5;
 disp('Finding miss trials in the Intan data ...');

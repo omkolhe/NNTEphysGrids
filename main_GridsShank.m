@@ -15,6 +15,7 @@ addpath(genpath('Dependancies'));
 rmpath(genpath('Dependancies/MVGC1'));
 %%  PreProcessing
 load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
+% load 64ChGrid_chanmap.mat;  % load the channel map for the IntanConcatenate function
 parameters.rows = 8;  % Number of rows of electrodes on the Grid
 parameters.cols = 4;  % Number of colums of electrodes on the Grid
 parameters.Fs = 1000;
@@ -36,6 +37,7 @@ if parameters.shank == 1
     load UCLASingle64Ch_chanmap.mat; % load the channel map for the the shank data
     UCLAProbeMap = UCLAProbeMap + size(electrode_map,1);
     finalElectrodeMap = [electrode_map;UCLAProbeMap];
+%     finalElectrodeMap = [UCLAProbeMap;electrode_map];
     parameters.nShank = size(UCLAProbeMap,1);
 else
     finalElectrodeMap = electrode_map;
@@ -50,7 +52,7 @@ Intan.Tmax = Ts * size(Intan.allIntan,2);
 Intan.t = 0:Ts:Intan.Tmax-Ts;
 
 %% Removing bad channels from impedance values
-[Z,IntanBehaviour.goodChMap,IntanBehaviour.badChMap] = readImp(electrode_map,2.5e6);
+[Z,IntanBehaviour.goodChMap,IntanBehaviour.badChMap] = readImp(electrode_map,10e6);
 figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size(Z,1)));ylabel('Impedance (in \Omega)');set(gca,'xticklabel',{[]})
 % Intan.badChMap =[21,22];[1,2];[6,31];[5,10,21]; ;2;7];
 %Intan = removeBadCh(Intan,Intan.badCh);
@@ -80,8 +82,8 @@ IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan
 %% Generalized Phase 
 LFP = createDataCube(LFP,parameters.rows,parameters.cols,IntanBehaviour.badChMap); % Creating datacube
 [parameters.X,parameters.Y] = meshgrid( 1:parameters.cols, 1:parameters.rows );
-LFP.xf = bandpass_filter(LFP.LFPdatacube,5,40,4,1000);
-[LFP.xgp, LFP.wt] = generalized_phase(LFP.xf,1000,0);
+LFP.xf = bandpass_filter(LFP.LFPdatacube,5,40,4,parameters.Fs);
+[LFP.xgp, LFP.wt] = generalized_phase(LFP.xf,parameters.Fs,0);
 if parameters.shank == 1
     LFP.xfProbe = bandpass_filter(LFP.LFPprobe,5,40,4,1000);
     [LFP.xgpProbe, LFP.wtProbe] =generalized_phase(LFP.xfProbe,1000,0);
@@ -112,9 +114,9 @@ LFP.xfbetanarrow = bandpass_filter(LFP.LFPdatacube,6,9,4,1000);
 IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters);
 % Saving paramters, path, IntanBehaviour to bin file 
 savepath = uigetdir(path);
-sessionName = [savepath,'/','Day2_EOPN_Baseline.mat'];
+sessionName = [savepath,'/','Day7_WavesOpto.mat'];
 % save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
-save(sessionName,"IntanBehaviour","fpath","parameters","Waves","LFP","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
+save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
 
 %% Combining  multiple Intanbehaviour structs from multiple sessions
 combIntanBehaviour = horzcat(IntanBehaviour1, IntanBehaviour2);
@@ -333,7 +335,8 @@ ylabel('Lever deflection (mV)'); ylim([0 0.1]); box off;
 %% Wave detection in velocity triggered windows
 nShuffle = 100;
 threshold = 99.73; % zscore of 3
-parameters.rhoThres = getRhoThreshold(IntanBehaviour.cueHitTrace,IntanBehaviour.cueMissTrace,parameters,nShuffle,threshold);
+fraction = 0.4;
+parameters.rhoThres = getRhoThreshold(IntanBehaviour.cueHitTrace,IntanBehaviour.cueMissTrace,parameters,nShuffle,threshold,fraction);
 % parameters.rhoThres = 0.75;
 
 disp('Wave Detection for wide band ...')

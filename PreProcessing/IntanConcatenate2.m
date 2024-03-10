@@ -6,14 +6,14 @@ pathname = fullfile(pathname);
 directory = dir(fullfile(pathname,'*.rhd')); %Parses RHD files
 count = 1;
 downsampleRate = 4;
-targetedFs = 5000;
+targetedFs = 10000;
 L = length(directory);
 for idx = 1:L
     file = directory(idx).folder;
     path = directory(idx).name;
     Intan = read_Intan_RHD2000_file(file,path); 
     Fs =  Intan.frequency_parameters.amplifier_sample_rate;
-    allIntan{count} = resample(Intan.amplifier_data(finalElectrodeMap,:)',targetedFs,Fs);
+    allIntan{count} = resample(Intan.amplifier_data',targetedFs,Fs);
     if ~isempty(Intan.board_adc_data)
         analog_adc_data{count} = resample(Intan.board_adc_data',targetedFs,Fs);
     else
@@ -49,7 +49,7 @@ Intan.analog_adc_data = single(Intan.analog_adc_data);
 Intan.dig_in_data = single(Intan.dig_in_data);
 % Adjust electrode order by depth
 % UCLA_probe_map %legacy file call
-% Intan.allIntan  = Intan.allIntan(finalElectrodeMap,:);
+Intan.allIntan  = Intan.allIntan(electrode_map,:);
 % Fix recording offset
 Intan.offset = 1; % second
 Intan.offsetSample = targetedFs*Intan.offset;

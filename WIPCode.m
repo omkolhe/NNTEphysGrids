@@ -363,9 +363,11 @@ plot_evaluation_points( Waves.wavesHit(14).p, Waves.wavesHit(14).evaluationPoint
 
 
 %% 
-animateWaves(42,IntanBehaviour.cueHitTrace,Waves.wavesHit,0,13);
+animateWaves(45,IntanBehaviour.cueHitTrace,Waves.wavesHit,0,15);
 
-figure,stack_plot(reshape(IntanBehaviour.cueHitTrace(6).xf,[],3001),0,4,1000);
+animateWaves(3,IntanBehaviour.cueMissTrace,Waves.wavesMiss,0,6);
+
+figure,stack_plot(reshape(IntanBehaviour.cueHitTrace(9).xf,[],3001),0,4,1000);
 
 figure,stack_plot(reshape(IntanBehaviour.hitTrace(23).xf,[],3001),1,4,1000);
 
@@ -387,24 +389,24 @@ rasterPlot(wavesHitPresent);hold on;
 xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','Cue','LabelVerticalAlignment','top');
 plot(RTTraceTime,1:size(IntanBehaviour.cueHitTrace,2),'.r');
 xline((mean(IntanBehaviour.reactionTime,'all')*parameters.Fs + parameters.windowBeforeCue*parameters.Fs+1),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
-ylabel('Trials');xlabel('Time (in ms)');xlim([1000 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs]);%ylim([1 20]);
+ylabel('Trials');xlabel('Time (in ms)');xlim([0 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs]);%ylim([1 20]);
 set(gca,'TickDir','out','fontsize',14'); box off;
 subplot(4,1,2)
 bar((sum(wavesHitPresent,1)/size(IntanBehaviour.cueHitTrace,2)));
 xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','Cue','LabelVerticalAlignment','top');
 xline((mean(IntanBehaviour.reactionTime,'all')*parameters.Fs + parameters.windowBeforeCue*parameters.Fs+1),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
-ylim([0 0.3]);xlim([1000 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs]);
+ylim([0 0.3]);xlim([0 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs]);
 ylabel('Wave probability');xlabel('Time (in ms)');set(gca,'TickDir','out','fontsize',14'); box off;
 subplot(4,1,3);
 title('Waves During Miss Trials')
 rasterPlot(wavesMissPresent);hold on;
 xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','Cue','LabelVerticalAlignment','top');
-ylabel('Trials');xlabel('Time (in ms)');xlim([1000 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs]);%ylim([1 20]);
+ylabel('Trials');xlabel('Time (in ms)');xlim([0 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs]);%ylim([1 20]);
 set(gca,'TickDir','out','fontsize',14'); box off;
 subplot(4,1,4)
 bar((sum(wavesMissPresent,1)/size(IntanBehaviour.cueMissTrace,2)));
 xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','Cue','LabelVerticalAlignment','top');
-ylim([0 0.3]);xlim([1000 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs])
+ylim([0 0.3]);xlim([0 parameters.windowBeforeCue*parameters.Fs+1+parameters.windowAfterCue*parameters.Fs])
 ylabel('Wave probability');xlabel('Time (in ms)')
 set(gca,'TickDir','out','fontsize',14'); box off;
 

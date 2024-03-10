@@ -1,4 +1,4 @@
-function [rhoThres] = getRhoThreshold(behaviourTrace1,behaviourTrace2,parameters,nShuffle,threshold)
+function [rhoThres] = getRhoThreshold(behaviourTrace1,behaviourTrace2,parameters,nShuffle,threshold,fraction)
 
 % warningid = 'MATLAB:smoothn:SUpperBound';
 warning('off','all');
@@ -6,10 +6,10 @@ warning('off','all');
 X = parameters.X;
 Y = parameters.Y;
 
-nTrialShuffle1 = ceil(0.25*size(behaviourTrace1,2));
+nTrialShuffle1 = ceil(fraction*size(behaviourTrace1,2));
 a1 = randperm(size(behaviourTrace1,2));
 trials1 = a1(1:nTrialShuffle1);
-nTrialShuffle2 = ceil(0.25*size(behaviourTrace2,2));
+nTrialShuffle2 = ceil(fraction*size(behaviourTrace2,2));
 a2 = randperm(size(behaviourTrace2,2));
 trials2 = a2(1:nTrialShuffle2);
 

@@ -49,7 +49,7 @@ baselineSpeed = [];
 cooledSpeed = [];
 
 for i = 1:size(Waves.wavesHit,2)
-    if IntanBehaviour.cueHitTrace(i).temp <= 20
+    if IntanBehaviour.cueHitTrace(i).temp <= 25
         cooledSpeed = [cooledSpeed,Waves.wavesHit(i).speed];
     elseif IntanBehaviour.cueHitTrace(i).temp >= 25
         baselineSpeed = [baselineSpeed,Waves.wavesHit(i).speed];
@@ -61,6 +61,20 @@ ttest2(baselineSpeed,cooledSpeed)
 data = baselineSpeed';
 
 figure,customBoxplot(data);
+
+%% Plotting Speed histogram
+
+h1 = histfit(baselineSpeed,100,'kernel');
+h2 = histfit(cooledSpeed,100,'kernel');
+figure('Name','Histogram of wave speeds: Baseline vs Cooled');
+bar(h1(1).XData, h1(1).YData/max(h1(1).YData),'BarWidth',1,'FaceColor',[0.5 0 0.4]);hold on;
+plot(h1(2).XData, h1(2).YData/max(h1(1).YData), 'r', 'LineWidth',2)
+xline(mean(baselineSpeed,'all'),'-r',{'Mean speed = ' num2str(mean(baselineSpeed,'all')) ' cm/s'});
+xlabel('Wave speed in cm/s');title('Wave Speed');box off;
+bar(h2(1).XData, h2(1).YData/max(h2(1).YData),'BarWidth',1,'FaceColor',[0 0.6 0.9]);hold on;
+plot(h2(2).XData, h2(2).YData/max(h2(1).YData), 'b', 'LineWidth',2)
+xline(mean(cooledSpeed,'all'),'-r',{'Mean speed = ' num2str(mean(cooledSpeed,'all')) ' cm/s'});
+
 
 %%
 RTbaseline = cell2mat(arrayfun(@(s) s.reactionTime, IntanBehaviour1.cueHitTrace, 'UniformOutput', false));

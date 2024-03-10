@@ -16,7 +16,7 @@ function animateWaves(trial,behaviourTrace,Waves,saveOption,waveID)
 
 % x = rad2deg(angle(Waves(trial).p));
 x = rad2deg(angle(behaviourTrace(trial).xgp));
-% x = abs(Waves(trial).p);
+% x = abs(behaviourTrace(trial).xf);
 evaluation_points = Waves(trial).evaluationPoints;
 source = Waves(trial).source;
 vx = Waves(trial).vx;
@@ -29,7 +29,7 @@ plot_pre_time = 0; pause_length = 0.03;
 M = load( 'myMap.mat' );
 
 if saveOption == 1
-    fn = 'WaveAnimation';
+    fn = 'WaveAnimation64';
     writerobj = VideoWriter([fn '.avi'],"Uncompressed AVI"); % Initialize movie file
     writerobj.FrameRate = 30;
     open(writerobj);
@@ -45,8 +45,9 @@ for jj =waveID %1:length(evaluation_points)
     vx_plot = vx(1,st:sp);
     vy_plot = vy(1,st:sp);
     
+    ts_interp = 0.25;
     t1 = st:1:sp;
-    t2 = st:0.25:sp;
+    t2 = st:ts_interp:sp;
     xplotnew = [];
     vxplotnew = [];
     vyplotnew = [];
@@ -67,7 +68,7 @@ for jj =waveID %1:length(evaluation_points)
 %     title( sprintf( 'Detected Wave, 0 of %d ms', size(x_plot,3) ) );
     color_range = [ min(reshape(x_plot,[],1)) max(reshape(x_plot,[],1)) ];
 %     color_range = [ -80 80 ];
-    h = imagesc( x_plot(:,:,1) ); hold on; axis image;
+    h = imagesc( inpaint_nans(x_plot(:,:,1),3 )); hold on; axis image;
     plot( source(jj,1), source(jj,2), '.', 'markersize', 35, 'color', [.7 .7 .7] );
     h2 = quiver(source(jj,1), source(jj,2),-vx_plot(1),-vy_plot(1));
     h2.Color = 'Blue';
@@ -92,10 +93,10 @@ for jj =waveID %1:length(evaluation_points)
 
     % animate plot
     for kk = 1:size(x_plot,3)
-        set( h, 'cdata', x_plot(:,:,kk) );
+        set( h, 'cdata', inpaint_nans(x_plot(:,:,kk),3 ) );
         set(h2, 'udata',-vx_plot(1,kk),'vdata',-vy_plot(1,kk));
         set( get(gca,'title'), 'string', ...
-            sprintf( 'Detected Wave, %d of %d ms', kk, size(x_plot,3) ) )
+            sprintf( 'Detected Wave, %f of %f ms', round(kk*ts_interp,1), round(size(x_plot,3)*ts_interp,1) ) )
         pause(pause_length);
         if (saveOption == 1 && jj == waveID)
             writeVideo(writerobj,getframe(gcf)); %grabs current fig frame

@@ -73,7 +73,7 @@ for ii=1:size(behaviourTrace,2)
         Waves(ii).waveTime(jj,:) = [st-1+waveClusters(clusterMaxIndx,1),st-1+waveClusters(clusterMaxIndx,2)];
         Waves(ii).evaluationPoints(jj) = Waves(ii).waveTime(jj,1);
         Waves(ii).source(jj,1) = round(mode(sourcepoint(1,waveClusters(clusterMaxIndx,1):waveClusters(clusterMaxIndx,2))));
-        Waves(ii).source(jj,2) = round(mode(sourcepoint(1,waveClusters(clusterMaxIndx,1):waveClusters(clusterMaxIndx,2))));
+        Waves(ii).source(jj,2) = round(mode(sourcepoint(2,waveClusters(clusterMaxIndx,1):waveClusters(clusterMaxIndx,2))));
         Waves(ii).rho{jj} = rho(waveClusters(clusterMaxIndx,1):waveClusters(clusterMaxIndx,2));
     end
     % Removing evaluation points in which no wave was detected 
@@ -117,6 +117,7 @@ for ii=1:size(behaviourTrace,2)
         Waves(ii).wavelength(kk) = mean(l(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),'all','omitnan');
         Waves(ii).waveDuration(kk) = Waves(ii).waveTime(kk,2)-Waves(ii).waveTime(kk,1)+1;
         Waves(ii).waveAmp(kk) = max(abs(p(:,:,Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2))),[],"all",'omitnan')-min(abs(p(:,:,Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2))),[],"all",'omitnan');
+%         Waves(ii).wavevx(kk) = vy(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2));
     end
     %Waves(ii).speedpdg = pgdMean(Waves(ii).PGD,Waves(ii).s,0.51);
     %Waves(ii).dirpdg = pgdMean(Waves(ii).PGD,Waves(ii).velDir,0.51);

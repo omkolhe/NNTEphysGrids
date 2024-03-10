@@ -182,8 +182,8 @@ if isempty(st_miss1)
     disp('First miss rejected');
     Behaviour.nMiss = Behaviour.nMiss-1;
     Behaviour.miss(1,:) = [];
-%     Behaviour.nMiss = Behaviour.nMiss-1;
-%     Behaviour.miss(1,:) = [];
+    Behaviour.nMiss = Behaviour.nMiss-1;
+    Behaviour.miss(1,:) = [];
 end 
 sp_missend =  max(find(Behaviour.time < Behaviour.miss(end,2)+parameters.windowAfterPull));
 if isempty(sp_missend)

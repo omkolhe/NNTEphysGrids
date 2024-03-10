@@ -20,8 +20,8 @@ parameters.cols = 4;  % Number of colums of electrodes on the Grid
 parameters.Fs = 1000;
 parameters.ts = 1/parameters.Fs;
 parameters.rewardTrials = 0; % 1 if reward is given , 0 if not
-parameters.rewardDistance = 100; % Distance travelled after which reward is given
-IntanConcatenate
+parameters.rewardDistance = 60; % Distance travelled after which reward is given
+IntanConcatenate2
 fpath = Intan.path; % where on disk do you want the analysis? ideally and SSD...
 
 %% Generating time series from Intan data
@@ -30,7 +30,7 @@ Intan.Tmax = Ts * size(Intan.allIntan,2);
 Intan.t = Ts:Ts:Intan.Tmax;
 
 %% Removing bad channels from impedance values
-[Z,Intan.goodChMap,Intan.badChMap] = readImp(electrode_map,5e6);
+[Z,Intan.goodChMap,Intan.badChMap] = readImp(electrode_map,2e6);
 figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size(Z,1)));ylabel('Impedance (in \Omega)');set(gca,'xticklabel',{[]})
 %Intan = removeBadCh(Intan,Intan.badCh);
 
@@ -43,13 +43,26 @@ LFP = fastpreprocess_filtering(Intan.allIntan,10000);
 LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.badChMap); % Creating datacube
 
 %% Spikes 
-Spikes.hpSignal = bandpass_filter_matrix(double(Intan.allIntan),300,3000,10,10000);
-Spikes.hpSignal(Intan.badChMap,:) = NaN;
-Spikes = CAR(Spikes);
+Intan.allIntan(Intan.badChMap,:) = [];
+Spikes = preprocessSpike(double(Intan.allIntan(:,:)),10000);
+Spikes.Spikes = [];
+Spikes = findSpikes(Spikes,-3.5,10000);
 
-figure,stack_plot(Spikes.hpSpikes(:,20000:30000),1,4,10000);
-figure,stack_plot(Spikes.hpSignal(:,1:10000),1,4,10000);
+[X,Q] = featureProject(Spikes.Spikes(4).spikeWaveform',1,1,1);
 
+
+
+figure,stack_plot(Spikes.rawspikeTrace(12:17,:),1,2,10000);
+figure,stack_plot(Spikes.whitenedSpikeTrace(12:17,:),1,2,10000);
+
+
+title('Common Mode Referenced - Ch 17')
+figure,plot(Intan.t,Spikes.whitenedSpikeTrace(17,:),"LineWidth",1.2,'Color',[0 0 0]);
+xlabel('Time (s)');ylabel('Voltage (uV)');
+
+figure,plot(Spikes.whitenedSpikeTrace(13,:))
+xline(Spikes.Spikes(13).spikeTime);
+yline(Spikes.threshold(13));
 
 %% Loading Encoder Data
 [Encoder] = readPos(parameters);
@@ -193,6 +206,19 @@ plotOption = 1;
 parameters.rhoThres= rhoThres;
 Wavesall = detectWaves(LFP.xgp,LFP.wt,[0,0,1,size(LFP.xgp,3)],parameters);
 WaveStatsSingle(Wavesall,parameters,1);
+
+parameters.xspacing = 0.06; % Grid spacing in mm between columns 
+parameters.yspacing = 0.06; % Grid spacing in mm between rows
+
+parameters.rhoThres= 0.6;
+allwaves.LFPIndex = (1:1:size(LFP.LFP,2))';
+xf{1,1} = LFP.xf;
+xgp{1,1} = LFP.xgp;
+wt{1,1} = LFP.wt;
+Wavesall = detectWaves(xf,xgp,wt,allwaves,parameters,0.6);
+WaveStatsSingle(Wavesall,parameters,1,size(LFP.LFP,2)/20);
+
+animateWaves(93,IntanBehaviour.cueHitTrace,Waves.wavesHit1,1,1);
 
 %% Beta event detection 
 avgBetaband = mean(LFP.beta_band,1);
@@ -514,4 +540,11 @@ set(gca,'xtick',1:4,'XTickLabel',{'Rest','Initiation','Run','Termination'});box 
 ylabel('Wave speed in cm/s');
 
 
+%% 
 
+
+Spikes.hpSignal = bandpass_filter_matrix(double(Intan.allIntan),300,3000,10,10000);
+Spikes.hpSignal(Intan.badChMap,:) = NaN;
+Spikes = CAR(Spikes);
+figure,stack_plot(Spikes.hpSpikes(:,20000:30000),1,4,10000);
+figure,stack_plot(Spikes.hpSignal(:,20000:60000),1,4,10000);

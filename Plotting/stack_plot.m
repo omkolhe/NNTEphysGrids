@@ -17,7 +17,7 @@ for i = 1:y
     baseline = baseline + max(DeltaFoverF,[],'all');
 end
 axis tight,box off
-set(gca,'XTick',[])
+% set(gca,'XTick',[])
 set(gca,'YTick',[])
 disp('Done!')
 end
