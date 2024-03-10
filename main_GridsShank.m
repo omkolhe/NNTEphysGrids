@@ -14,10 +14,11 @@ addpath(genpath('Analysis'));
 addpath(genpath('Dependancies'));
 rmpath(genpath('Dependancies/MVGC1'));
 %%  PreProcessing
-load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
+% load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
 % load 64ChGrid_chanmap.mat;  % load the channel map for the IntanConcatenate function
-parameters.rows = 8;  % Number of rows of electrodes on the Grid
-parameters.cols = 4;  % Number of colums of electrodes on the Grid
+load 64ChM1M2Grid_chanmap.mat % load the channel map for 64ch Dual grid 
+parameters.rows = 5;  % Number of rows of electrodes on the Grid
+parameters.cols = 6;  % Number of colums of electrodes on the Grid
 parameters.Fs = 1000;
 parameters.ts = 1/parameters.Fs;
 parameters.windowBeforePull = 1.5; % in seconds
@@ -29,8 +30,8 @@ parameters.windowAfterMI = 1.5; % in seconds
 parameters.experiment = 'cue'; % self - internally generated, cue - cue initiated 
 parameters.cool = 0; % 1 - cooling , 0 - no cooling 
 parameters.opto = 0; % 1 - opto ON , 0 - opto OFF
-parameters.xspacing = 0.1; % Grid spacing in mm between columns 
-parameters.yspacing = 0.1; % Grid spacing in mm between rows
+parameters.xspacing = 0.15; % Grid spacing in mm between columns 
+parameters.yspacing = 0.15; % Grid spacing in mm between rows
 parameters.shank = 0; % 1 - if UCLA 64Ch single shank data is present
 
 if parameters.shank == 1
@@ -53,6 +54,7 @@ Intan.t = 0:Ts:Intan.Tmax-Ts;
 
 %% Removing bad channels from impedance values
 [Z,IntanBehaviour.goodChMap,IntanBehaviour.badChMap] = readImp(electrode_map,10e6);
+% [Z,IntanBehaviour.goodChMap,IntanBehaviour.badChMap] = readImp(finalElectrodeMap,10e6);
 figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size(Z,1)));ylabel('Impedance (in \Omega)');set(gca,'xticklabel',{[]})
 % Intan.badChMap =[21,22];[1,2];[6,31];[5,10,21]; ;2;7];
 %Intan = removeBadCh(Intan,Intan.badCh);
@@ -335,7 +337,7 @@ ylabel('Lever deflection (mV)'); ylim([0 0.1]); box off;
 %% Wave detection in velocity triggered windows
 nShuffle = 100;
 threshold = 99.73; % zscore of 3
-fraction = 0.4;
+fraction = 0.20;
 parameters.rhoThres = getRhoThreshold(IntanBehaviour.cueHitTrace,IntanBehaviour.cueMissTrace,parameters,nShuffle,threshold,fraction);
 % parameters.rhoThres = 0.75;
 

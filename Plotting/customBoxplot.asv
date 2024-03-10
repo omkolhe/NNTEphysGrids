@@ -37,6 +37,6 @@ else
     boxplot(data),hold on
     if scatterOn
         rgbtrip = [0.8500 0.3250 0.0980];
-        scatter(ones(size(data,1),1),data,'filled','jitter','on','jitterAmount',0.08,'MarkerFaceColor',rgbtrip);
+        scatter(ones(size(data,1),1),data,'filled','jitter','on','jitterAmount',0.08'MarkerFaceColor',rgbtrip);
     end
 end

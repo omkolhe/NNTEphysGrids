@@ -1,0 +1,16 @@
+function plotBox2(data1,data2)
+
+% Making column vectors 
+if size(data1,1) ~= 1
+    data1 = data1';
+end
+if size(data2,1) ~= 1
+    data2 = data2';
+end
+
+n1 = size(data)
+% Appending zeros
+if size(data1,2)>size(data2,2)
+
+
+end

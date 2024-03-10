@@ -373,6 +373,8 @@ figure,stack_plot(reshape(IntanBehaviour.hitTrace(23).xf,[],3001),1,4,1000);
 
 figure,stack_plot(reshape(LFP.xf(:,:,1:10000),[],10000),0,4,1000);
 
+figure,stack_plot(reshape(IntanBehaviourM2.cueHitTrace(20).xf,[],3001),0,4,1000);
+
 
 %%
 wavesHitPresent = vertcat(Waves.wavesHit.wavePresent);
