@@ -1,4 +1,4 @@
-function [] = rasterPlotPropColor(Spikes,prop1,prop2)
+function [] = rasterPlotPropColor(Spikes,prop1,prop2,angleFlag)
 
 if isempty(prop2)
     szFlag = 0;
@@ -22,4 +22,5 @@ for i=1:y
     end
 end
 colorbar;
-phasemap;
+if angleFlag==1 phasemap, else colormap("jet"), end
+% phasemap;
