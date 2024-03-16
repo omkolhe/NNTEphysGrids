@@ -9,14 +9,17 @@ waveTimeWindow = 40; % in points
 
 for ii=1:size(behaviourTrace,2)    
     p = xgp{1,ii};
+    p1 = xgp{1,ii};
     wt = wt1{1,ii};
     Waves(ii).wavePresent = zeros(1,size(xf{1,ii},3));
     Waves(ii).waveStart = zeros(1,size(xf{1,ii},3));
-%     for ll=1:size(Waves(ii).p,3)
-%         xf{1,ii}(:,:,ll) = inpaint_nans(xf{1,ii}(:,:,ll),3);
-%         Waves(ii).p(:,:,ll) = inpaint_nans(Waves(ii).p(:,:,ll),3);
-%         Waves(ii).wt(:,:,ll) = inpaint_nans(Waves(ii).wt(:,:,ll),3);
-%     end
+    if sum(isnan(p),'all') >= 1
+        for ll=1:size(p,3)
+    %         xf{1,ii}(:,:,ll) = inpaint_nans(xf{1,ii}(:,:,ll),3);
+            p(:,:,ll) = inpaint_nans(p(:,:,ll),3);
+            wt(:,:,ll) = inpaint_nans(wt(:,:,ll),3);
+        end
+    end
 %     p = arrayfun(@(jj) inpaint_nans(p(:,:,jj)),1:size(p,3));
     Waves(ii).evaluationPoints = find_evaluation_points(p,0,0.2);
 %     plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );
@@ -48,7 +51,7 @@ for ii=1:size(behaviourTrace,2)
         sourcepoint = zeros(2,sp-st+1);
         dir = zeros(sp-st+1,1);
         for kk=1:(sp-st+1)
-            ph = angle( p(:,:,(st+kk-1)));
+            ph = angle( p1(:,:,(st+kk-1)));
             sourcepoint(:,kk) = find_source_points(st+kk-1,X,Y,dx, dy );
             [rho(kk,1),~,~] = phase_correlation_distance( ph,sourcepoint(:,kk), parameters.xspacing,parameters.yspacing );
             dir(kk) = rad2deg(velDir(st+kk-1));
@@ -121,7 +124,7 @@ for ii=1:size(behaviourTrace,2)
     end
     %Waves(ii).speedpdg = pgdMean(Waves(ii).PGD,Waves(ii).s,0.51);
     %Waves(ii).dirpdg = pgdMean(Waves(ii).PGD,Waves(ii).velDir,0.51);
-    %plot_vector_field( exp( 1i .* Waves(ii).pd(:,:,100) ), 0 );
+    %plot_vector_field( exp( 1i .* pd(:,:,527) ), 0 );
     %plot_wave_examples( LFP.xf(:,:,Encoder.trialTime(ii,3):Encoder.trialTime(ii,4)), options, ii, Waves(ii).evaluationPoints, Waves(ii).source, Waves(ii).rho );
 end
   

@@ -21,6 +21,9 @@ for i=1:nTrialShuffle1
     for j=1:nShuffle
         if j==1
             pShuffle = behaviourTrace1(trials1(i)).xgp;
+%             for ll=1:size(pShuffle,3)
+%                 pShuffle1(:,:,ll) = inpaint_nans(pShuffle(:,:,ll),3);
+%             end
             [~,~,dx,dy] = phase_gradient_complex_multiplication( pShuffle, parameters.xspacing,parameters.yspacing );
             source = find_source_points( evaluationPoints, X, Y, dx, dy );
             for jj = 1:length(evaluationPoints)
@@ -30,6 +33,9 @@ for i=1:nTrialShuffle1
             rhoAll = [rhoAll,rho];
         else
             pShuffle = shuffle_channels(behaviourTrace1(trials1(i)).xgp);
+%             for ll=1:size(pShuffle,3)
+%                 pShuffle1(:,:,ll) = inpaint_nans(pShuffle(:,:,ll),3);
+%             end
             [~,~,dx,dy] = phase_gradient_complex_multiplication( pShuffle, parameters.xspacing,parameters.yspacing );
             source = find_source_points( evaluationPoints, X, Y, dx, dy );
             for jj = 1:length(evaluationPoints)
@@ -39,6 +45,7 @@ for i=1:nTrialShuffle1
             rhoAllShuffle = [rhoAllShuffle,rho];
         end
     end
+    disp([num2str(i) '/' num2str(nTrialShuffle1)]);
 end
 
 for i=1:nTrialShuffle2
@@ -46,6 +53,9 @@ for i=1:nTrialShuffle2
     for j=1:nShuffle
         if j==1
             pShuffle = behaviourTrace2(trials2(i)).xgp;
+%             for ll=1:size(pShuffle,3)
+%                 pShuffle1(:,:,ll) = inpaint_nans(pShuffle(:,:,ll),3);
+%             end
             [~,~,dx,dy] = phase_gradient_complex_multiplication( pShuffle, parameters.xspacing,parameters.yspacing );
             source = find_source_points( evaluationPoints, X, Y, dx, dy );
             for jj = 1:length(evaluationPoints)
@@ -55,6 +65,9 @@ for i=1:nTrialShuffle2
             rhoAll = [rhoAll,rho];
         else
             pShuffle = shuffle_channels(behaviourTrace2(trials2(i)).xgp);
+%             for ll=1:size(pShuffle,3)
+%                 pShuffle1(:,:,ll) = inpaint_nans(pShuffle(:,:,ll),3);
+%             end
             [~,~,dx,dy] = phase_gradient_complex_multiplication( pShuffle, parameters.xspacing,parameters.yspacing );
             source = find_source_points( evaluationPoints, X, Y, dx, dy );
             for jj = 1:length(evaluationPoints)
@@ -64,6 +77,7 @@ for i=1:nTrialShuffle2
             rhoAllShuffle = [rhoAllShuffle,rho];
         end
     end
+    disp([num2str(i) '/' num2str(nTrialShuffle2)]);
 end
 
 

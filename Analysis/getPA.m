@@ -20,6 +20,10 @@ if strcmp(parameters.experiment,'cue')
     end
     PA.Hit = calPhaseAlignment(xgpHit,parameters);
     PA.Miss = calPhaseAlignment(xgpMiss,parameters);
+    [~,PA.PAPeakHit] = max(mean(PA.Hit,[1 2],'omitnan'));
+    PA.HitAngles = rmmissing(reshape(cell2mat(cellfun(@(s) reshape(angle(s(:,:,PA.PAPeakHit)),nElectrodes,1), xgpHit,'UniformOutput',false)),[],1));
+    [~,PA.PAPeakMiss] = max(mean(PA.Miss,[1 2],'omitnan'));
+    PA.MissAngles = rmmissing(reshape(cell2mat(cellfun(@(s) reshape(angle(s(:,:,PA.PAPeakMiss)),nElectrodes,1), xgpMiss,'UniformOutput',false)),[],1));
 end
 
 if shank == 0
@@ -31,6 +35,11 @@ else
 end
 PA.HitReward = calPhaseAlignment(xgpHitReward,parameters);
 PA.FA = calPhaseAlignment(xgpFA,parameters);
+[~,PA.PAPeakHitReward] = max(mean(PA.HitReward,[1 2],'omitnan'));
+PA.HitRewardAngles = rmmissing(reshape(cell2mat(cellfun(@(s) reshape(angle(s(:,:,PA.PAPeakHitReward)),nElectrodes,1), xgpHitReward,'UniformOutput',false)),[],1));
+[~,PA.PAPeakFA] = max(mean(PA.FA,[1 2],'omitnan'));
+PA.FAAngles = rmmissing(reshape(cell2mat(cellfun(@(s) reshape(angle(s(:,:,PA.PAPeakFA)),nElectrodes,1), xgpFA,'UniformOutput',false)),[],1));
+
 
 if shank == 0
     xgpMIHit = arrayfun(@(s) s.xgp, IntanBehaviour.MIHitTrace, 'UniformOutput', false);
@@ -41,6 +50,10 @@ else
 end
 PA.MIHit = calPhaseAlignment(xgpMIHit,parameters);
 PA.MIFA = calPhaseAlignment(xgpMIFA,parameters);
+[~,PA.PAPeakMIHit] = max(mean(PA.MIHit,[1 2],'omitnan'));
+PA.MIHitAngles = rmmissing(reshape(cell2mat(cellfun(@(s) reshape(angle(s(:,:,PA.PAPeakMIHit)),nElectrodes,1), xgpMIHit,'UniformOutput',false)),[],1));
+[~,PA.PAPeakMIFA] = max(mean(PA.MIFA,[1 2],'omitnan'));
+PA.MIFAAngles = rmmissing(reshape(cell2mat(cellfun(@(s) reshape(angle(s(:,:,PA.PAPeakMIFA)),nElectrodes,1), xgpMIFA,'UniformOutput',false)),[],1));
 
 
 if plotFlag == 1

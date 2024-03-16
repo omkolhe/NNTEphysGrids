@@ -11,14 +11,15 @@ addpath(genpath('spikes-master'));
 addpath(genpath('PreProcessing'));
 addpath(genpath('Plotting'));
 addpath(genpath('Analysis'));
+addpath(genpath('Channel Maps'));
 addpath(genpath('Dependancies'));
 rmpath(genpath('Dependancies/MVGC1'));
 %%  PreProcessing
 % load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
 % load 64ChGrid_chanmap.mat;  % load the channel map for the IntanConcatenate function
 load 64ChM1M2Grid_chanmap.mat % load the channel map for 64ch Dual grid 
-parameters.rows = 5;  % Number of rows of electrodes on the Grid
-parameters.cols = 6;  % Number of colums of electrodes on the Grid
+parameters.rows = 8;  % Number of rows of electrodes on the Grid
+parameters.cols = 8;  % Number of colums of electrodes on the Grid
 parameters.Fs = 1000;
 parameters.ts = 1/parameters.Fs;
 parameters.windowBeforePull = 1.5; % in seconds
@@ -53,7 +54,7 @@ Intan.Tmax = Ts * size(Intan.allIntan,2);
 Intan.t = 0:Ts:Intan.Tmax-Ts;
 
 %% Removing bad channels from impedance values
-[Z,IntanBehaviour.goodChMap,IntanBehaviour.badChMap] = readImp(electrode_map,10e6);
+[Z,IntanBehaviour.goodChMap,IntanBehaviour.badChMap] = readImp(electrode_map,5e6);
 % [Z,IntanBehaviour.goodChMap,IntanBehaviour.badChMap] = readImp(finalElectrodeMap,10e6);
 figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size(Z,1)));ylabel('Impedance (in \Omega)');set(gca,'xticklabel',{[]})
 % Intan.badChMap =[21,22];[1,2];[6,31];[5,10,21]; ;2;7];
@@ -337,7 +338,7 @@ ylabel('Lever deflection (mV)'); ylim([0 0.1]); box off;
 %% Wave detection in velocity triggered windows
 nShuffle = 100;
 threshold = 99.73; % zscore of 3
-fraction = 0.20;
+fraction = 0.2;
 parameters.rhoThres = getRhoThreshold(IntanBehaviour.cueHitTrace,IntanBehaviour.cueMissTrace,parameters,nShuffle,threshold,fraction);
 % parameters.rhoThres = 0.75;
 

@@ -26,10 +26,12 @@ d(d<0) = d(d<0)+2*pi;
 while r2<r2thres
     k=k+1;
     fittedVm = fitmvmdist(dirComb',k,'MaxIter',250,'ErrorThreshold',1e-5);
-    fittedData = fittedVm.random(size(d,1));
+%     fittedVm.kappa
+    fittedData = fittedVm.random(size(d,1),false);
     fittedData(fittedData<0) = fittedData(fittedData<0)+2*pi;
     r2 = r2score(sort(d),sort(fittedData));
     if r2>r2thres
+        disp(num2str(r2))
         break
     end
     if k == modeMax

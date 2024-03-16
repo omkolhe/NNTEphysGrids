@@ -16,7 +16,7 @@ if fit == 0
     nComponents = fittedVm.nComponents;
     likelihoods = fittedVm.pdf(angles);
 else
-    [~, fittedVm] = getClusterDirectionality(Waves,0.95,3);
+    [~, fittedVm] = getClusterDirectionality2(Waves,0.95,3);
     nComponents = fittedVm.nComponents;
     likelihoods = fittedVm.pdf(angles);
 end

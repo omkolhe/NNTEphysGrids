@@ -6,9 +6,9 @@ else
     waves2Flag = 0;
 end
 
-waves1Present = vertcat(Waves1.waveStart);
+waves1Present = vertcat(Waves1.wavePresent);
 if waves2Flag == 1
-    waves2Present = vertcat(Waves2.waveStart);
+    waves2Present = vertcat(Waves2.wavePresent);
 end
 
 figure();
