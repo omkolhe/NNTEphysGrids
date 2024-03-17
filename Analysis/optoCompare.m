@@ -77,7 +77,7 @@ sgtitle('Wave rasters for Hits - Baseline vs Opto');
 
 % Plotting wave speed histograms
 srt = 1500;
-stp = 2500;
+stp = 1700;
 speedCombBaseline = horzcat(selectWaves(WavesBaseline.wavesHit,srt,stp).speed);
 speedCombOpto = horzcat(selectWaves(WavesOpto.wavesHit,srt,stp).speed);
 
@@ -105,6 +105,38 @@ disp('h-statistic:');
 disp(t);
 disp('p-value:');
 disp(p);
+
+
+% Waves speed vs time 
+for i = 1:30
+    st = (i-1)*100;
+    sp = (i)*100;
+    dirCombBaseline = horzcat(WavesBaseline.wavesHit(1:end).speed);
+    evalPointsHit = horzcat(WavesBaseline.wavesHit(1:end).evaluationPoints);
+    WaveComb(i).Baseline = dirCombBaseline(evalPointsHit >=st & evalPointsHit <= sp);
+
+    dirCombOpto = horzcat(WavesBaseline.wavesHit(1:end).speed);
+    evalPointsMiss = horzcat(WavesOpto.wavesHit(1:end).evaluationPoints);
+    WaveComb(i).Opto = dirCombOpto(evalPointsMiss >=st & evalPointsMiss <= sp);
+end
+
+figure(); hold on;
+avgVarBaseline = arrayfun(@(s) mean(s.Baseline,'all'), WaveComb);
+maxVarBaseline = max(avgVarBaseline);
+avgVarOpto = arrayfun(@(s) mean(s.Opto,'all'), WaveComb);
+maxVarOpto = max(avgVarOpto);
+a = arrayfun(@(s) ranksum(s.Baseline,s.Opto) , WaveComb);
+pVal = (a<0.05);
+significanceX = find(pVal)*100;
+significanceY = 1.1*max(maxVarBaseline,maxVarOpto)*ones(1,length(significanceX));
+h1 = plot(100:100:3000,(avgVarBaseline),'Color', [0.7 0.7 0.7],'LineWidth',1.5);
+h2 = plot(100:100:3000,(avgVarOpto),'Color', [0.8500 0.3250 0.0980],'LineWidth',1.5);
+xline(1501,'--r','Cue');xlabel('Time (ms)'); ylabel('Wave speed (cm/s)');
+plot(significanceX,significanceY,'r*');
+legend([h1 h2],'Baseline','Opto','Location','best');
+xlim([1000 3000]);set(gca,'TickDir','out','fontsize',14')
+title('M2 -> Th Opto');
+
 %% Comparing Wave Properties - Direction
 
 % Plotting Wave Rasters colorcoded by Direction
@@ -112,19 +144,19 @@ srt = 1;
 stp = 1500;
 figure();
 subplot(2,2,1);
-[~,~] = plotWaveDirection(selectWaves(WavesBaseline.wavesHit,srt,stp),[]);
+[~,~] = plotWaveDirection(selectWaves(WavesBaseline.wavesHit,srt,stp),36,[]);
 title('Baseline: Spontaneous');
 subplot(2,2,2);
-[~,~] = plotWaveDirection(selectWaves(WavesOpto.wavesHit,srt,stp),[]);
+[~,~] = plotWaveDirection(selectWaves(WavesOpto.wavesHit,srt,stp),36,[]);
 title('Opto: Spontaneous');
 sgtitle('Wave Direction')
 srt = 1500;
-stp = 3000;
+stp = 1700;
 subplot(2,2,3);
-[dirCombBaseline,~] = plotWaveDirection(selectWaves(WavesBaseline.wavesHit,srt,stp),[]);
+[dirCombBaseline,~] = plotWaveDirection(selectWaves(WavesBaseline.wavesHit,srt,stp),36,[]);
 title('Baseline: Cue Evoked');
 subplot(2,2,4);
-[dirCombOpto,~] = plotWaveDirection(selectWaves(WavesOpto.wavesHit,srt,stp),[]);
+[dirCombOpto,~] = plotWaveDirection(selectWaves(WavesOpto.wavesHit,srt,stp),36,[]);
 title('Opto: Cue Evoked');
 sgtitle('Wave Direction')
 
