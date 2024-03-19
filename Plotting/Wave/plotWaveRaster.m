@@ -34,7 +34,7 @@ if waves2Flag == 1
     set(gca,'TickDir','out','fontsize',14'); box off;
     ax4 = subplot(4,1,4)
     bar((sum(waves2Present,1)/size(behaviourTrace2,2)));
-    xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','Cue','LabelVerticalAlignment','top');
+%     xline(parameters.windowBeforeCue*parameters.Fs+1,'--r','Cue','LabelVerticalAlignment','top');
     ylim([0 0.4]);xlim([0 size(waves2Present,2)])
     ylabel('Wave probability');xlabel('Time (in ms)')
     set(gca,'TickDir','out','fontsize',14'); box off;

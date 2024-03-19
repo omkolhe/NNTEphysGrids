@@ -26,9 +26,11 @@ if length(size(data))>1
             buff = [buff;t(t>0)];
             labels = repmat({num2str(i)},length(buff),1);
             if i==1
-                rgbtrip = [0.7 0.7 0.7];
+%                 rgbtrip = [0.7 0.7 0.7];
+                rgbtrip = [0.7490 0 0.3490];
             else
-                rgbtrip = [0.8500 0.3250 0.0980];
+%                 rgbtrip = [0.8500 0.3250 0.0980];
+                rgbtrip = [0 1 0.9804];
             end
             scatter(i*ones(length(t(t>0)),1),t(t>0),'filled','jitter','on','jitterAmount',0.1,'MarkerFaceColor',rgbtrip);
         end

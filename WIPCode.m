@@ -367,7 +367,7 @@ animateWaves(45,IntanBehaviour.cueHitTrace,Waves.wavesHit,0,15);
 
 animateWaves(3,IntanBehaviour.cueMissTrace,Waves.wavesMiss,0,6);
 
-figure,stack_plot(reshape(IntanBehaviour.cueHitTrace(68).xf,[],3001),1,4,1000);
+figure,stack_plot(reshape(IntanBehaviour.cueHitTrace(25).xf,[],3001),1,4,1000);
 
 figure,stack_plot(reshape(IntanBehaviour.hitTrace(23).xf,[],3001),1,4,1000);
 

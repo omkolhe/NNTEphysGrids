@@ -56,10 +56,10 @@ for i = 1:size(Waves.wavesHit,2)
     end
 end
 
-[p,h] = ranksum(baselineSpeed,cooledSpeed);
+[p,h] = ranksum(baselineSpeed,cooledSpeed)
 figure,plotBox2(baselineSpeed,cooledSpeed);
 ylabel('Wave Speed (cm/s)'); title('Cooling M2');subtitle(['p-val = ' num2str(p)]);
-xtix = {'Baseline','Cooled'}; xtixloc = [1 2]; set(gca,'XTickMode','auto','XTickLabel',xtix,'XTick',xtixloc);set(gca,'TickDir','out','fontsize',14');
+xtix = {'Baseline','Opto'}; xtixloc = [1 2]; set(gca,'XTickMode','auto','XTickLabel',xtix,'XTick',xtixloc);set(gca,'TickDir','out','fontsize',14');
 set(gca,'TickDir','out','fontsize',14');
 %% Plotting Speed histogram
 

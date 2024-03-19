@@ -34,7 +34,7 @@ subplot(2,3,4);
 [dirCombMiss,~] = plotWaveDirection(selectWaves(Waves.wavesMiss,srt,stp),36,[]);
 title('Miss: Spontaneous');set(gca,'TickDir','out','fontsize',14');
 [p,~,~] = circ_kuipertest(dirCombHit, dirCombMiss,60,0);disp('Wave Direction');disp('p-value:');disp(p);
-srt = 1500;stp = 1800;
+srt = 1500;stp = 1700;
 subplot(2,3,2);
 [dirCombHit,~] = plotWaveDirection(selectWaves(Waves.wavesHit,srt,stp),36,[]);
 title('Hits: Cue Evoked');set(gca,'TickDir','out','fontsize',14');
@@ -50,7 +50,7 @@ subplot(2,3,6);
 [dirCombMiss,~] = plotWaveDirection(selectWaves(Waves.wavesMiss,srt,stp),36,[]);
 title('Miss: Post Cue Spontaneous');set(gca,'TickDir','out','fontsize',14');
 [p,~,~] = circ_kuipertest(dirCombHit, dirCombMiss,60,0);disp('Wave Direction');disp('p-value:');disp(p);
-sgtitle('Wave Direction - Hits vs Miss')
+sgtitle('Wave Direction')
 
 
 % Plotting Wave Rasters colorcoded by Direction - Hits vs FA - Reward
@@ -78,7 +78,7 @@ subplot(2,3,3);
 title('Hits: Post Reward Spontaneous');set(gca,'TickDir','out','fontsize',14');
 subplot(2,3,6);
 [dirCombMiss,~] = plotWaveDirection(selectWaves(Waves.wavesFA,srt,stp),36,[]);
-title('FAs: Post Reward Spontaneous');set(gca,'TickDir','out','fontsize',14');
+title('FAs: Post Cue Spontaneous');set(gca,'TickDir','out','fontsize',14');
 [p,~,~] = circ_kuipertest(dirCombHit, dirCombMiss,60,0);disp('Wave Direction');disp('p-value:');disp(p);
 sgtitle('Wave Direction: Hits vs FA - Reward aligned')
 
@@ -110,6 +110,4 @@ subplot(2,3,6);
 [dirCombMiss,~] = plotWaveDirection(selectWaves(Waves.wavesMIFA,srt,stp),36,[]);
 title('FAs: Post MI Spontaneous');set(gca,'TickDir','out','fontsize',14');
 [p,~,~] = circ_kuipertest(dirCombHit, dirCombMiss,60,0);disp('Wave Direction');disp('p-value:');disp(p);
-sgtitle('Wave Direction: Hits vs FA - MI aligned')
-
-%% 
+sgtitle('Wave Direction: Hits vs FA - MIaligned')
