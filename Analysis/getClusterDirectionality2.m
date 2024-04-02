@@ -1,9 +1,10 @@
-function [mode, fittedVmFinal] = getClusterDirectionality2(Waves,r2thres,modeMax,nBins)
+function [mode, fittedVmFinal] = getClusterDirectionality2(dirComb,r2thres,modeMax,nBins)
 
 % % Description 
 
 % Input: 
-% Waves - wave structure 
+% Waves - wave structure
+% dirComb - array of the directions 
 % r2thres - threshold for r2 - godness of fit 
 % modeMax - max number of peaks in the mix von misses fitting
 % nBins - Number of bins for histogram fitting
@@ -16,7 +17,7 @@ function [mode, fittedVmFinal] = getClusterDirectionality2(Waves,r2thres,modeMax
 % fittedVm - the final fitted Vm 
 
 
-dirComb = horzcat(Waves(1:end).waveDir);
+% dirComb = horzcat(Waves(1:end).waveDir);
 dirPDF.edges = linspace(-pi,pi,nBins+1);
 [dirPDF.prob,dirPDF.edges,dirPDF.bins] = histcounts(dirComb,dirPDF.edges,'Normalization','probability');
 

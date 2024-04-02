@@ -21,7 +21,7 @@ if nargin > 1, plot_option = varargin{1}; else plot_option = 0; end
 M = real( exp( 1i * angle(ph) ) ); N = imag( exp( 1i * angle(ph) ) );
 
 % plotting
-fg = figure;
+% fg = figure;
 if ( plot_option == 0 )
     imagesc( angle(ph) ); cb = colorbar; axis image; caxis( [-pi pi] ); hold on;
     set( get(cb,'ylabel'), 'string', 'Direction (rad)' )

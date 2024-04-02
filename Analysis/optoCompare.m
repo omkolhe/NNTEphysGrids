@@ -57,19 +57,19 @@ xlim([-0.5 1.5]);set(gca,'TickDir','out','fontsize',14');
 %% Comparing Wave Properties - Speed 
 % Plotting Wave Rasters colorcoded by Speed
 figure();
-Spikes = vertcat(selectWaves(WavesBaseline.wavesHit,1,3000).waveStart);
+WaveSpikes = vertcat(selectWaves(WavesBaseline.wavesHit,1,3000).waveStart);
 prop = arrayfun(@(s) s.speed, selectWaves(WavesBaseline.wavesHit,1,3000), 'UniformOutput', false);
 prop2 = arrayfun(@(s) s.waveDuration, selectWaves(WavesBaseline.wavesHit,1,3000), 'UniformOutput', false);
 subplot(2,1,1);
-rasterPlotPropColor(Spikes,prop,prop2,0);
+rasterPlotPropColor(WaveSpikes,prop,prop2,0);
 RTTraceTime = (IntanBehaviourBaseline.reactionTime*parameters.Fs) +(parameters.windowBeforeCue*parameters.Fs);
 plot(RTTraceTime,1:size(IntanBehaviourBaseline.cueHitTrace,2),'.r'); 
 title('Wave Hits - Baseline');set(gca,'TickDir','out','fontsize',14');
-Spikes = vertcat(selectWaves(WavesOpto.wavesHit,1,3000).waveStart);
+WaveSpikes = vertcat(selectWaves(WavesOpto.wavesHit,1,3000).waveStart);
 prop = arrayfun(@(s) s.speed, selectWaves(WavesOpto.wavesHit,1,3000), 'UniformOutput', false);
 prop2 = arrayfun(@(s) s.waveDuration, selectWaves(WavesOpto.wavesHit,1,3000), 'UniformOutput', false);
 subplot(2,1,2);
-rasterPlotPropColor(Spikes,prop,prop2,0);
+rasterPlotPropColor(WaveSpikes,prop,prop2,0);
 title('Waves Hits - Opto');set(gca,'TickDir','out','fontsize',14');
 RTTraceTime = (IntanBehaviourOpto.reactionTime*parameters.Fs) +(parameters.windowBeforeCue*parameters.Fs);
 plot(RTTraceTime,1:size(IntanBehaviourOpto.cueHitTrace,2),'.r');xlim([1 3001]);
@@ -170,23 +170,23 @@ title('Opto: Post Cue Spontaneous');set(gca,'TickDir','out','fontsize',14');
 sgtitle('Wave Direction')
 
 
-Spikes = vertcat(selectWaves(WavesBaseline.wavesHit,1,3000).waveStart);figure();
+WaveSpikes = vertcat(selectWaves(WavesBaseline.wavesHit,1,3000).waveStart);figure();
 prop = arrayfun(@(s) s.waveDir, selectWaves(WavesBaseline.wavesHit,1,3000), 'UniformOutput', false);
 prop2 = arrayfun(@(s) s.waveDuration, selectWaves(WavesBaseline.wavesHit,1,3000), 'UniformOutput', false);
 ax1 = subplot(2,1,1);
-rasterPlotPropColor(Spikes,prop,[],1);
+rasterPlotPropColor(WaveSpikes,prop,[],1);
 RTTraceTime = (IntanBehaviourBaseline.reactionTime*parameters.Fs) +(parameters.windowBeforeCue*parameters.Fs);
-% plot(RTTraceTime,1:size(IntanBehaviourBaseline.cueHitTrace,2),'.r');xlim([1 size(Spikes,2)]);
+% plot(RTTraceTime,1:size(IntanBehaviourBaseline.cueHitTrace,2),'.r');xlim([1 size(WaveSpikes,2)]);
 title('Wave Hits - Baseline');set(gca,'TickDir','out','fontsize',14');
 
-Spikes = vertcat(selectWaves(WavesOpto.wavesHit,1,3000).waveStart);
+WaveSpikes = vertcat(selectWaves(WavesOpto.wavesHit,1,3000).waveStart);
 prop = arrayfun(@(s) s.waveDir, selectWaves(WavesOpto.wavesHit,1,3000), 'UniformOutput', false);
 prop2 = arrayfun(@(s) s.waveDuration, selectWaves(WavesOpto.wavesHit,1,3000), 'UniformOutput', false);
 ax2 = subplot(2,1,2);
-rasterPlotPropColor(Spikes,prop,[],1);
+rasterPlotPropColor(WaveSpikes,prop,[],1);
 title('Waves Hits - Opto');set(gca,'TickDir','out','fontsize',14');
 RTTraceTime = (IntanBehaviourOpto.reactionTime*parameters.Fs) +(parameters.windowBeforeCue*parameters.Fs);
-% plot(RTTraceTime,1:size(IntanBehaviourOpto.cueHitTrace,2),'.r'); xlim([1 size(Spikes,2)]);
+% plot(RTTraceTime,1:size(IntanBehaviourOpto.cueHitTrace,2),'.r'); xlim([1 size(WaveSpikes,2)]);
 sgtitle('Wave rasters for Hits - Baseline vs Opto');
 linkaxes([ax1,ax2],'x');
 %% Plotting Wave Rasters

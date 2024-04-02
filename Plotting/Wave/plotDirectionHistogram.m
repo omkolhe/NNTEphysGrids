@@ -1,4 +1,4 @@
-function [dirComb, fittedVm] = plotWaveDirection(Waves,nBins,varargin)
+function [dirComb, fittedVm] = plotDirectionHistogram(dirComb,nBins,varargin)
 
 if isempty(varargin{1})
     fit = 1;
@@ -8,7 +8,7 @@ else
     disp('Fitted distribution passed')
 end
 
-dirComb = horzcat(Waves(1:end).waveDir);
+% dirComb = horzcat(Waves(1:end).waveDir);
 angles = linspace(-pi, pi, 1000)';
 
 if fit == 0
