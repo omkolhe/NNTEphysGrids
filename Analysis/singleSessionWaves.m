@@ -112,4 +112,24 @@ title('FAs: Post MI Spontaneous');set(gca,'TickDir','out','fontsize',14');
 [p,~,~] = circ_kuipertest(dirCombHit, dirCombMiss,60,0);disp('Wave Direction');disp('p-value:');disp(p);
 sgtitle('Wave Direction: Hits vs FA - MI aligned')
 
+% Raster color coded by wave direction 
+
+Spikes = vertcat(selectWaves(Waves.wavesHit,1,3000).waveStart);figure();
+prop = arrayfun(@(s) s.waveDir, selectWaves(Waves.wavesHit,1,3000), 'UniformOutput', false);
+prop2 = arrayfun(@(s) s.waveDuration, selectWaves(Waves.wavesHit,1,3000), 'UniformOutput', false);
+ax1 = subplot(2,1,1);
+rasterPlotPropColor(Spikes,prop,prop2,1);
+RTTraceTime = (IntanBehaviour.reactionTime*parameters.Fs) +(parameters.windowBeforeCue*parameters.Fs);
+% plot(RTTraceTime,1:size(IntanBehaviourBaseline.cueHitTrace,2),'.r');xlim([1 size(Spikes,2)]);
+title('Wave Hits - Baseline');set(gca,'TickDir','out','fontsize',14');
+
+Spikes = vertcat(selectWaves(Waves.wavesMiss,1,3000).waveStart);
+prop = arrayfun(@(s) s.waveDir, selectWaves(Waves.wavesMiss,1,3000), 'UniformOutput', false);
+prop2 = arrayfun(@(s) s.waveDuration, selectWaves(Waves.wavesMiss,1,3000), 'UniformOutput', false);
+ax2 = subplot(2,1,2);
+rasterPlotPropColor(Spikes,prop,prop2,1);
+title('Waves Hits - Opto');set(gca,'TickDir','out','fontsize',14');
+sgtitle('Wave rasters for Hits vs Misses');
+linkaxes([ax1,ax2],'x');
+
 %% 

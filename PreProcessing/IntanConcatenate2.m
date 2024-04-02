@@ -6,7 +6,7 @@ pathname = fullfile(pathname);
 directory = dir(fullfile(pathname,'*.rhd')); %Parses RHD files
 count = 1;
 downsampleRate = 4;
-targetedFs = 10000;
+targetedFs = 20000;
 L = length(directory);
 for idx = 1:L
     file = directory(idx).folder;
@@ -20,7 +20,7 @@ for idx = 1:L
         analog_adc_data = [];
     end
     if ~isempty(Intan.board_dig_in_data)
-        dig_in_data{count} = downsample(Intan.board_dig_in_data',round(Fs/targetedFs),1);
+        dig_in_data{count} = downsample(Intan.board_dig_in_data',round(Fs/targetedFs),0);
     else
         dig_in_data = [];
     end

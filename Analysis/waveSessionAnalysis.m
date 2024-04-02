@@ -34,13 +34,13 @@ linkaxes([ax1,ax2],'x');
 
 % Plotting Wave Rasters colorcoded by Direction
 srt = 1500;
-stp = 1800;
+stp = 1700;
 figure();
 subplot(1,2,1);
-[dirCombHit,~] = plotWaveDirection(selectWaves(Waves.wavesHit(1:end),srt,stp),[]);
+[dirCombHit,~] = plotWaveDirection(selectWaves(Waves.wavesHit(1:end),srt,stp),36,[]);
 title('Hits');
 subplot(1,2,2);
-[dirCombMiss,~] = plotWaveDirection(selectWaves(Waves.wavesMiss(1:end),srt,stp),[]);
+[dirCombMiss,~] = plotWaveDirection(selectWaves(Waves.wavesMiss(1:end),srt,stp),36,[]);
 title('Miss');
 sgtitle('Wave Direction')
 
@@ -49,3 +49,60 @@ sgtitle('Wave Direction')
 disp('Wave Direction')
 disp('p-value:');
 disp(p);
+
+
+srt = 1000;stp = 1300;
+figure();
+subplot(2,3,1);
+[dirCombBaseline,~] = plotWaveDirection(selectWaves(Waves.wavesMIHit,srt,stp),36,[]);
+title('Baseline: Spontaneous');set(gca,'TickDir','out','fontsize',14');
+subplot(2,3,4);
+[dirCombOpto,~] = plotWaveDirection(selectWaves(Waves.wavesMIFA,srt,stp),36,[]);
+title('Opto: Spontaneous');set(gca,'TickDir','out','fontsize',14');
+[p,~,~] = circ_kuipertest(dirCombBaseline, dirCombOpto,60,0);disp('Wave Direction');disp('p-value:');disp(p);
+srt = 1300;stp = 1700;
+subplot(2,3,2);
+[dirCombBaseline,~] = plotWaveDirection(selectWaves(Waves.wavesMIHit,srt,stp),36,[]);
+title('Baseline: Cue Evoked');set(gca,'TickDir','out','fontsize',14');
+subplot(2,3,5);
+[dirCombOpto,~] = plotWaveDirection(selectWaves(Waves.wavesMIFA,srt,stp),36,[]);
+title('Opto: Cue Evoked');set(gca,'TickDir','out','fontsize',14');
+[p,~,~] = circ_kuipertest(dirCombBaseline, dirCombOpto,60,0);disp('Wave Direction');disp('p-value:');disp(p);
+srt = 1700;stp = 3000;
+subplot(2,3,3);
+[dirCombBaseline,~] = plotWaveDirection(selectWaves(Waves.wavesMIHit,srt,stp),36,[]);
+title('Baseline: Post Cue Spontaneous');set(gca,'TickDir','out','fontsize',14');
+subplot(2,3,6);
+[dirCombOpto,~] = plotWaveDirection(selectWaves(Waves.wavesMIFA,srt,stp),36,[]);
+title('Opto: Post Cue Spontaneous');set(gca,'TickDir','out','fontsize',14');
+[p,~,~] = circ_kuipertest(dirCombBaseline, dirCombOpto,60,0);disp('Wave Direction');disp('p-value:');disp(p);
+sgtitle('Wave Direction')
+
+
+
+srt = 1000;stp = 1500;
+figure();
+subplot(2,3,1);
+[dirCombBaseline,~] = plotWaveDirection(selectWaves(Waves.wavesHit,srt,stp),36,[]);
+title('Baseline: Spontaneous');set(gca,'TickDir','out','fontsize',14');
+subplot(2,3,4);
+[dirCombOpto,~] = plotWaveDirection(selectWaves(Waves.wavesMiss,srt,stp),36,[]);
+title('Opto: Spontaneous');set(gca,'TickDir','out','fontsize',14');
+[p,~,~] = circ_kuipertest(dirCombBaseline, dirCombOpto,60,0);disp('Wave Direction');disp('p-value:');disp(p);
+srt = 1500;stp = 1800;
+subplot(2,3,2);
+[dirCombBaseline,~] = plotWaveDirection(selectWaves(Waves.wavesHit,srt,stp),36,[]);
+title('Baseline: Cue Evoked');set(gca,'TickDir','out','fontsize',14');
+subplot(2,3,5);
+[dirCombOpto,~] = plotWaveDirection(selectWaves(Waves.wavesMiss,srt,stp),36,[]);
+title('Opto: Cue Evoked');set(gca,'TickDir','out','fontsize',14');
+[p,~,~] = circ_kuipertest(dirCombBaseline, dirCombOpto,60,0);disp('Wave Direction');disp('p-value:');disp(p);
+srt = 1700;stp = 2200;
+subplot(2,3,3);
+[dirCombBaseline,~] = plotWaveDirection(selectWaves(Waves.wavesHit,srt,stp),36,[]);
+title('Baseline: Post Cue Spontaneous');set(gca,'TickDir','out','fontsize',14');
+subplot(2,3,6);
+[dirCombOpto,~] = plotWaveDirection(selectWaves(Waves.wavesMiss,srt,stp),36,[]);
+title('Opto: Post Cue Spontaneous');set(gca,'TickDir','out','fontsize',14');
+[p,~,~] = circ_kuipertest(dirCombBaseline, dirCombOpto,60,0);disp('Wave Direction');disp('p-value:');disp(p);
+sgtitle('Wave Direction')

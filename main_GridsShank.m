@@ -15,11 +15,11 @@ addpath(genpath('Channel Maps'));
 addpath(genpath('Dependancies'));
 rmpath(genpath('Dependancies/MVGC1'));
 %%  PreProcessing
-% load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
+load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
 % load 64ChGrid_chanmap.mat;  % load the channel map for the IntanConcatenate function
-load 64ChM1M2Grid_chanmap.mat % load the channel map for 64ch Dual grid 
+% load 64ChM1M2Grid_chanmap.mat % load the channel map for 64ch Dual grid 
 parameters.rows = 8;  % Number of rows of electrodes on the Grid
-parameters.cols = 8;  % Number of colums of electrodes on the Grid
+parameters.cols = 4;  % Number of colums of electrodes on the Grid
 parameters.Fs = 1000;
 parameters.ts = 1/parameters.Fs;
 parameters.windowBeforePull = 1.5; % in seconds
@@ -117,19 +117,21 @@ LFP.xfbetanarrow = bandpass_filter(LFP.LFPdatacube,6,9,4,1000);
 IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters);
 % Saving paramters, path, IntanBehaviour to bin file 
 savepath = uigetdir(path);
-sessionName = [savepath,'/','Day7_WavesOpto.mat'];
+sessionName = [savepath,'/','Day12_BaselineWaves.mat'];
 % save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
-save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
+save(sessionName,"IntanBehaviour","fpath","parameters","Waves","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
 
 %% Combining  multiple Intanbehaviour structs from multiple sessions
-combIntanBehaviour = horzcat(IntanBehaviour1, IntanBehaviour2);
+combIntanBehaviour = horzcat(IntanBehaviourBaseline, IntanBehaviourCool);
 IntanBehaviour.cueHitTrace = horzcat(combIntanBehaviour(1:end).cueHitTrace);
 IntanBehaviour.cueMissTrace = horzcat(combIntanBehaviour(1:end).cueMissTrace);
 IntanBehaviour.hitTrace = horzcat(combIntanBehaviour(1:end).hitTrace);
 IntanBehaviour.missTrace = horzcat(combIntanBehaviour(1:end).missTrace);
+IntanBehaviour.MIHitTrace = horzcat(combIntanBehaviour(1:end).MIHitTrace);
+IntanBehaviour.MIFATrace = horzcat(combIntanBehaviour(1:end).MIFATrace);
 IntanBehaviour.reactionTime = horzcat(combIntanBehaviour(1:end).reactionTime);
 
-clear combIntanBehaviour IntanBehaviour1 IntanBehaviour2;
+clear combIntanBehaviour %IntanBehaviour1 IntanBehaviour2;
 %% Power Spectrum during task across channels 
 [PSD.ChHit , PSD.f] = getAvgPSD(IntanBehaviour.cueHitTrace,parameters);
 [PSD.ChMiss , PSD.f] = getAvgPSD(IntanBehaviour.cueMissTrace,parameters);
