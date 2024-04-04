@@ -119,6 +119,9 @@ for ii=1:size(behaviourTrace,2)
         Waves(ii).waveDir(kk) = atan2(mean(vy(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),"all",'omitnan'),mean(vx(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),"all",'omitnan'));
         Waves(ii).wavelength(kk) = mean(l(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),'all','omitnan');
         Waves(ii).waveDuration(kk) = Waves(ii).waveTime(kk,2)-Waves(ii).waveTime(kk,1)+1;
+        Waves(ii).waveFreq(kk) = mean(wt(:,:,Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),'all','omitnan');
+%         Waves(ii).minWaveFreq(kk,1) = min(wt(:,:,Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),[],'all','omitnan');
+%         Waves(ii).minWaveFreq(kk,2) = max(wt(:,:,Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2)),[],'all','omitnan');
         Waves(ii).waveAmp(kk) = max(abs(p(:,:,Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2))),[],"all",'omitnan')-min(abs(p(:,:,Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2))),[],"all",'omitnan');
 %         Waves(ii).wavevx(kk) = vy(Waves(ii).waveTime(kk,1):Waves(ii).waveTime(kk,2));
     end

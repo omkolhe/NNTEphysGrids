@@ -1,6 +1,6 @@
-function [] = rasterPlotPropColor(Spikes,prop1,prop2,angleFlag)
+function [] = rasterPlotPropColor(Spikes,prop1c,prop2sz,angleFlag)
 
-if isempty(prop2)
+if isempty(prop2sz)
     szFlag = 0;
 else
     szFlag = 1;
@@ -16,9 +16,9 @@ for i=1:y
     x = find(Spikes(i,:)==1);
     y = i*ones(1,numel(x));
     if szFlag == 1
-        scatter(x,y,prop2{1,i}, prop1{1,i},"filled");
+        scatter(x,y,prop2sz{1,i}, prop1c{1,i},"filled");
     else
-        scatter(x,y,[], prop1{1,i},"filled");
+        scatter(x,y,[], prop1c{1,i},"filled");
     end
 end
 colorbar;

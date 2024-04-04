@@ -106,3 +106,6 @@ subplot(2,3,6);
 title('Opto: Post Cue Spontaneous');set(gca,'TickDir','out','fontsize',14');
 [p,~,~] = circ_kuipertest(dirCombBaseline, dirCombOpto,60,0);disp('Wave Direction');disp('p-value:');disp(p);
 sgtitle('Wave Direction')
+
+ 
+

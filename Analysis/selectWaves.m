@@ -19,5 +19,6 @@ for i=1:size(Waves,2)
     WavesOut(i).wavelength(posDel) = [];
     WavesOut(i).waveDuration(posDel) = [];
     WavesOut(i).waveAmp(posDel) = [];
+    WavesOut(i).waveFreq(posDel) = [];
 end
 
