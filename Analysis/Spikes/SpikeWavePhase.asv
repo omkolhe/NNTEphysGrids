@@ -5,7 +5,7 @@ Spikes = rejectSpikes(Spikes,0.75,1,parameters);
 
 %% Plotting spikes raster and FR to check 
 figure,hold on
-for n = 39
+for n = 9
 subplot(2,1,[1]),Show_Spikes(Spikes.PSTH.hit.spks{n}),axis off
 subplot(2,1,[2]),bar(-1500:1500,smoothdata(Spikes.PSTH.hit.spkRates(n,:)),'FaceColor',[28/255 117/255 188/255],'EdgeColor','none')
 axis tight, box off, set(gca,'TickDir','out');sgtitle(['Neuron - ' num2str(n)])
@@ -110,35 +110,36 @@ for i=1:Spikes.nSpikes
 end
 
 %% Looking at phase maps just for Hits pre and post cue
-pre1 = 1000; pre2 = 1500;
-post1 = 1501; post2 = 2001;
+pre1 = 1200; pre2 = 1500;
+post1 = 1501; post2 = 1801;
 for i=1:Spikes.nSpikes % iterrating over all spikes 
     % Pre cue
-    allPMs = arrayfun(@(s) angle(s.xgp(:,:,find(s.spikeRaster(i,pre1:pre2)))), IntanBehaviour.cueHitTrace,'UniformOutput',false); 
-    Spikes.spikeTrigPhaseMapPre(i).allPM
-    Spikes.spikeTrigPhaseMapPre(i).rawPhaseMap = circ_mean(cat(3,allPMs{1,1:end}),[],3);
-    Spikes.spikeTrigPhaseMapPre(i).PA = abs(circ_r(angle(cat(3,allPMs{1,1:end})),[],[],3));
+    a = arrayfun(@(s) angle(s.xgp(:,:,find(s.spikeRaster(i,pre1:pre2)))), IntanBehaviour.cueHitTrace,'UniformOutput',false); 
+    Spikes.spikeTrigPhaseMapPre(i).allPMsRaw = cat(3,a{1,1:end});
+    Spikes.spikeTrigPhaseMapPre(i).allPMs = inpaintNaNsPM(Spikes.spikeTrigPhaseMapPre(i).allPMsRaw);
+    Spikes.spikeTrigPhaseMapPre(i).rawPhaseMap = circ_mean(Spikes.spikeTrigPhaseMapPre(i).allPMsRaw,[],3);
+    Spikes.spikeTrigPhaseMapPre(i).PA = abs(circ_r(angle(Spikes.spikeTrigPhaseMapPre(i).allPMsRaw),[],[],3));
     Spikes.spikeTrigPhaseMapPre(i).meanPA = mean(Spikes.spikeTrigPhaseMapPre(i).PA,'all','omitnan');
-    a = 1*exp(1i*Spikes.spikeTrigPhaseMapPre(i).rawPhaseMap);
-    Spikes.spikeTrigPhaseMapPre(i).phaseMap = angle(inpaint_nans(a,3));
-    [Spikes.spikeTrigPhaseMapPre(i).pm,Spikes.spikeTrigPhaseMapPre(i).pd,Spikes.spikeTrigPhaseMapPre(i).dx,Spikes.spikeTrigPhaseMapPre(i).dy] = getPhaseGradient( Spikes.spikeTrigPhaseMapPre(i).phaseMap, parameters.xspacing,parameters.yspacing);
-    Spikes.spikeTrigPhaseMapPre(i).sourcePoint = find_source_points2(1,parameters.X,parameters.Y,Spikes.spikeTrigPhaseMapPre(i).dx,Spikes.spikeTrigPhaseMapPre(i).dy);
+    Spikes.spikeTrigPhaseMapPre(i).phaseMap = circ_mean(Spikes.spikeTrigPhaseMapPre(i).allPMs,[],3);
+    [Spikes.spikeTrigPhaseMapPre(i).pm,Spikes.spikeTrigPhaseMapPre(i).pd,Spikes.spikeTrigPhaseMapPre(i).dx,Spikes.spikeTrigPhaseMapPre(i).dy] = getPhaseGradient( Spikes.spikeTrigPhaseMapPre(i).allPMs, parameters.xspacing,parameters.yspacing);
+    Spikes.spikeTrigPhaseMapPre(i).sourcePoint = find_source_points2(1:size(Spikes.spikeTrigPhaseMapPre(i).allPMs,3),parameters.X,parameters.Y,Spikes.spikeTrigPhaseMapPre(i).dx,Spikes.spikeTrigPhaseMapPre(i).dy);
     Spikes.spikeTrigPhaseMapPre(i).PGD = phase_gradient_directionality(Spikes.spikeTrigPhaseMapPre(i).pm,Spikes.spikeTrigPhaseMapPre(i).dx,Spikes.spikeTrigPhaseMapPre(i).dy);
-    [Spikes.spikeTrigPhaseMapPre(i).rho,~,~] = phase_correlation_distance( Spikes.spikeTrigPhaseMapPre(i).phaseMap,Spikes.spikeTrigPhaseMapPre(i).sourcePoint, parameters.xspacing,parameters.yspacing );
+%     [Spikes.spikeTrigPhaseMapPre(i).rho,~,~] = phase_correlation_distance( Spikes.spikeTrigPhaseMapPre(i).phaseMap,Spikes.spikeTrigPhaseMapPre(i).sourcePoint, parameters.xspacing,parameters.yspacing );
     [Spikes.spikeTrigPhaseMapPre(i).vx, Spikes.spikeTrigPhaseMapPre(i).vy] = wavefront_direction(Spikes.spikeTrigPhaseMapPre(i).pd,[]);
     Spikes.spikeTrigPhaseMapPre(i).waveDir = atan2(Spikes.spikeTrigPhaseMapPre(i).vy,Spikes.spikeTrigPhaseMapPre(i).vx);
     
     % Post Cue
-    Spikes.spikeTrigPhaseMapPost(i).allPMs = arrayfun(@(s) angle(s.xgp(:,:,find(s.spikeRaster(i,post1:post2)))), IntanBehaviour.cueHitTrace,'UniformOutput',false); 
-    Spikes.spikeTrigPhaseMapPost(i).rawPhaseMap = circ_mean(cat(3,allPMs{1,1:end}),[],3);
-    Spikes.spikeTrigPhaseMapPost(i).PA = abs(circ_r(angle(cat(3,allPMs{1,1:end})),[],[],3));
+    a = arrayfun(@(s) angle(s.xgp(:,:,find(s.spikeRaster(i,post1:post2)))), IntanBehaviour.cueHitTrace,'UniformOutput',false); 
+    Spikes.spikeTrigPhaseMapPost(i).allPMsRaw = cat(3,a{1,1:end});
+    Spikes.spikeTrigPhaseMapPost(i).allPMs = inpaintNaNsPM(Spikes.spikeTrigPhaseMapPost(i).allPMsRaw);
+    Spikes.spikeTrigPhaseMapPost(i).rawPhaseMap = circ_mean(Spikes.spikeTrigPhaseMapPost(i).allPMsRaw,[],3);
+    Spikes.spikeTrigPhaseMapPost(i).PA = abs(circ_r(angle(Spikes.spikeTrigPhaseMapPost(i).allPMsRaw),[],[],3));
     Spikes.spikeTrigPhaseMapPost(i).meanPA = mean(Spikes.spikeTrigPhaseMapPost(i).PA,'all','omitnan');
-    a = 1*exp(1i*Spikes.spikeTrigPhaseMapPost(i).rawPhaseMap);
-    Spikes.spikeTrigPhaseMapPost(i).phaseMap = angle(inpaint_nans(a,3));
-    [Spikes.spikeTrigPhaseMapPost(i).pm,Spikes.spikeTrigPhaseMapPost(i).pd,Spikes.spikeTrigPhaseMapPost(i).dx,Spikes.spikeTrigPhaseMapPost(i).dy] = getPhaseGradient( Spikes.spikeTrigPhaseMapPost(i).phaseMap, parameters.xspacing,parameters.yspacing);
-    Spikes.spikeTrigPhaseMapPost(i).sourcePoint = find_source_points2(1,parameters.X,parameters.Y,Spikes.spikeTrigPhaseMapPost(i).dx,Spikes.spikeTrigPhaseMapPost(i).dy);
+    Spikes.spikeTrigPhaseMapPost(i).phaseMap = circ_mean(Spikes.spikeTrigPhaseMapPost(i).allPMs,[],3);
+    [Spikes.spikeTrigPhaseMapPost(i).pm,Spikes.spikeTrigPhaseMapPost(i).pd,Spikes.spikeTrigPhaseMapPost(i).dx,Spikes.spikeTrigPhaseMapPost(i).dy] = getPhaseGradient( Spikes.spikeTrigPhaseMapPost(i).allPMs, parameters.xspacing,parameters.yspacing);
+    Spikes.spikeTrigPhaseMapPost(i).sourcePoint = find_source_points2(1:size(Spikes.spikeTrigPhaseMapPost(i).allPMs,3),parameters.X,parameters.Y,Spikes.spikeTrigPhaseMapPost(i).dx,Spikes.spikeTrigPhaseMapPost(i).dy);
     Spikes.spikeTrigPhaseMapPost(i).PGD = phase_gradient_directionality(Spikes.spikeTrigPhaseMapPost(i).pm,Spikes.spikeTrigPhaseMapPost(i).dx,Spikes.spikeTrigPhaseMapPost(i).dy);
-    [Spikes.spikeTrigPhaseMapPost(i).rho,~,~] = phase_correlation_distance( Spikes.spikeTrigPhaseMapPost(i).phaseMap,Spikes.spikeTrigPhaseMapPost(i).sourcePoint, parameters.xspacing,parameters.yspacing );
+%     [Spikes.spikeTrigPhaseMapPost(i).rho,~,~] = phase_correlation_distance( Spikes.spikeTrigPhaseMapPost(i).phaseMap,Spikes.spikeTrigPhaseMapPost(i).sourcePoint, parameters.xspacing,parameters.yspacing );
     [Spikes.spikeTrigPhaseMapPost(i).vx, Spikes.spikeTrigPhaseMapPost(i).vy] = wavefront_direction(Spikes.spikeTrigPhaseMapPost(i).pd,[]);
     Spikes.spikeTrigPhaseMapPost(i).waveDir = atan2(Spikes.spikeTrigPhaseMapPost(i).vy,Spikes.spikeTrigPhaseMapPost(i).vx);
 end
@@ -202,7 +203,13 @@ plotDirectionHistogram(PMGDirectionPost,36,[]);
 %     end
 % end
 
-
+% Plotting PMG direction for a spike 
+n = 9;
+figure;
+subplot(1,2,1)
+plotDirectionHistogram(Spikes.spikeTrigPhaseMapPre(n).waveDir,36,[]);
+subplot(1,2,2)
+plotDirectionHistogram(Spikes.spikeTrigPhaseMapPost(n).waveDir,36,[]);
 %% Wave triggered spiking patterns
 
 

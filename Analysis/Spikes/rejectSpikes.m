@@ -56,5 +56,13 @@ Spikes.PSTH.MIFA.spkRates(Spikes.badSpikes2,:) = [];
 [~,sortspikeDepth] = sort(cell2mat(arrayfun(@(s) s.channelDepth, Spikes.Clusters,'UniformOutput',false))');
 Spikes.Clusters = Spikes.Clusters(sortspikeDepth);
 Spikes.nSpikes = size(Spikes.Clusters,2);
+Spikes.PSTH.hit.spks = Spikes.PSTH.hit.spks(sortspikeDepth);
+Spikes.PSTH.hit.spkRates = Spikes.PSTH.hit.spkRates(sortspikeDepth,:);
+Spikes.PSTH.miss.spks = Spikes.PSTH.miss.spks(sortspikeDepth);
+Spikes.PSTH.miss.spkRates = Spikes.PSTH.miss.spkRates(sortspikeDepth,:);
+Spikes.PSTH.MIFA.spks = Spikes.PSTH.MIFA.spks(sortspikeDepth);
+Spikes.PSTH.MIFA.spkRates = Spikes.PSTH.MIFA.spkRates(sortspikeDepth,:);
+Spikes.PSTH.MIHit.spks = Spikes.PSTH.MIHit.spks(sortspikeDepth);
+Spikes.PSTH.MIHit.spkRates = Spikes.PSTH.MIHit.spkRates(sortspikeDepth,:);
 
 disp([num2str(Spikes.nSpikes) ' number of good spike clusters detected']);
