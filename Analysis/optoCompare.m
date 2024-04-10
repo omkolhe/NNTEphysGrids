@@ -1,6 +1,6 @@
 %% Comaparing Behaviour 
 [p,h] = ranksum(IntanBehaviourBaseline.reactionTime,IntanBehaviourOpto.reactionTime)
-plotBox2(IntanBehaviourBaseline.reactionTime,IntanBehaviourOpto.reactionTime);
+figure,plotBox2(IntanBehaviourBaseline.reactionTime,IntanBehaviourOpto.reactionTime);
 % xL=xlim;
 % yL=ylim;
 % text(0.995*xL(2),0.995*yL(2),['p-val = ' num2str(p)],'HorizontalAlignment','right','VerticalAlignment','top')
@@ -142,7 +142,7 @@ title('M2 -> Th Opto');
 %% Comparing Wave Properties - Direction
 
 % Plotting Wave Rasters colorcoded by Direction
-srt = 1300;stp = 1500;
+srt = 1;stp = 1500;
 figure();
 subplot(2,3,1);
 [dirCombBaseline,~] = plotWaveDirection(selectWaves(WavesBaseline.wavesHit,srt,stp),36,[]);
@@ -151,7 +151,7 @@ subplot(2,3,4);
 [dirCombOpto,~] = plotWaveDirection(selectWaves(WavesOpto.wavesHit,srt,stp),36,[]);
 title('Opto: Spontaneous');set(gca,'TickDir','out','fontsize',14');
 [p,~,~] = circ_kuipertest(dirCombBaseline, dirCombOpto,60,0);disp('Wave Direction');disp('p-value:');disp(p);
-srt = 1500;stp = 1700;
+srt = 1500;stp = 1800;
 subplot(2,3,2);
 [dirCombBaseline,~] = plotWaveDirection(selectWaves(WavesBaseline.wavesHit,srt,stp),36,[]);
 title('Baseline: Cue Evoked');set(gca,'TickDir','out','fontsize',14');
@@ -159,7 +159,7 @@ subplot(2,3,5);
 [dirCombOpto,~] = plotWaveDirection(selectWaves(WavesOpto.wavesHit,srt,stp),36,[]);
 title('Opto: Cue Evoked');set(gca,'TickDir','out','fontsize',14');
 [p,~,~] = circ_kuipertest(dirCombBaseline, dirCombOpto,60,0);disp('Wave Direction');disp('p-value:');disp(p);
-srt = 1700;stp = 1900;
+srt = 1900;stp = 3000;
 subplot(2,3,3);
 [dirCombBaseline,~] = plotWaveDirection(selectWaves(WavesBaseline.wavesHit,srt,stp),36,[]);
 title('Baseline: Post Cue Spontaneous');set(gca,'TickDir','out','fontsize',14');

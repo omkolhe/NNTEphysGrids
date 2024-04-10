@@ -45,3 +45,22 @@ if waves2Flag == 1
 else
     linkaxes([ax1 ax2],'x');
 end
+
+%% Fitting curve to the bar graph 
+% a = (sum(wavesPresent,1)/size(IntanBehaviour.cueHitTrace,2));
+% [cur, goodness] = fit((1:3001)',a','cubicinterp');
+% figure,
+% plot(smooth(cur));
+% 
+% b = feval(cur,1:3001);
+% figure,plot(smooth(b,100,'sgolay',4));
+% 
+% 
+% plotWaveRaster(Waves.wavesHit,[],IntanBehaviour.cueHitTrace,[],parameters);
+% subplot(2,1,2);hold on;
+% plot(smooth(b,100,'sgolay',4));
+% xlim([1000 3001]);
+% yline(mean(a)+1.96*std(a));
+
+
+

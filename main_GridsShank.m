@@ -340,7 +340,7 @@ ylabel('Lever deflection (mV)'); ylim([0 0.1]); box off;
 %% Wave detection in velocity triggered windows
 nShuffle = 100;
 threshold = 99.73; % zscore of 3
-fraction = 0.2;
+fraction = 0.3;
 parameters.rhoThres = getRhoThreshold(IntanBehaviour.cueHitTrace,IntanBehaviour.cueMissTrace,parameters,nShuffle,threshold,fraction);
 % parameters.rhoThres = 0.75;
 
@@ -599,7 +599,7 @@ PAProbe = getPA(IntanBehaviour,z_score,nIterrate,1,parameters,1);
 % PA= PAProbe;
 %% Percent Phase Locking
 z_score = 0;
-nIterrate = 100;
+nIterrate = 2;
 PPLGrid = getPPL(IntanBehaviour,z_score,nIterrate,1,parameters,0);
 PPLShank = getPPL(IntanBehaviour,z_score,nIterrate,1,parameters,1);
 

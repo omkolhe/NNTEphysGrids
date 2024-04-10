@@ -24,6 +24,8 @@ for ii=1:size(behaviourTrace,2)
     Waves(ii).evaluationPoints = find_evaluation_points(p,0,0.2);
 %     plot_evaluation_points( Waves(ii).p, Waves(ii).evaluationPoints );
     [pm,pd,dx,dy] = phase_gradient_complex_multiplication(p, parameters.xspacing, parameters.yspacing );
+    Waves(ii).dx = dx;
+    Waves(ii).dy = dy;
     % Phase gradient directionality 
     [Waves(ii).PGD] = phase_gradient_directionality(pm,dx,dy);
     % Wavelength

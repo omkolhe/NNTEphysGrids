@@ -1,5 +1,6 @@
 Spikes = SpikesBaseline;
 IntanBehaviour = IntanBehaviourBaseline;
+LFP = LFPBaseline;
 %% Removing clusters that are not correct
 Spikes = rejectSpikes(Spikes,0.75,1,parameters);
 
@@ -61,11 +62,12 @@ for i=1:Spikes.nSpikes
 end
 %% Plotting spike triggered phase maps
 figure,
-n = 10;
+n = 42;
 imagesc(Spikes.spikeTrigPhase(n).phaseMap);
-map = colorcet( 'C2' );
-map = circshift(map,1);
-colormap(map)
+% map = colorcet( 'C2' );
+% map = circshift(map,1);
+% colormap(map)
+colormap("bone");
 c = colorbar;
 hold on;
 [XX,YY] = meshgrid( 1:size(Spikes.spikeTrigPhase(n).dx+1i*Spikes.spikeTrigPhase(n).dy,2), 1:size(Spikes.spikeTrigPhase(n).dx+1i*Spikes.spikeTrigPhase(n).dy,1) );
@@ -100,7 +102,7 @@ PMGDirection = cell2mat(arrayfun(@(s) s.waveDir, Spikes.spikeTrigPhase,'UniformO
 figure,plotDirectionHistogram(PMGDirection,36,[]);
 phaseBoundary1 = pi/2;
 PMGDirectionRotated = angle(exp(1i*PMGDirection)*exp(1i*-phaseBoundary1));
-figure,plotDirectionHistogram(PMGDirectionRotated,36,[]);
+% figure,plotDirectionHistogram(PMGDirectionRotated,36,[]);
 for i=1:Spikes.nSpikes
     if (PMGDirectionRotated(i)>0)
         Spikes.spikeTrigPhase(i).directionCluster = 1;
@@ -182,8 +184,10 @@ set(gca,'fontsize',14,'linewidth',1.5);
 sgtitle('Preferred Phase for Pre-cue and Post-cue');
 
 % Plotting PMG direction histograms 
-PMGDirectionPre = cell2mat(arrayfun(@(s) s.waveDir, Spikes.spikeTrigPhaseMapPre,'UniformOutput',false));
-PMGDirectionPost = cell2mat(arrayfun(@(s) s.waveDir, Spikes.spikeTrigPhaseMapPost,'UniformOutput',false));
+PMGDirectionPre = cell2mat(arrayfun(@(s) circ_mean(s.waveDir,[],2), Spikes.spikeTrigPhaseMapPre,'UniformOutput',false));
+PMGDirectionPost = cell2mat(arrayfun(@(s) circ_mean(s.waveDir,[],2), Spikes.spikeTrigPhaseMapPost,'UniformOutput',false));
+% PMGDirectionPre = cell2mat(arrayfun(@(s) s.waveDir, Spikes.spikeTrigPhaseMapPre,'UniformOutput',false));
+% PMGDirectionPost = cell2mat(arrayfun(@(s) s.waveDir, Spikes.spikeTrigPhaseMapPost,'UniformOutput',false));
 figure;
 subplot(1,2,1);
 title('Pre-Cue');

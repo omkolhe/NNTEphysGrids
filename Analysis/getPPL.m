@@ -109,14 +109,14 @@ if z_score == 1
     nHit = size(xgpHit,2);
     nMiss = size(xgpMiss,2);
     nTot = nHit + nMiss;
-    nullDistHit = zeros(parameters.rows,parameters.cols,size(PPLHit,3),nIterrate);
-    nullDistMiss = zeros(parameters.rows,parameters.cols,size(PPLMiss,3),nIterrate);
+    nullDistHit = zeros(parameters.rows,parameters.cols,size(PPL.PPLHit,3),nIterrate);
+    nullDistMiss = zeros(parameters.rows,parameters.cols,size(PPL.PPLMiss,3),nIterrate);
     for j=1:nIterrate
         randIndex = randperm(nTot);
         xgpHitRand = xgpComb(randIndex(1:nHit));
         xgpMissRand = xgpComb(randIndex(nHit+1:end));
-        nullDistHit(:,:,:,j) = getPPL(xgpHitRand,parameters);
-        nullDistMiss(:,:,:,j) = getPPL(xgpMissRand,parameters);
+        nullDistHit(:,:,:,j) = calPPL(xgpHitRand,parameters);
+        nullDistMiss(:,:,:,j) = calPPL(xgpMissRand,parameters);
         j
     end
     muHit = mean(nullDistHit,4); % Mean of the null distribution
@@ -124,13 +124,13 @@ if z_score == 1
     muMiss = mean(nullDistMiss,4); % Mean of the null distribution
     sigmaMiss = std(nullDistMiss,0,4); % Standard deviation of null distribution
     
-    PPLHitz = (PPLHit-muHit)./sigmaHit;
-    PPLMissz = (PPLMiss-muMiss)./sigmaMiss;
+    PPL.PPLHitz = (PPL.PPLHit-muHit)./sigmaHit;
+    PPL.PPLMissz = (PPL.PPLMiss-muMiss)./sigmaMiss;
     
     figure();
-    plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLHitz,[1 2])),'-r','LineWidth',1.2); hold on;
+    plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPL.PPLHitz,[1 2])),'-r','LineWidth',1.2); hold on;
     % plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PAMiss,[1 2])),'-k','LineWidth',1);
-    plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPLMissz,[1 2])),'-k','LineWidth',1);
+    plot(IntanBehaviour.cueHitTrace(1).time,squeeze(nanmean(PPL.PPLMissz,[1 2])),'-k','LineWidth',1);
     ylabel("z-score"); xlabel("Time (s)");
     xline(0,'--r','Cue','LabelVerticalAlignment','top');
     xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
@@ -139,37 +139,37 @@ if z_score == 1
     figure();
     subplot(2,1,1);
     title("Percentage Phase across all electrodes - Hits")
-    imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PPLHitz,[],size(PPLHitz,3))); colormap(hot);
+    imagesc(IntanBehaviour.cueHitTrace(1).time,1:32,reshape(PPL.PPLHitz,[],size(PPL.PPLHitz,3))); colormap(hot);
     ylabel("Electrodes");xlabel("Time (s)");
     xline(0,'-w','Cue','LabelVerticalAlignment','top');
     subplot(2,1,2);
     title("Percentage Phase across all electrodes - Misses")
-    imagesc(IntanBehaviour.cueMissTrace(1).time,1:32,reshape(PPLMissz,[],size(PPLMissz,3))); colormap(hot);
+    imagesc(IntanBehaviour.cueMissTrace(1).time,1:32,reshape(PPL.PPLMissz,[],size(PPL.PPLMissz,3))); colormap(hot);
     ylabel("Electrodes");xlabel("Time (s)");
     xline(0,'-w','Cue','LabelVerticalAlignment','top');
-    
-    nIterrate = 200;
-    xgpHit = arrayfun(@(s) s.xgp, IntanBehaviour.hitTrace, 'UniformOutput', false);
-    xgpMiss = arrayfun(@(s) s.xgp, IntanBehaviour.missTrace, 'UniformOutput', false);
-    xgpComb = [xgpHit xgpMiss];
-    nHit = size(xgpHit,2);
-    nMiss = size(xgpMiss,2);
-    nTot = nHit + nMiss;
-    nullDistHit = zeros(parameters.rows,parameters.cols,size(PPLHitReward,3),nIterrate);
-    nullDistMiss = zeros(parameters.rows,parameters.cols,size(PPLFA,3),nIterrate);
-    for j=1:nIterrate
-        randIndex = randperm(nTot);
-        xgpHitRand = xgpComb(randIndex(1:nHit));
-        xgpMissRand = xgpComb(randIndex(nHit+1:end));
-        nullDistHit(:,:,:,j) = getPPL(xgpHitRand,parameters);
-        nullDistMiss(:,:,:,j) = getPPL(xgpMissRand,parameters);
-        j
-    end
-    muHitReward = mean(nullDistHit,4); % Mean of the null distribution
-    sigmaHitReward = std(nullDistHit,0,4); % Standard deviation of null distribution
-    muFA = mean(nullDistMiss,4); % Mean of the null distribution
-    sigmaFA = std(nullDistMiss,0,4); % Standard deviation of null distribution
-    
-    PPLHitRewardz = (PPLHit-muHitReward)./sigmaHitReward;
-    PPLFAz = (PPLMiss-muFA)./sigmaFA;
+%     
+%     nIterrate = 200;
+%     xgpHit = arrayfun(@(s) s.xgp, IntanBehaviour.hitTrace, 'UniformOutput', false);
+%     xgpMiss = arrayfun(@(s) s.xgp, IntanBehaviour.missTrace, 'UniformOutput', false);
+%     xgpComb = [xgpHit xgpMiss];
+%     nHit = size(xgpHit,2);
+%     nMiss = size(xgpMiss,2);
+%     nTot = nHit + nMiss;
+%     nullDistHit = zeros(parameters.rows,parameters.cols,size(PPL.PPLHitReward,3),nIterrate);
+%     nullDistMiss = zeros(parameters.rows,parameters.cols,size(PPL.PPLFA,3),nIterrate);
+%     for j=1:nIterrate
+%         randIndex = randperm(nTot);
+%         xgpHitRand = xgpComb(randIndex(1:nHit));
+%         xgpMissRand = xgpComb(randIndex(nHit+1:end));
+%         nullDistHit(:,:,:,j) = calPPL(xgpHitRand,parameters);
+%         nullDistMiss(:,:,:,j) = calPPL(xgpMissRand,parameters);
+%         j
+%     end
+%     muHitReward = mean(nullDistHit,4); % Mean of the null distribution
+%     sigmaHitReward = std(nullDistHit,0,4); % Standard deviation of null distribution
+%     muFA = mean(nullDistMiss,4); % Mean of the null distribution
+%     sigmaFA = std(nullDistMiss,0,4); % Standard deviation of null distribution
+%     
+%     PPL.PPLHitRewardz = (PPL.PPLHit-muHitReward)./sigmaHitReward;
+%     PPL.PPLFAz = (PPL.PPLMiss-muFA)./sigmaFA;
 end

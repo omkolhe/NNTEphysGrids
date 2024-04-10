@@ -142,7 +142,7 @@ title('M2 -> Th Cool');
 %% Comparing Wave Properties - Direction
 
 % Plotting Wave Rasters colorcoded by Direction
-srt = 1300;stp = 1500;
+srt = 1000;stp = 1500;
 figure();
 subplot(2,3,1);
 [dirCombBaseline,~] = plotWaveDirection(selectWaves(WavesBaseline.wavesHit,srt,stp),36,[]);
@@ -151,7 +151,7 @@ subplot(2,3,4);
 [dirCombCool,~] = plotWaveDirection(selectWaves(WavesCool.wavesHit,srt,stp),36,[]);
 title('Cool: Spontaneous');set(gca,'TickDir','out','fontsize',14');
 [p,~,~] = circ_kuipertest(dirCombBaseline, dirCombCool,60,0);disp('Wave Direction');disp('p-value:');disp(p);
-srt = 1500;stp = 1700;
+srt = 1500;stp = 2000;
 subplot(2,3,2);
 [dirCombBaseline,~] = plotWaveDirection(selectWaves(WavesBaseline.wavesHit,srt,stp),36,[]);
 title('Baseline: Cue Evoked');set(gca,'TickDir','out','fontsize',14');
@@ -159,7 +159,7 @@ subplot(2,3,5);
 [dirCombCool,~] = plotWaveDirection(selectWaves(WavesCool.wavesHit,srt,stp),36,[]);
 title('Cool: Cue Evoked');set(gca,'TickDir','out','fontsize',14');
 [p,~,~] = circ_kuipertest(dirCombBaseline, dirCombCool,60,0);disp('Wave Direction');disp('p-value:');disp(p);
-srt = 1700;stp = 1900;
+srt = 1800;stp = 3000;
 subplot(2,3,3);
 [dirCombBaseline,~] = plotWaveDirection(selectWaves(WavesBaseline.wavesHit,srt,stp),36,[]);
 title('Baseline: Post Cue Spontaneous');set(gca,'TickDir','out','fontsize',14');

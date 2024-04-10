@@ -42,7 +42,7 @@ subplot(2,3,5);
 [dirCombMiss,~] = plotWaveDirection(selectWaves(Waves.wavesMiss,srt,stp),36,[]);
 title('Miss: Cue Evoked');set(gca,'TickDir','out','fontsize',14');
 [p,~,~] = circ_kuipertest(dirCombHit, dirCombMiss,60,0);disp('Wave Direction');disp('p-value:');disp(p);
-srt = 1700;stp = 3000;
+srt = 1800;stp = 3000;
 subplot(2,3,3);
 [dirCombHit,~] = plotWaveDirection(selectWaves(Waves.wavesHit,srt,stp),36,[]);
 title('Hits: Post Cue Spontaneous');set(gca,'TickDir','out','fontsize',14');
@@ -192,3 +192,35 @@ h4 = plot(interval:interval:interval*nPoints,waveAvgFreq(4,:),'Color', [1 0 0 0.
 % h = scatter(interval:interval:interval*nPoints,waveNetDir(1,:),80,waveNetDir(2,:),'filled');
 xline(1501,'--r','Cue');xlabel('Time (ms)'); ylabel('Average Wave Frequency (Hz)');
 legend([h1 h2 h3 h4],'Hits','Miss','MIFAs','MIHits','Location','best'); ylim([5 15]);
+
+%% Wave Speed 
+
+% Plotting wave freq as function of time
+nPoints = 30; interval = (parameters.Fs*(parameters.windowAfterCue+parameters.windowBeforeCue))/nPoints;
+waveAvgFreq = zeros(4,nPoints);
+for i=1:nPoints
+    st = (i-1)*interval + 1;
+    sp = (i)*interval + 1;
+    WaveSpeed(i).speedHit = horzcat(selectWaves(Waves.wavesHit,st,sp).speed);
+    WaveSpeed(i).speedMiss = horzcat(selectWaves(Waves.wavesMiss,st,sp).speed);
+    WaveSpeed(i).speedMIHit = horzcat(selectWaves(Waves.wavesMIHit,st,sp).speed);
+    WaveSpeed(i).speedMIFA = horzcat(selectWaves(Waves.wavesMIFA,st,sp).speed);
+end
+
+t = interval:interval:interval*nPoints;
+y = cell2mat(arrayfun(@(s) mean(s.speedHit,'all','omitnan'),WaveSpeed,'UniformOutput',false));
+err = cell2mat(arrayfun(@(s) std(s.speedHit,0,'all','omitnan'),WaveSpeed,'UniformOutput',false));
+figure;hold on;
+h1 = errorbar(t,y,err,'Color', [0.8500 0.3250 0.0980],'LineWidth',1.5);
+y = cell2mat(arrayfun(@(s) mean(s.speedMiss,'all','omitnan'),WaveSpeed,'UniformOutput',false));
+err = cell2mat(arrayfun(@(s) std(s.speedMiss,0,'all','omitnan'),WaveSpeed,'UniformOutput',false));
+h2 = errorbar(t,y,err,'Color', [0.7 0.7 0.7],'LineWidth',1.5);
+y = cell2mat(arrayfun(@(s) mean(s.speedMIHit,'all','omitnan'),WaveSpeed,'UniformOutput',false));
+err = cell2mat(arrayfun(@(s) std(s.speedMIHit,0,'all','omitnan'),WaveSpeed,'UniformOutput',false));
+h3 = errorbar(t,y,err,'Color', [0 0 1 0.4],'LineWidth',1.5);
+y = cell2mat(arrayfun(@(s) mean(s.speedMIFA,'all','omitnan'),WaveSpeed,'UniformOutput',false));
+err = cell2mat(arrayfun(@(s) std(s.speedMIFA,0,'all','omitnan'),WaveSpeed,'UniformOutput',false));
+h4 = errorbar(t,y,err,'Color', [1 0 0 0.4],'LineWidth',1.5);
+
+xline(1501,'--r','Cue');xlabel('Time (ms)'); ylabel('Average Wave Frequency (Hz)');
+legend([h1 h2 h3 h4],'Hits','Miss','MIFAs','MIHits','Location','best'); %ylim([5 15]);
