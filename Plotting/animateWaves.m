@@ -23,7 +23,7 @@ vx = Waves(trial).vx;
 vy = Waves(trial).vy;
 
 % parameters
-plot_pre_time = 0; pause_length = 0.03; 
+plot_pre_time = 0; pause_length = 0.01; 
 
 % init
 M = load( 'myMap.mat' );
@@ -76,8 +76,8 @@ for jj =waveID %1:length(evaluation_points)
     h2.ShowArrowHead = 'on';
     h2.MaxHeadSize = 2;
     set( gca, 'linewidth', 3, 'xtick', [], 'ytick', [], 'fontname', 'arial', 'fontsize', 16, 'ydir', 'reverse' );
-    colormap(hot);
-%     colormap( M.myMap ); 
+%     colormap(jet);
+    colormap( M.myMap ); 
     box on; xlabel( 'electrodes' ); ylabel( 'electrodes' ); caxis( color_range )
 
     % create colorbar

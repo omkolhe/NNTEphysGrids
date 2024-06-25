@@ -1,16 +1,18 @@
+
+
 nPoints = 15; interval = (parameters.Fs*(parameters.windowAfterCue+parameters.windowBeforeCue))/nPoints;
 waveNetDir = zeros(8,nPoints);
 for i=1:nPoints
     st = (i-1)*interval + 1;
     sp = (i)*interval + 1;
-    waveNetDir(1,i) = circ_r((horzcat(selectWaves(Waves.wavesHit,st,sp).waveDir))');
-    waveNetDir(2,i) = circ_mean((horzcat(selectWaves(Waves.wavesHit,st,sp).waveDir))');
-    waveNetDir(3,i) = circ_r((horzcat(selectWaves(Waves.wavesMiss,st,sp).waveDir))');
-    waveNetDir(4,i) = circ_mean((horzcat(selectWaves(Waves.wavesMiss,st,sp).waveDir))');
-    waveNetDir(5,i) = circ_r((horzcat(selectWaves(Waves.wavesMIFA,st,sp).waveDir))');
-    waveNetDir(6,i) = circ_mean((horzcat(selectWaves(Waves.wavesMIFA,st,sp).waveDir))');
-    waveNetDir(7,i) = circ_r((horzcat(selectWaves(Waves.wavesMIHit,st,sp).waveDir))');
-    waveNetDir(8,i) = circ_mean((horzcat(selectWaves(Waves.wavesMIHit,st,sp).waveDir))');
+    waveNetDir(1,i) = circ_r((horzcat(selectWaves(WavesM1.wavesHit,st,sp).waveDir))');
+    waveNetDir(2,i) = circ_mean((horzcat(selectWaves(WavesM1.wavesHit,st,sp).waveDir))');
+    waveNetDir(3,i) = circ_r((horzcat(selectWaves(WavesM1.wavesMiss,st,sp).waveDir))');
+    waveNetDir(4,i) = circ_mean((horzcat(selectWaves(WavesM1.wavesMiss,st,sp).waveDir))');
+    waveNetDir(5,i) = circ_r((horzcat(selectWaves(WavesM1.wavesMIFA,st,sp).waveDir))');
+    waveNetDir(6,i) = circ_mean((horzcat(selectWaves(WavesM1.wavesMIFA,st,sp).waveDir))');
+    waveNetDir(7,i) = circ_r((horzcat(selectWaves(WavesM1.wavesMIHit,st,sp).waveDir))');
+    waveNetDir(8,i) = circ_mean((horzcat(selectWaves(WavesM1.wavesMIHit,st,sp).waveDir))');
 end
 
 figure;hold on;
