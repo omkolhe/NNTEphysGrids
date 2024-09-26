@@ -10,7 +10,7 @@ plot(RTTraceTime,1:size(IntanBehaviour.cueHitTrace,2),'.r');
 plotWaveRaster(Waves.wavesHitReward,Waves.wavesFA,IntanBehaviour.hitTrace,IntanBehaviour.missTrace,parameters);
 sgtitle('Wave Rasters for Hits vs FA');
 
-%  Waves during Hits vs FA
+%  Waves during MIHits vs MIFA 
 plotWaveRaster(Waves.wavesMIHit,Waves.wavesMIFA,IntanBehaviour.MIHitTrace,IntanBehaviour.MIFATrace,parameters);
 sgtitle('Wave Rasters for Hits vs FA');
 
@@ -97,7 +97,7 @@ subplot(2,3,5);
 [dirCombOpto,~] = plotWaveDirection(selectWaves(Waves.wavesMiss,srt,stp),36,[]);
 title('Opto: Cue Evoked');set(gca,'TickDir','out','fontsize',14');
 [p,~,~] = circ_kuipertest(dirCombBaseline, dirCombOpto,60,0);disp('Wave Direction');disp('p-value:');disp(p);
-srt = 1700;stp = 2200;
+srt = 1800;stp = 2200;
 subplot(2,3,3);
 [dirCombBaseline,~] = plotWaveDirection(selectWaves(Waves.wavesHit,srt,stp),36,[]);
 title('Baseline: Post Cue Spontaneous');set(gca,'TickDir','out','fontsize',14');

@@ -2,17 +2,14 @@ function IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters)
 
 betaPresent = 0;
 gammaPresent = 0;
-filterOrder = 4;
-filterLP1 = 5;
-filterLP2 = 40;
-
 
 if strcmp(parameters.experiment,'cue')
     % Adding LFP an GP traces to cueHitTrace variable 
     for i=1:size(IntanBehaviour.cueHitTrace,2)
         IntanBehaviour.cueHitTrace(i).rawLFP = LFP.LFPdatacube(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
-        IntanBehaviour.cueHitTrace(i).xf = bandpass_filter(IntanBehaviour.cueHitTrace(i).rawLFP,filterLP1,filterLP2,filterOrder,parameters.Fs);
-        [IntanBehaviour.cueHitTrace(i).xgp, IntanBehaviour.cueHitTrace(i).wt] = generalized_phase(IntanBehaviour.cueHitTrace(i).xf,parameters.Fs,0);
+        IntanBehaviour.cueHitTrace(i).xf = LFP.xf(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+        IntanBehaviour.cueHitTrace(i).xgp = LFP.xgp(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
+        IntanBehaviour.cueHitTrace(i).wt = LFP.wt(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
         if parameters.shank == 1
             IntanBehaviour.cueHitTrace(i).rawLFPProbe = LFP.LFPprobe(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
             IntanBehaviour.cueHitTrace(i).xfProbe = LFP.xfProbe(:,:,IntanBehaviour.cueHitTrace(i).LFPIndex(1):IntanBehaviour.cueHitTrace(i).LFPIndex(end));
@@ -49,8 +46,9 @@ if strcmp(parameters.experiment,'cue')
         % Adding LFP an GP traces to cueMissTrace variable
         for i=1:size(IntanBehaviour.cueMissTrace,2)
             IntanBehaviour.cueMissTrace(i).rawLFP = LFP.LFPdatacube(:,:,IntanBehaviour.cueMissTrace(i).LFPIndex(1):IntanBehaviour.cueMissTrace(i).LFPIndex(end));
-            IntanBehaviour.cueMissTrace(i).xf = bandpass_filter(IntanBehaviour.cueMissTrace(i).rawLFP,filterLP1,filterLP2,filterOrder,parameters.Fs);
-            [IntanBehaviour.cueMissTrace(i).xgp, IntanBehaviour.cueMissTrace(i).wt] = generalized_phase(IntanBehaviour.cueMissTrace(i).xf,parameters.Fs,0);
+            IntanBehaviour.cueMissTrace(i).xf = LFP.xf(:,:,IntanBehaviour.cueMissTrace(i).LFPIndex(1):IntanBehaviour.cueMissTrace(i).LFPIndex(end));
+            IntanBehaviour.cueMissTrace(i).xgp = LFP.xgp(:,:,IntanBehaviour.cueMissTrace(i).LFPIndex(1):IntanBehaviour.cueMissTrace(i).LFPIndex(end));
+            IntanBehaviour.cueMissTrace(i).wt = LFP.wt(:,:,IntanBehaviour.cueMissTrace(i).LFPIndex(1):IntanBehaviour.cueMissTrace(i).LFPIndex(end));
             if parameters.shank == 1
                 IntanBehaviour.cueMissTrace(i).rawLFPProbe = LFP.LFPprobe(:,:,IntanBehaviour.cueMissTrace(i).LFPIndex(1):IntanBehaviour.cueMissTrace(i).LFPIndex(end));
                 IntanBehaviour.cueMissTrace(i).xfProbe = LFP.xfProbe(:,:,IntanBehaviour.cueMissTrace(i).LFPIndex(1):IntanBehaviour.cueMissTrace(i).LFPIndex(end));
@@ -89,8 +87,9 @@ if isfield(IntanBehaviour,'missTrace')
     % Adding LFP an GP traces to missTrace variable 
     for i=1:size(IntanBehaviour.missTrace,2)
         IntanBehaviour.missTrace(i).rawLFP = LFP.LFPdatacube(:,:,IntanBehaviour.missTrace(i).LFPIndex(1):IntanBehaviour.missTrace(i).LFPIndex(end));
-        IntanBehaviour.missTrace(i).xf = bandpass_filter(IntanBehaviour.missTrace(i).rawLFP,filterLP1,filterLP2,filterOrder,parameters.Fs);
-        [IntanBehaviour.missTrace(i).xgp, IntanBehaviour.missTrace(i).wt] = generalized_phase(IntanBehaviour.missTrace(i).xf,parameters.Fs,0);
+        IntanBehaviour.missTrace(i).xf = LFP.xf(:,:,IntanBehaviour.missTrace(i).LFPIndex(1):IntanBehaviour.missTrace(i).LFPIndex(end));
+        IntanBehaviour.missTrace(i).xgp = LFP.xgp(:,:,IntanBehaviour.missTrace(i).LFPIndex(1):IntanBehaviour.missTrace(i).LFPIndex(end));
+        IntanBehaviour.missTrace(i).wt = LFP.wt(:,:,IntanBehaviour.missTrace(i).LFPIndex(1):IntanBehaviour.missTrace(i).LFPIndex(end));
         if parameters.shank == 1
             IntanBehaviour.missTrace(i).rawLFPProbe = LFP.LFPprobe(:,:,IntanBehaviour.missTrace(i).LFPIndex(1):IntanBehaviour.missTrace(i).LFPIndex(end));
             IntanBehaviour.missTrace(i).xfProbe = LFP.xfProbe(:,:,IntanBehaviour.missTrace(i).LFPIndex(1):IntanBehaviour.missTrace(i).LFPIndex(end));
@@ -128,8 +127,9 @@ if isfield(IntanBehaviour,'hitTrace')
     % Adding LFP an GP traces to hitTrace variable 
     for i=1:size(IntanBehaviour. hitTrace,2)
         IntanBehaviour. hitTrace(i).rawLFP = LFP.LFPdatacube(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
-        IntanBehaviour.hitTrace(i).xf = bandpass_filter(IntanBehaviour.hitTrace(i).rawLFP,filterLP1,filterLP2,filterOrder,parameters.Fs);
-        [IntanBehaviour.hitTrace(i).xgp, IntanBehaviour.hitTrace(i).wt] = generalized_phase(IntanBehaviour.hitTrace(i).xf,parameters.Fs,0);
+        IntanBehaviour. hitTrace(i).xf = LFP.xf(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+        IntanBehaviour. hitTrace(i).xgp = LFP.xgp(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
+        IntanBehaviour. hitTrace(i).wt = LFP.wt(:,:,IntanBehaviour. hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
         if parameters.shank == 1
             IntanBehaviour. hitTrace(i).rawLFPProbe = LFP.LFPprobe(:,:,IntanBehaviour.hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
             IntanBehaviour. hitTrace(i).xfProbe = LFP.xfProbe(:,:,IntanBehaviour.hitTrace(i).LFPIndex(1):IntanBehaviour. hitTrace(i).LFPIndex(end));
@@ -167,8 +167,9 @@ if isfield(IntanBehaviour,'MIHitTrace')
     % Adding LFP an GP traces to hitTrace variable 
     for i=1:size(IntanBehaviour.  MIHitTrace,2)
         IntanBehaviour.  MIHitTrace(i).rawLFP = LFP.LFPdatacube(:,:,IntanBehaviour.  MIHitTrace(i).LFPIndex(1):IntanBehaviour.  MIHitTrace(i).LFPIndex(end));
-        IntanBehaviour.MIHitTrace(i).xf = bandpass_filter(IntanBehaviour.MIHitTrace(i).rawLFP,filterLP1,filterLP2,filterOrder,parameters.Fs);
-        [IntanBehaviour.MIHitTrace(i).xgp, IntanBehaviour.MIHitTrace(i).wt] = generalized_phase(IntanBehaviour.MIHitTrace(i).xf,parameters.Fs,0);
+        IntanBehaviour.  MIHitTrace(i).xf = LFP.xf(:,:,IntanBehaviour.  MIHitTrace(i).LFPIndex(1):IntanBehaviour.  MIHitTrace(i).LFPIndex(end));
+        IntanBehaviour.  MIHitTrace(i).xgp = LFP.xgp(:,:,IntanBehaviour.  MIHitTrace(i).LFPIndex(1):IntanBehaviour.  MIHitTrace(i).LFPIndex(end));
+        IntanBehaviour.  MIHitTrace(i).wt = LFP.wt(:,:,IntanBehaviour.  MIHitTrace(i).LFPIndex(1):IntanBehaviour.  MIHitTrace(i).LFPIndex(end));
         if parameters.shank == 1
             IntanBehaviour.  MIHitTrace(i).rawLFPProbe = LFP.LFPprobe(:,:,IntanBehaviour.  MIHitTrace(i).LFPIndex(1):IntanBehaviour.  MIHitTrace(i).LFPIndex(end));
             IntanBehaviour.  MIHitTrace(i).xfProbe = LFP.xfProbe(:,:,IntanBehaviour.  MIHitTrace(i).LFPIndex(1):IntanBehaviour.  MIHitTrace(i).LFPIndex(end));
@@ -206,8 +207,9 @@ if isfield(IntanBehaviour,'MIFATrace')
     % Adding LFP an GP traces to  MIFATrace variable 
     for i=1:size(IntanBehaviour.  MIFATrace,2)
         IntanBehaviour.  MIFATrace(i).rawLFP = LFP.LFPdatacube(:,:,IntanBehaviour.  MIFATrace(i).LFPIndex(1):IntanBehaviour.  MIFATrace(i).LFPIndex(end));
-        IntanBehaviour.MIFATrace(i).xf = bandpass_filter(IntanBehaviour.MIFATrace(i).rawLFP,filterLP1,filterLP2,filterOrder,parameters.Fs);
-        [IntanBehaviour.MIFATrace(i).xgp, IntanBehaviour.MIFATrace(i).wt] = generalized_phase(IntanBehaviour.MIFATrace(i).xf,parameters.Fs,0);
+        IntanBehaviour.  MIFATrace(i).xf = LFP.xf(:,:,IntanBehaviour.  MIFATrace(i).LFPIndex(1):IntanBehaviour.  MIFATrace(i).LFPIndex(end));
+        IntanBehaviour.  MIFATrace(i).xgp = LFP.xgp(:,:,IntanBehaviour.  MIFATrace(i).LFPIndex(1):IntanBehaviour.  MIFATrace(i).LFPIndex(end));
+        IntanBehaviour.  MIFATrace(i).wt = LFP.wt(:,:,IntanBehaviour.  MIFATrace(i).LFPIndex(1):IntanBehaviour.  MIFATrace(i).LFPIndex(end));
         if parameters.shank == 1
             IntanBehaviour.  MIFATrace(i).rawLFPProbe = LFP.LFPprobe(:,:,IntanBehaviour.  MIFATrace(i).LFPIndex(1):IntanBehaviour.  MIFATrace(i).LFPIndex(end));
             IntanBehaviour.  MIFATrace(i).xfProbe = LFP.xfProbe(:,:,IntanBehaviour.  MIFATrace(i).LFPIndex(1):IntanBehaviour.  MIFATrace(i).LFPIndex(end));

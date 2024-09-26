@@ -233,6 +233,10 @@ end
 
 missIndex = removeNaNRows(missIndex');
 
+if missIndex(1) <= parameters.windowBeforePull*parameters.Fs
+    missIndex = missIndex(2:end);
+end
+
 IntanBehaviour.nMiss = size(missIndex,1);
 
 for i=1:IntanBehaviour.nMiss
@@ -301,6 +305,11 @@ IntanBehaviour.nCueHit = size(IntanBehaviour.cueHitTrace,2);
 meanMotionTrace = mean(horzcat(IntanBehaviour.missTrace.trace),2);
 IntanBehaviour.meanRestingPositionFA = mean(meanMotionTrace(1:500));
 IntanBehaviour.MIcutoffFA = 0.2*(IntanBehaviour.threshold-IntanBehaviour.meanRestingPositionFA) + IntanBehaviour.meanRestingPositionFA;
+
+if IntanBehaviour.missTrace(1).LFPIndex(1) < parameters.windowBeforeMI*parameters.Fs + 300
+    IntanBehaviour.missTrace(1) = [];
+    IntanBehaviour.nMiss = IntanBehaviour.nMiss - 1;
+end
 
 for i=1:IntanBehaviour.nMiss
     f = IntanBehaviour.missTrace(i).trace - IntanBehaviour.MIcutoffFA;

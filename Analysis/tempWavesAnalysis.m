@@ -47,20 +47,31 @@ set(gca,'TickDir','out','fontsize',14'); box off;
 %% Hit waves comparison 
 baselineSpeed = [];
 cooledSpeed = [];
-
-for i = 1:size(Waves.wavesHit,2)
-    if IntanBehaviour.cueHitTrace(i).temp <= 42.5
-        cooledSpeed = [cooledSpeed,Waves.wavesHit(i).speed];
-    elseif IntanBehaviour.cueHitTrace(i).temp >= 55
-        baselineSpeed = [baselineSpeed,Waves.wavesHit(i).speed];
+recoverySpeed = [];
+recoveryflag = 0;
+waveStruct = Waves.wavesHit;
+for i = 1:size(waveStruct,2)
+    if IntanBehaviour.cueHitTrace(i).temp <= 12
+        cooledSpeed = [cooledSpeed,waveStruct(i).speed];
+        recoveryflag =1;
+    elseif IntanBehaviour.cueHitTrace(i).temp >= 20 && recoveryflag == 0
+        baselineSpeed = [baselineSpeed,waveStruct(i).speed];
+    elseif IntanBehaviour.cueHitTrace(i).temp >= 15 && recoveryflag == 1
+        recoverySpeed = [recoverySpeed,waveStruct(i).speed];
     end
 end
 
-[p,h] = ranksum(baselineSpeed,cooledSpeed);
-figure,plotBox2(baselineSpeed,cooledSpeed);
-ylabel('Wave Speed (cm/s)'); title('Cooling M2');subtitle(['p-val = ' num2str(p)]);
-xtix = {'Baseline','Cooled'}; xtixloc = [1 2]; set(gca,'XTickMode','auto','XTickLabel',xtix,'XTick',xtixloc);set(gca,'TickDir','out','fontsize',14');
-set(gca,'TickDir','out','fontsize',14');
+ranksum(baselineSpeed',cooledSpeed')
+ranksum(cooledSpeed',recoverySpeed')
+ranksum(baselineSpeed',recoverySpeed')
+
+temp = [baselineSpeed';cooledSpeed';recoverySpeed'];
+templabels = cellstr([repmat('Baseline',size(baselineSpeed,2),1);repmat('Cooled  ',size(cooledSpeed,2),1);repmat('Recovery',size(recoverySpeed,2),1)]);
+colors = [166/255 14/255 90/255;53/255 189/255 206/255;0.8500 0.3250 0.0980];
+figure,violinplot(temp,templabels,'ShowData',true,'ShowWhiskers',false,'ShowBox',false,'MarkerSize',5,'ViolinColor',colors);
+ylabel('Wave Speed (cm/s)'); title('Cooling M2');
+% xtix = {'Baseline','Cooled','Recovery'}; xtixloc = [1 2 3]; set(gca,'XTickMode','auto','XTickLabel',xtix,'XTick',xtixloc);set(gca,'TickDir','out','fontsize',14');
+set(gca,'TickDir','out','fontsize',14');box off;
 %% Plotting Speed histogram
 
 h1 = histfit(baselineSpeed,80,'lognormal');

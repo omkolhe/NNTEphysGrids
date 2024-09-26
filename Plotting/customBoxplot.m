@@ -28,9 +28,11 @@ if length(size(data))>1
             if i==1
 %                 rgbtrip = [0.7 0.7 0.7];
                 rgbtrip = [166/255 14/255 90/255];
-            else
+            elseif i==2
 %                 rgbtrip = [0.8500 0.3250 0.0980];
                 rgbtrip = [53/255 189/255 206/255];
+            else
+                rgbtrip = [0.8500 0.3250 0.0980];
             end
             scatter(i*ones(length(t(t>0)),1),t(t>0),'filled','jitter','on','jitterAmount',0.1,'MarkerFaceColor',rgbtrip);
         end

@@ -11,6 +11,7 @@ addpath(genpath('spikes-master'));
 addpath(genpath('PreProcessing'));
 addpath(genpath('Plotting'));
 addpath(genpath('Analysis'));
+addpath(genpath('Channel Maps'));
 addpath(genpath('Dependancies'));
 rmpath(genpath('Dependancies/MVGC1'));
 %%  PreProcessing
@@ -36,7 +37,7 @@ figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size
 
 %% LFP
 set(0,'DefaultFigureWindowStyle','normal')
-LFP = fastpreprocess_filtering(Intan.allIntan,10000);
+LFP = fastpreprocess_filtering(Intan.allIntan,5000);
 % LFP = bestLFP(LFP);
 % LFP = bandFilter(LFP,'depth'); % Extract LFPs based on 'depth' or 'single'
 % LFPplot(LFP);
@@ -44,16 +45,18 @@ LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.badChMap); % Crea
 
 %% Spikes 
 Intan.allIntan(Intan.badChMap,:) = [];
-Spikes = preprocessSpike(double(Intan.allIntan(:,:)),10000);
+Spikes = preprocessSpike(double(Intan.allIntan(:,:)),5000);
 Spikes.Spikes = [];
-Spikes = findSpikes(Spikes,-3.5,10000);
+Spikes = findSpikes(Spikes,-5,5000);
 
-[X,Q] = featureProject(Spikes.Spikes(4).spikeWaveform',1,1,1);
+[X,Q] = featureProject(Spikes.Spikes(1).spikeWaveform',1,1,1);
+
+figure,plot(Spikes.Spikes(1).spikeWaveform')
 
 
 
-figure,stack_plot(Spikes.rawspikeTrace(12:17,:),1,2,10000);
-figure,stack_plot(Spikes.whitenedSpikeTrace(12:17,:),1,2,10000);
+figure,stack_plot(Spikes.rawspikeTrace(:,1:50000),1,2,5000);
+figure,stack_plot(Spikes.whitenedSpikeTrace(:,1:50000),1,2,5000);
 
 
 title('Common Mode Referenced - Ch 17')

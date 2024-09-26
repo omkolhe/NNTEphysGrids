@@ -7,26 +7,23 @@ recoveryRT = [];
 recoveryFlag = 0; % Run before loop; recoveryFlag = 0 - Baseline, = 1 - Recovery
 % only works for 1 baseline, cool and recovery cycle
 for i=1:size(IntanBehaviour.cueHitTrace,2)  
-    if IntanBehaviour.cueHitTrace(i).temp <= 17
+    if IntanBehaviour.cueHitTrace(i).temp <= 15
         coolRT = [coolRT;IntanBehaviour.cueHitTrace(i).reactionTime];
-        %recoveryFlag = 1;
-        recoveryFlag = 0;
-    elseif IntanBehaviour.cueHitTrace(i).temp >= 30 && recoveryFlag == 0
+        recoveryFlag = 1;
+%         recoveryFlag = 0;
+    elseif IntanBehaviour.cueHitTrace(i).temp >= 20 && recoveryFlag == 0
         baselineRT= [baselineRT;IntanBehaviour.cueHitTrace(i).reactionTime];
-    elseif IntanBehaviour.cueHitTrace(i).temp >= 25 && recoveryFlag == 1
+    elseif IntanBehaviour.cueHitTrace(i).temp >= 18 && recoveryFlag == 1
         recoveryRT= [recoveryRT;IntanBehaviour.cueHitTrace(i).reactionTime];
     end
 end
 
 ranksum(coolRT,baselineRT)
-ttest2(coolRT,baselineRT)
+% ttest2(coolRT,baselineRT)
 ranksum(coolRT,recoveryRT)
 ranksum(baselineRT,recoveryRT)
 
-data = baselineRT;
-% manually copy noOptoRT into data
-
-figure,customBoxplot(data);
+figure,plotBox3(baselineRT,coolRT,recoveryRT);
 ylabel('Reaction Time (s)');
 
 %% Analog control of RT wrt to temp

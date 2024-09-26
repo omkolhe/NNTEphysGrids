@@ -178,14 +178,15 @@ if plot == 1
     boxplot([mapAngle360(rad2deg(dirComb))';mapAngle360(rad2deg(dirCombMiss))'],group,'BoxStyle','filled','PlotStyle','compact');
     set(gca,'XTickLabel',{'Hits','Misses'});box off;
 end
-
-figure('Name','Histogram for wave direction in   Hits and Misses');
-subplot(2,1,1);
-histogram(mapAngle360(rad2deg(dirComb)),60);
-title('Wave Direction :  Hits');box off;
-subplot(2,1,2);
-histogram(mapAngle360(rad2deg(dirCombMiss)),60);
-title('Wave Direction :  Misses');box off;
+if plot == 1
+    figure('Name','Histogram for wave direction in   Hits and Misses');
+    subplot(2,1,1);
+    histogram(mapAngle360(rad2deg(dirComb)),60);
+    title('Wave Direction :  Hits');box off;
+    subplot(2,1,2);
+    histogram(mapAngle360(rad2deg(dirCombMiss)),60);
+    title('Wave Direction :  Misses');box off;
+end
 
 
 % Wave source points stats
@@ -194,23 +195,24 @@ sourceDen = zeros(rows,cols);
 sourceCombMiss = vertcat(Waves2(1:end).source);
 sourceDenMiss = zeros(rows,cols);
 
-for j=1:size(sourceComb,2)
-    sourceDen(sourceComb(2,j),sourceComb(1,j)) = sourceDen(sourceComb(2,j),sourceComb(1,j)) + 1;
+for j=1:size(sourceComb,1)
+    sourceDen(sourceComb(j,2),sourceComb(j,1)) = sourceDen(sourceComb(j,2),sourceComb(j,1)) + 1;
 end
 maxSourcePoint = max(sourceComb);
-
-for j=1:size(sourceCombMiss,2)
-    sourceDenMiss(sourceCombMiss(2,j),sourceCombMiss(1,j)) = sourceDenMiss(sourceCombMiss(2,j),sourceCombMiss(1,j)) + 1;
+sourceDen = sourceDen/size(sourceComb,1);
+for j=1:size(sourceCombMiss,1)
+    sourceDenMiss(sourceCombMiss(j,2),sourceCombMiss(j,1)) = sourceDenMiss(sourceCombMiss(j,2),sourceCombMiss(j,1)) + 1;
 end
 maxSourcePointMiss = max(sourceCombMiss);
+sourceDenMiss = sourceDenMiss/size(sourceComb,1);
 
 if plot == 1
     figure('Name','Spatial map of source points in   Hits and Misses'); 
     subplot(2,1,1);
-    imagesc(sourceDen);set(gca,'YDir','normal');box off;
+    imagesc(sourceDen);set(gca,'YDir','normal');box off;colormap("hot");
     title('Spatial map of sources points :   Inititaion'); colorbar;
     subplot(2,1,2);
-    imagesc(sourceDenMiss);set(gca,'YDir','normal');box off;
+    imagesc(sourceDenMiss);set(gca,'YDir','normal');box off;colormap("hot");
     title('Spatial map of sources points :   Misses'); colorbar;
 end 
 

@@ -52,7 +52,7 @@ end
 
 for ii = 1:rows
 	for jj = 1:cols
-        disp('Calculating GP for Ch '+ string(cols*(ii-1)+jj) + '/' + string(rows*cols))
+%         disp('Calculating GP for Ch '+ string(cols*(ii-1)+jj) + '/' + string(rows*cols))
 		% check if nan channel
 		if all( isnan(ph(ii,jj,:)) ), continue; end
 

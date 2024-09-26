@@ -47,6 +47,10 @@ if cue==1
 end   
 Behaviour.B = B(2:end,:);
 
+%% Checking if the Arduino timer resets if the session runs for too long
+a = sign(diff(Behaviour.time));
+b = find(a==-1);
+Behaviour.time(b+1:end) = Behaviour.time(b+1:end)+Behaviour.time(b);
 %% Getting hit and miss timings
 hitIndex = find(diff(B(:,3)) == 1) + 1;
 hitTime = Behaviour.time(hitIndex);

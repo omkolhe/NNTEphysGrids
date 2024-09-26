@@ -7,7 +7,7 @@ function [Spikes] = findSpikes(Spikes,thres,Fs)
 % recorded segment and stored
 % Ref - K A Ludwig et al, 2006, Journal of Neural Engineering
 
-timeWindowSpike = 1.2; % in ms before and after the peak
+timeWindowSpike = 3; % in ms before and after the peak
 windowSpike = timeWindowSpike*Fs*1e-3;
 
 Spikes.threshold = zeros(size(Spikes.whitenedSpikeTrace,1),1);

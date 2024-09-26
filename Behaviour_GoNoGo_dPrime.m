@@ -20,3 +20,12 @@ figure,plot(sort(dprime), 'Color',[0 0 0],'LineWidth',1.5);
 xlabel('Sessions');
 ylabel('Performance (d prime)');
 set(gca,'TickDir','out','fontsize',14');
+
+%%
+nHits = 222; 
+nCR = 96;
+nMiss = 53;
+nFA = 58;
+
+dprime = norminv(nHits/(nHits+nMiss)) - norminv(nFA/(nFA+nCR));
+
