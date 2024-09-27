@@ -135,7 +135,7 @@ if z_score == 1
         nTot = nHit + nMiss;
         nullDistHit = zeros(size(PA.Hit,1),size(PA.Hit,2),size(PA.Hit,3),nPerm);
         nullDistMiss = zeros(size(PA.Miss,1),size(PA.Miss,2),size(PA.Miss,3),nPerm);
-        for j=1:nPerm
+        parfor j=1:nPerm
             randIndex = randperm(nTot);
             xgpHitRand = xgpComb(randIndex(1:nHit));
             xgpMissRand = xgpComb(randIndex(nHit+1:end));
@@ -182,7 +182,7 @@ if z_score == 1
 
     nullDistHit = zeros(size(PA.HitReward,1),size(PA.HitReward,2),size(PA.HitReward,3),nPerm);
     nullDistMiss = zeros(size(PA.FA,1),size(PA.FA,2),size(PA.FA,3),nPerm);
-    for j=1:nPerm
+    parfor j=1:nPerm
         randIndex = randperm(nTot);
         xgpHitRand = xgpComb(randIndex(1:nHit));
         xgpMissRand = xgpComb(randIndex(nHit+1:end));

@@ -13,6 +13,7 @@ addpath(genpath('Plotting'));
 addpath(genpath('Analysis'));
 addpath(genpath('Channel Maps'));
 addpath(genpath('Dependancies'));
+addpath(genpath('Pipelines'));
 rmpath(genpath('Dependancies/MVGC1'));
 %%  PreProcessing
 load Grids30Ch_chanmap.mat;  % load the channel map for the IntanConcatenate function
@@ -91,7 +92,7 @@ IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan
 IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters);
 % Saving paramters, path, IntanBehaviour to bin file 
 savepath = uigetdir(path);
-sessionName = [savepath,'/','M130ChGridsCoolingWavesDay8.mat'];
+sessionName = [savepath,'/','M130ChGridsCoolingWavesDay3.mat'];
 % save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
 save(sessionName,"IntanBehaviour","fpath","parameters","Waves","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
 
@@ -202,7 +203,7 @@ plotOption = 1;
 
 %% Mutual Information
 z_score = 0;
-nIterrate = 100;
+nIterrate = 10;
 MI = getMI(IntanBehaviour,z_score,nIterrate,1,parameters);
 
 % For amplitude
@@ -266,16 +267,16 @@ xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelV
 title('Trial Averaged Phase Gradient  Directionality (PGD)');box off;  legend('Hits','Shuffled');
 
 %% Cross-Trial Phase Alignment
-z_score = 0;
-nIterrate = 1000;
+z_score = 1;
+nIterrate = 100;
 PAGrid = getPA(IntanBehaviour,z_score,nIterrate,1,parameters,0);
 PAProbe = getPA(IntanBehaviour,z_score,nIterrate,1,parameters,1);
 
 % PA = PAGrid;
 % PA= PAProbe;
 %% Percent Phase Locking
-z_score = 0;
-nIterrate = 2;
+z_score = 1;
+nIterrate = 10;
 PPLGrid = getPPL(IntanBehaviour,z_score,nIterrate,1,parameters,0);
 PPLShank = getPPL(IntanBehaviour,z_score,nIterrate,1,parameters,1);
 

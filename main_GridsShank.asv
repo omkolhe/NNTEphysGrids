@@ -13,6 +13,7 @@ addpath(genpath('Plotting'));
 addpath(genpath('Analysis'));
 addpath(genpath('Channel Maps'));
 addpath(genpath('Dependancies'));
+addpath(genpath('Pipelines'));
 rmpath(genpath('Dependancies/MVGC1'));
 %%  PreProcessing
 load Grids30Ch_chanmap.mat;  % load the channel map for the IntanConcatenate function
@@ -30,7 +31,7 @@ parameters.windowAfterCue = 1.5; % in seconds
 parameters.windowBeforeMI = 1.5; % in seconds 
 parameters.windowAfterMI = 1.5; % in seconds 
 parameters.experiment = 'cue'; % self - internally generated, cue - cue initiated 
-parameters.cool = 0; % 1 - cooling , 0 - no cooling 
+parameters.cool = 1; % 1 - cooling , 0 - no cooling 
 parameters.opto = 0; % 1 - opto ON , 0 - opto OFF
 parameters.xspacing = 0.12; % Grid spacing in mm between columns 
 parameters.yspacing = 0.12; % Grid spacing in mm between rows
@@ -56,15 +57,15 @@ Intan.t = 0:Ts:Intan.Tmax-Ts;
 
 %% Removing bad channels from impedance values
 % [Z,IntanBehaviour.goodChMap,IntanBehaviour.badChMap] = readImp(electrode_map,5e6);
-[Z,IntanBehaviour.goodChMap,IntanBehaviour.badChMap] = readImp(finalElectrodeMap,10e6);
+[Z,IntanBehaviour.goodChMap,IntanBehaviour.badChMap] = readImp(finalElectrodeMap,8e6);
 figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size(Z,1)));ylabel('Impedance (in \Omega)');set(gca,'xticklabel',{[]})
 % Intan.badChMap =[21,22];[1,2];[6,31];[5,10,21]; ;2;7];
 %Intan = removeBadCh(Intan,Intan.badCh);
-IntanBehaviour.badChMap =[21,22];
-IntanBehaviour.badChMap =[31,32];
-IntanBehaviour.badChMap =[24,25,26];
-IntanBehaviour.badChMap =[29];
-IntanBehaviour.badChMap =[];
+% IntanBehaviour.badChMap =[21,22];
+% IntanBehaviour.badChMap =[31,32];
+% IntanBehaviour.badChMap =[24,25,26];
+% IntanBehaviour.badChMap =[29];
+% IntanBehaviour.badChMap =[];
 %% LFP
 set(0,'DefaultFigureWindowStyle','normal')
 LFP = fastpreprocess_filtering(Intan.allIntan,5000);
@@ -91,21 +92,21 @@ IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan
 IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters);
 % Saving paramters, path, IntanBehaviour to bin file 
 savepath = uigetdir(path);
-sessionName = [savepath,'/','M130ChGridsM2CoolingDay3.mat'];
+sessionName = [savepath,'/','M130ChGridsCoolingWavesDay3.mat'];
 % save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
 save(sessionName,"IntanBehaviour","fpath","parameters","Waves","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
 
 %% Combining  multiple Intanbehaviour structs from multiple sessions
-combIntanBehaviour = horzcat(IntanBehaviourBaseline, IntanBehaviourCool);
-IntanBehaviour.cueHitTrace = horzcat(combIntanBehaviour(1:end).cueHitTrace);
-IntanBehaviour.cueMissTrace = horzcat(combIntanBehaviour(1:end).cueMissTrace);
-IntanBehaviour.hitTrace = horzcat(combIntanBehaviour(1:end).hitTrace);
-IntanBehaviour.missTrace = horzcat(combIntanBehaviour(1:end).missTrace);
-IntanBehaviour.MIHitTrace = horzcat(combIntanBehaviour(1:end).MIHitTrace);
-IntanBehaviour.MIFATrace = horzcat(combIntanBehaviour(1:end).MIFATrace);
-IntanBehaviour.reactionTime = horzcat(combIntanBehaviour(1:end).reactionTime);
-
-clear combIntanBehaviour %IntanBehaviour1 IntanBehaviour2;
+% combIntanBehaviour = horzcat(IntanBehaviourBaseline, IntanBehaviourCool);
+% IntanBehaviour.cueHitTrace = horzcat(combIntanBehaviour(1:end).cueHitTrace);
+% IntanBehaviour.cueMissTrace = horzcat(combIntanBehaviour(1:end).cueMissTrace);
+% IntanBehaviour.hitTrace = horzcat(combIntanBehaviour(1:end).hitTrace);
+% IntanBehaviour.missTrace = horzcat(combIntanBehaviour(1:end).missTrace);
+% IntanBehaviour.MIHitTrace = horzcat(combIntanBehaviour(1:end).MIHitTrace);
+% IntanBehaviour.MIFATrace = horzcat(combIntanBehaviour(1:end).MIFATrace);
+% IntanBehaviour.reactionTime = horzcat(combIntanBehaviour(1:end).reactionTime);
+% 
+% clear combIntanBehaviour %IntanBehaviour1 IntanBehaviour2;
 %% Power Spectrum during task across channels 
 PSDAnalyis;
 
@@ -201,8 +202,8 @@ plotOption = 1;
 [WaveStats(1)] = getWaveStats(gammaWaves.wavesHit,gammaWaves.wavesMiss,parameters,plotOption);
 
 %% Mutual Information
-z_score = 0;
-nIterrate = 100;
+z_score = 1;
+nIterrate = 10;
 MI = getMI(IntanBehaviour,z_score,nIterrate,1,parameters);
 
 % For amplitude

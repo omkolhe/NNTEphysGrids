@@ -62,7 +62,7 @@ if z_score == 1
     nTot = nHit + nMiss;
     
     nullDistCue = zeros(parameters.rows,parameters.cols,size(MI.PhaseCue,3),nPerm);
-    for j=1:nPerm
+    parfor j=1:nPerm
         randIndex = randperm(nTot);
         xgpHitRand = xgpComb(randIndex(1:nHit));
         xgpMissRand = xgpComb(randIndex(nHit+1:end));
@@ -90,7 +90,7 @@ if z_score == 1
     nTot = nHit + nMiss;
     
     nullDistReward = zeros(parameters.rows,parameters.cols,size(MI.PhaseReward,3),nPerm);
-    for j=1:nPerm
+    parfor j=1:nPerm
         randIndex = randperm(nTot);
         xgpHitRand = xgpComb(randIndex(1:nHit));
         xgpMissRand = xgpComb(randIndex(nHit+1:end));

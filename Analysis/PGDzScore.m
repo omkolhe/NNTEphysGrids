@@ -1,6 +1,6 @@
 PGDHits = vertcat(Waves.wavesHit.PGD);
 PGDMiss = vertcat(Waves.wavesMiss.PGD);
-% PGDAll = vertcat(PGDHits,PGDMiss);
+PGDAll = vertcat(PGDHits,PGDMiss);
 
 figure(); hold on;
 shadedErrorBar(IntanBehaviour.cueHitTrace(1).time,PGDHits,{@mean,@(x) std(x)/sqrt(size(x,1))});
@@ -38,6 +38,7 @@ nHits = size(PGDHits,1);
 nMiss = size(PGDMiss,1);
 
 for i=1:n
+    i
     r = randperm(nHits+nMiss);
     PGDHitsShuffled(i,:) = mean(PGDAll(r(1:nHits),:),1);
     PGDMissShuffled(i,:) = mean(PGDAll(r(nHits+1:nHits+nMiss),:),1);

@@ -111,7 +111,7 @@ if z_score == 1
     nTot = nHit + nMiss;
     nullDistHit = zeros(parameters.rows,parameters.cols,size(PPL.PPLHit,3),nIterrate);
     nullDistMiss = zeros(parameters.rows,parameters.cols,size(PPL.PPLMiss,3),nIterrate);
-    for j=1:nIterrate
+    parfor j=1:nIterrate
         randIndex = randperm(nTot);
         xgpHitRand = xgpComb(randIndex(1:nHit));
         xgpMissRand = xgpComb(randIndex(nHit+1:end));
