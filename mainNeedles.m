@@ -18,7 +18,7 @@ rmpath(genpath('Dependancies/MVGC1'));
 load GridsLowDenNeedle_chanmap.mat;  % load the channel map for the IntanConcatenate function
 parameters.rows = 8;  % Number of rows of electrodes on the Grid
 parameters.cols = 4;  % Number of colums of electrodes on the Grid
-parameters.Fs = 1000;
+parameters.Fs = 20000;
 parameters.ts = 1/parameters.Fs;
 parameters.rewardTrials = 0; % 1 if reward is given , 0 if not
 parameters.rewardDistance = 60; % Distance travelled after which reward is given
@@ -45,28 +45,44 @@ LFP = createDataCube(LFP,parameters.rows,parameters.cols,Intan.badChMap); % Crea
 
 %% Spikes 
 Intan.allIntan(Intan.badChMap,:) = [];
-Spikes = preprocessSpike(double(Intan.allIntan(:,:)),5000);
+Spikes = preprocessSpike(double(Intan.allIntan([20,21,25],:)),20000);
 Spikes.Spikes = [];
-Spikes = findSpikes(Spikes,-5,5000);
+Spikes = findSpikes(Spikes,-10,20000);
 
 [X,Q] = featureProject(Spikes.Spikes(1).spikeWaveform',1,1,1);
 
-figure,plot(Spikes.Spikes(1).spikeWaveform')
+figure,plot(Spikes.Spikes(1).spikeWaveform(1:100,:)',"LineWidth",0.5,'Color',[0 0 0 0.2]);
+hold on;
+plot(mean(Spikes.Spikes(1).spikeWaveform(1:100,:)',2),"LineWidth",3,'Color',[0 0 1 1]);
 
 
 
-figure,stack_plot(Spikes.rawspikeTrace(:,1:50000),1,2,5000);
-figure,stack_plot(Spikes.whitenedSpikeTrace(:,1:50000),1,2,5000);
+figure,stack_plot(Spikes.rawspikeTrace(1,20000*15:20000*20),1,2,20000);xlim([0 60]);
+figure,stack_plot(Spikes.whitenedSpikeTrace(1,20000*1:20000*20),1,2,20000);xlim([0 60]);
 
 
 title('Common Mode Referenced - Ch 17')
-figure,plot(Intan.t,Spikes.whitenedSpikeTrace(17,:),"LineWidth",1.2,'Color',[0 0 0]);
+figure,plot(Intan.t(1:5:20000*20),downsample(Spikes.whitenedSpikeTrace(1,1:20000*20),5),"LineWidth",1.1,'Color',[0 0 0]);
 xlabel('Time (s)');ylabel('Voltage (uV)');
 
-figure,plot(Spikes.whitenedSpikeTrace(13,:))
+title('Common Mode Referenced - Ch 17')
+figure,plot(Intan.t(1:20000*1),Spikes.rawspikeTrace(1,1:20000*1),"LineWidth",1.2,'Color',[0 0 0]);
+xlabel('Time (s)');ylabel('Voltage (uV)');
+
+title('Common Mode Referenced - Ch 17')
+figure,plot(Intan.t(1:20000*1),Intan.allIntan(19,1:20000*1),"LineWidth",0.5,'Color',[0 0 0]);
+xlabel('Time (s)');ylabel('Voltage (uV)');
+
+
+figure,plot(Spikes.whitenedSpikeTrace(1,:))
 xline(Spikes.Spikes(13).spikeTime);
 yline(Spikes.threshold(13));
-
+%% Example spikd on chn 19
+win = 1:600000;
+time = win(1)/Fs:1/Fs:win(end)/Fs;
+figure,subplot(211),plot(time,Intan.allIntan(20,win))
+subplot(212),plot(time,Spikes.whitenedSpikeTrace(20,win))  
+linkaxes
 %% Loading Encoder Data
 [Encoder] = readPos(parameters);
 figure('Name','Velocity');plot(Encoder.time,Encoder.vel,'LineWidth',1.5);ylim([-20 20]);xlabel('Time (in s)');ylabel('Velocity in cm/s');yline([2 -2]);

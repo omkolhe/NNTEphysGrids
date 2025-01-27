@@ -14,8 +14,8 @@ if length(size(data))>1
     labels = [];buff = [];
     for i = 1:size(data,2)
         t = data(:,i);
-        buff = [buff;t(t>0)];
-        labels = [labels;repmat({num2str(i)},length(t(t>0)),1)];
+        buff = [buff;t(t~=0)];
+        labels = [labels;repmat({num2str(i)},length(t(t~=0)),1)];
     end
     boxplot(buff,labels), hold on; box off;
     h=findobj('LineStyle','--'); set(h, 'LineStyle','-');
@@ -23,7 +23,7 @@ if length(size(data))>1
     if scatterOn
         for i = 1:size(data,2)
             t = data(:,i);
-            buff = [buff;t(t>0)];
+            buff = [buff;t(t~=0)];
             labels = repmat({num2str(i)},length(buff),1);
             if i==1
 %                 rgbtrip = [0.7 0.7 0.7];
@@ -34,7 +34,7 @@ if length(size(data))>1
             else
                 rgbtrip = [0.8500 0.3250 0.0980];
             end
-            scatter(i*ones(length(t(t>0)),1),t(t>0),'filled','jitter','on','jitterAmount',0.1,'MarkerFaceColor',rgbtrip);
+            scatter(i*ones(length(t(t~=0)),1),t(t~=0),'filled','jitter','on','jitterAmount',0.1,'MarkerFaceColor',rgbtrip);
         end
     end
 else

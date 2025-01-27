@@ -14,6 +14,7 @@ addpath(genpath('Analysis'));
 addpath(genpath('Channel Maps'));
 addpath(genpath('Dependancies'));
 addpath(genpath('Pipelines'));
+addpath(genpath('BatchProcessing'));
 rmpath(genpath('Dependancies/MVGC1'));
 %%  PreProcessing
 load Grids30Ch_chanmap.mat;  % load the channel map for the IntanConcatenate function
@@ -31,11 +32,12 @@ parameters.windowAfterCue = 1.5; % in seconds
 parameters.windowBeforeMI = 1.5; % in seconds 
 parameters.windowAfterMI = 1.5; % in seconds 
 parameters.experiment = 'cue'; % self - internally generated, cue - cue initiated 
-parameters.cool = 1; % 1 - cooling , 0 - no cooling 
-parameters.opto = 0; % 1 - opto ON , 0 - opto OFF
+parameters.cool = 0; % 1 - cooling , 0 - no cooling 
+parameters.opto = 1; % 1 - opto ON , 0 - opto OFF
 parameters.xspacing = 0.12; % Grid spacing in mm between columns 
 parameters.yspacing = 0.12; % Grid spacing in mm between rows
 parameters.shank = 0; % 1 - if UCLA 64Ch single shank data is present
+parameters.eOPN = 1; % 1 - if the opto trials were eOPN, 0 - otherwise
 
 if parameters.shank == 1
     load UCLASingle64Ch_chanmap.mat; % load the channel map for the the shank data
@@ -47,6 +49,23 @@ else
     finalElectrodeMap = electrode_map;
 end
 
+%% Getting path for arduino behaviour file
+[enfile,enpath] = uigetfile('*.csv','Select csv file for Arduino behaviour file');
+if isequal(enfile,0)
+   disp('User selected Cancel');
+else
+   disp(['User selected ', fullfile(enpath,enfile)]);
+end
+
+%% Getting path for impedance file
+[impfile,imppath] = uigetfile('*.csv','Select csv file for Grid impedance');
+if isequal(impfile,0)
+   disp('User selected Cancel');
+else
+   disp(['User selected ', fullfile(imppath,impfile)]);
+end
+
+%% Reading intan files 
 IntanConcatenate
 fpath = Intan.path; % where on disk do you want the analysis? ideally and SSD...
 
@@ -57,7 +76,7 @@ Intan.t = 0:Ts:Intan.Tmax-Ts;
 
 %% Removing bad channels from impedance values
 % [Z,IntanBehaviour.goodChMap,IntanBehaviour.badChMap] = readImp(electrode_map,5e6);
-[Z,IntanBehaviour.goodChMap,IntanBehaviour.badChMap] = readImp(finalElectrodeMap,8e6);
+[Z,IntanBehaviour.goodChMap,IntanBehaviour.badChMap] = readImp(imppath,impfile,finalElectrodeMap,5e6);
 figure('Name','Impedance Test at 1kHz');boxchart(Z); xlabel('n = ' + string(size(Z,1)));ylabel('Impedance (in \Omega)');set(gca,'xticklabel',{[]})
 % Intan.badChMap =[21,22];[1,2];[6,31];[5,10,21]; ;2;7];
 %Intan = removeBadCh(Intan,Intan.badCh);
@@ -80,8 +99,8 @@ end
 LFP = createDataCube(LFP,parameters.rows,parameters.cols,IntanBehaviour.badChMap); % Creating datacube
 
 %% Loading Lever Data 
-plotOption = 1;
-[Behaviour] = readLever(parameters,LFP.times,plotOption);
+plotOption = 0;
+[Behaviour] = readLever(enpath,enfile,parameters,LFP.times,plotOption);
 
 %% Reading behaviour data from Intan traces 
 plotOption = 1;
@@ -90,28 +109,6 @@ IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan
 %% Generalized Phase 
 [parameters.X,parameters.Y] = meshgrid( 1:parameters.cols, 1:parameters.rows );
 IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters);
-% Saving paramters, path, IntanBehaviour to bin file 
-savepath = uigetdir(path);
-sessionName = [savepath,'/','M130ChGridsCoolingWavesDay3.mat'];
-% save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
-save(sessionName,"IntanBehaviour","fpath","parameters","Waves","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
-
-%% Combining  multiple Intanbehaviour structs from multiple sessions
-% combIntanBehaviour = horzcat(IntanBehaviourBaseline, IntanBehaviourCool);
-% IntanBehaviour.cueHitTrace = horzcat(combIntanBehaviour(1:end).cueHitTrace);
-% IntanBehaviour.cueMissTrace = horzcat(combIntanBehaviour(1:end).cueMissTrace);
-% IntanBehaviour.hitTrace = horzcat(combIntanBehaviour(1:end).hitTrace);
-% IntanBehaviour.missTrace = horzcat(combIntanBehaviour(1:end).missTrace);
-% IntanBehaviour.MIHitTrace = horzcat(combIntanBehaviour(1:end).MIHitTrace);
-% IntanBehaviour.MIFATrace = horzcat(combIntanBehaviour(1:end).MIFATrace);
-% IntanBehaviour.reactionTime = horzcat(combIntanBehaviour(1:end).reactionTime);
-% 
-% clear combIntanBehaviour %IntanBehaviour1 IntanBehaviour2;
-%% Power Spectrum during task across channels 
-PSDAnalyis;
-
-%% Wavelet spectrogram
-waveletSpectrogramAnalysis;
 
 %% Wave detection in trials
 nShuffle = 100;
@@ -162,8 +159,19 @@ end
 % Analysis code for wave detection on beta,theta,gamma band
 % multibandWaveAnalysis;
 
+%%
+%% Saving paramters, path, IntanBehaviour to bin file 
+savepath = uigetdir(path);
+sessionName = [savepath,'/','61592eOPNDay4Waves.mat'];
+% save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
+save(sessionName,"IntanBehaviour","fpath","parameters","Waves","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
+
+if parameters.opto == 1
+    save(sessionName,"IntanBehaviourBaseline","IntanBehaviourOpto","fpath","parameters","WavesBaseline","WavesOpto","-v7.3");
+end
+
 %% Wave detecion for entire time 
-parameters.rhoThres= rhoThres;
+parameters.rhoThres= 0.75;
 allwaves.LFPIndex = (1:1:size(LFP.LFP,2))';
 xf{1,1} = LFP.xf;
 xgp{1,1} = LFP.xgp;
@@ -201,8 +209,25 @@ plotOption = 1;
 [WaveStats(1)] = getWaveStats(betaWaves.wavesHit,betaWaves.wavesMiss,parameters,plotOption);
 [WaveStats(1)] = getWaveStats(gammaWaves.wavesHit,gammaWaves.wavesMiss,parameters,plotOption);
 
+%% Combining  multiple Intanbehaviour structs from multiple sessions
+% combIntanBehaviour = horzcat(IntanBehaviourBaseline, IntanBehaviourCool);
+% IntanBehaviour.cueHitTrace = horzcat(combIntanBehaviour(1:end).cueHitTrace);
+% IntanBehaviour.cueMissTrace = horzcat(combIntanBehaviour(1:end).cueMissTrace);
+% IntanBehaviour.hitTrace = horzcat(combIntanBehaviour(1:end).hitTrace);
+% IntanBehaviour.missTrace = horzcat(combIntanBehaviour(1:end).missTrace);
+% IntanBehaviour.MIHitTrace = horzcat(combIntanBehaviour(1:end).MIHitTrace);
+% IntanBehaviour.MIFATrace = horzcat(combIntanBehaviour(1:end).MIFATrace);
+% IntanBehaviour.reactionTime = horzcat(combIntanBehaviour(1:end).reactionTime);
+% 
+% clear combIntanBehaviour %IntanBehaviour1 IntanBehaviour2;
+%% Power Spectrum during task across channels 
+PSDAnalyis;
+
+%% Wavelet spectrogram
+waveletSpectrogramAnalysis;
+
 %% Mutual Information
-z_score = 1;
+z_score = 0;
 nIterrate = 10;
 MI = getMI(IntanBehaviour,z_score,nIterrate,1,parameters);
 
@@ -267,16 +292,16 @@ xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelV
 title('Trial Averaged Phase Gradient  Directionality (PGD)');box off;  legend('Hits','Shuffled');
 
 %% Cross-Trial Phase Alignment
-z_score = 0;
-nIterrate = 1000;
+z_score = 1;
+nIterrate = 100;
 PAGrid = getPA(IntanBehaviour,z_score,nIterrate,1,parameters,0);
 PAProbe = getPA(IntanBehaviour,z_score,nIterrate,1,parameters,1);
 
 % PA = PAGrid;
 % PA= PAProbe;
 %% Percent Phase Locking
-z_score = 0;
-nIterrate = 2;
+z_score = 1;
+nIterrate = 10;
 PPLGrid = getPPL(IntanBehaviour,z_score,nIterrate,1,parameters,0);
 PPLShank = getPPL(IntanBehaviour,z_score,nIterrate,1,parameters,1);
 

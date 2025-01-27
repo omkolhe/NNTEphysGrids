@@ -3,7 +3,7 @@ function [] = WaveStatsSingle(Waves,parameters,plot,nMax)
 avgSpeed = mean(Waves.speed,'all');
 if plot == 1
     figure('Name','Histogram of wave speeds');
-    histfit(Waves.speed,100,'kernel');
+    histfit(Waves.speed,20,'kernel');
     xline(avgSpeed,'-r',{'Mean speed = ' num2str(avgSpeed) ' cm/s'});
     xlabel('Wave speed in cm/s');ylabel('Frequency');title('Wave Speed');
 end
@@ -12,7 +12,7 @@ avgl = mean(Waves.wavelength,'all');
 if plot == 1
     figure('Name','Histogram of wavelengths')
     histfit(Waves.wavelength,100,'kernel');
-    xline(avgl,'-r',{'Mean wavelength = ' num2str(avgSpeed) ' cm'});
+    xline(avgl,'-r',{'Mean wavelength = ' num2str(avgl) ' cm'});
     xlabel('Wavelength in cm');ylabel('Frequency');title('Wavelength');
 end
 

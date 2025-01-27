@@ -86,16 +86,44 @@ WavesRecovery.wavesMiss = Waves.wavesMiss(coolingIndex+1:end);
 
 %% Plotting Behaviour 
 
-%Plotting hits vs cooling 
 hitTime = cell2mat(arrayfun(@(s) s.LFPtime(1501), IntanBehaviour.cueHitTrace, 'UniformOutput', false));
 RT = cell2mat(arrayfun(@(s) s.reactionTime, IntanBehaviour.cueHitTrace, 'UniformOutput', false));
+tempTrace = lowpass(IntanBehaviour.tempTrace,0.005,parameters.Fs,'ImpulseResponse','iir','Steepness',0.5)-25;
+timeTrace = IntanBehaviour.time/60;
+tempTrace = [tempTrace NaN];
+timeTrace = [timeTrace NaN];
 h = figure();
-plot(IntanBehaviour.time/60,lowpass(IntanBehaviour.tempTrace,0.1,parameters.Fs));
-ylabel('Temperature (in $^\circ$ C)','Interpreter','latex');
+hp=patch(timeTrace,tempTrace,tempTrace,'EdgeColor','interp');
+hp.LineWidth = 3; % if you want fatter lines
+colormap(flip(M.myMap) ); 
+colorbar;
+ylabel(' $\Delta$ Temperature (in $^\circ$ C)','Interpreter','latex');
 xlabel('Time (in min)')
 hold on; yyaxis right; box off;
-plot(hitTime/60,RT*1000,'r*');
+scatter(hitTime/60,RT*1000,20,[0.5 0.5 0.5 ],'filled');
+xlim([0.2 35])
 ylabel('Reaction Time (in ms)');
+
+
+%% Calculating the hitrate 
+hitRateResolution = 30;
+hitRate = zeros(2,floor(IntanBehaviour.time(end)/hitRateResolution)+1); %per minute 1st row is hit rate,2nd row is temp
+hitRate(1,end) = NaN;
+hitRate(2,end) = NaN;
+hitRateTime = (1:1:floor(IntanBehaviour.time(end)/hitRateResolution)+1);
+hitRateTime(end) = NaN;
+M = load( 'myMap.mat' );
+colormap( M.myMap ); 
+for i=1:size(hitRate,2)-1
+    hitRate(2,i) = mean(IntanBehaviour.tempTrace((i-1)*hitRateResolution*parameters.Fs+1:i*hitRateResolution*parameters.Fs));
+    hitRate(1,i) = size(find(hitTime>(i-1)*hitRateResolution+1 & hitTime<i*hitRateResolution),2);
+end
+
+figure,
+hp = patch(hitRateTime,hitRate(1,:),hitRate(2,:),'EdgeColor','interp');
+hp.LineWidth = 2; % if you want fatter lines
+colormap(flip(M.myMap) ); 
+colorbar;
 saveas(h,[savepath '\Figures\RTvsCooling.png']);
 saveas(h,[savepath '\Figures\RTvsCooling.fig']);
 %% Plotting reaction time 
@@ -127,6 +155,13 @@ ylabel('Reaction Time (s)');
 saveas(h,[savepath '\Figures\RTStatsCooling.png']);
 saveas(h,[savepath '\Figures\RTStatsCooling.fig']);
 %% Plotting wave speed 
+
+WaveSpeed.Baseline = cell2mat(arrayfun(@(s) s.speed, WavesBaseline.wavesHit, 'UniformOutput', false));
+WaveSpeed.Cooling = cell2mat(arrayfun(@(s) s.speed, WavesCooling.wavesHit, 'UniformOutput', false));
+WaveSpeed.Recovery = cell2mat(arrayfun(@(s) s.speed, WavesRecovery.wavesHit, 'UniformOutput', false));
+sessionName = [savepath,'/','WaveSpeed.mat'];
+save(sessionName,"WaveSpeed","fpath","parameters","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
+
 baselineSpeed = [];
 cooledSpeed = [];
 recoverySpeed = [];
@@ -323,3 +358,58 @@ disp(['Peak PA angle p-val = ' num2str(p)]);
 
 saveas(h,[savepath '\Figures\PAHitsvsCooling.png']);
 saveas(h,[savepath '\Figures\PAHitsvsCooling.fig']);
+
+%% Plotting behaviour 
+M = load( 'myMap.mat' );
+hitTime = cell2mat(arrayfun(@(s) s.LFPtime(1501), IntanBehaviour.cueHitTrace, 'UniformOutput', false));
+RT = cell2mat(arrayfun(@(s) s.reactionTime, IntanBehaviour.cueHitTrace, 'UniformOutput', false));
+tempTrace = downsample(lowpass(IntanBehaviour.tempTrace,0.005,parameters.Fs,'ImpulseResponse','iir','Steepness',0.5),2000)-25;
+timeTrace = downsample(IntanBehaviour.time,2000)/60;
+tempTrace = [tempTrace NaN];
+timeTrace = [timeTrace NaN];
+h = figure();
+hp=patch(timeTrace,tempTrace,tempTrace,'EdgeColor','interp');
+hp.LineWidth = 3; % if you want fatter lines
+colormap(flip(M.myMap) ); 
+ylabel(' $\Delta$ Temperature (in $^\circ$ C)','Interpreter','latex');
+xlabel('Time (in min)')
+hold on; yyaxis right; box off;xlim([0.5 35])
+scatter(hitTime/60,RT*1000,20,[0.5 0.5 0.5 ],'filled');
+ylabel('Reaction Time (in ms)');
+
+%% Change in wave structure or PGD 
+
+PreCueBaselinePGD = mean(PGD.PGDHitsBaseline(:,1000:1500),2);
+PreCueBaseline = mean(PreCueBaselinePGD);
+PerPreCueBaselinePGD = 100*(mean(PGD.PGDHitsBaseline(:,1000:1500),2)-PreCueBaseline)/PreCueBaseline;
+PerPostCueBaselinePGD = 100*((mean(PGD.PGDHitsBaseline(:,1500:2000),2) - PreCueBaselinePGD)./PreCueBaselinePGD);
+% figure,plotBox2(PerPreCueBaselinePGD,PerPostCueBaselinePGD);
+
+PreCueCoolingPGD = mean(PGD.PGDHitsCooling(:,1000:1500),2);
+PreCueBaseline = mean(PreCueCoolingPGD);
+PerPreCueCoolingPGD = 100*(mean(PGD.PGDHitsCooling(:,1000:1500),2)-PreCueBaseline)/PreCueBaseline;
+PerPostCueCoolingPGD = 100*((mean(PGD.PGDHitsCooling(:,1500:2000),2) - PreCueCoolingPGD)./PreCueCoolingPGD);
+% figure,plotBox2(PerPreCueCoolingPGD,PerPostCueCoolingPGD);
+
+% Comparing changes 
+ranksum(PerPreCueBaselinePGD,PerPostCueBaselinePGD)
+ranksum(PerPreCueCoolingPGD,PerPostCueCoolingPGD)
+
+% Comparing both pres and posts
+ranksum(PerPreCueBaselinePGD,PerPreCueCoolingPGD)
+ranksum(PerPostCueBaselinePGD,PerPostCueCoolingPGD)
+
+figure();subplot(1,2,1);
+title('Baseline');
+connectedBoxPlot(PerPreCueBaselinePGD,PerPostCueBaselinePGD);
+ylim([-35 70]);
+xtix = {'Baseline','Cooled'}; xtixloc = [1 2]; set(gca,'XTickMode','auto','XTickLabel',xtix,'XTick',xtixloc);set(gca,'TickDir','out','fontsize',14');box off;
+ylabel('PGD Change (%)');
+subplot(1,2,2);
+title('Cooling');
+connectedBoxPlot(PerPreCueCoolingPGD,PerPostCueCoolingPGD);
+ylim([-35 70]);box off;
+xtix = {'Baseline','Cooled'}; xtixloc = [1 2]; set(gca,'XTickMode','auto','XTickLabel',xtix,'XTick',xtixloc);set(gca,'TickDir','out','fontsize',14');box off;
+ylabel('PGD Change (%)');
+saveas(h,[savepath '\Figures\PGDChangeCooling.png']);
+saveas(h,[savepath '\Figures\PGDChangeCooling.fig']);

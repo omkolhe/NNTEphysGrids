@@ -7,7 +7,7 @@ function [Spikes] = findSpikes(Spikes,thres,Fs)
 % recorded segment and stored
 % Ref - K A Ludwig et al, 2006, Journal of Neural Engineering
 
-timeWindowSpike = 3; % in ms before and after the peak
+timeWindowSpike = 1.2; % in ms before and after the peak
 windowSpike = timeWindowSpike*Fs*1e-3;
 
 Spikes.threshold = zeros(size(Spikes.whitenedSpikeTrace,1),1);
@@ -19,7 +19,7 @@ for i=1:size(Spikes.whitenedSpikeTrace,1)
     % Getting time when the spike exceeds the threshold for the channel
 %     a = findpeaks(abs(Spikes.whitenedSpikeTrace(i,:)-mean(Spikes.whitenedSpikeTrace(i,:),2)),Spikes.threshold(i));    
 %     Spikes.Spikes(i).spikeTime = a.loc';
-    Spikes.Spikes(i).spikeTime = find(diff(Spikes.threshold(i) >= squeeze(Spikes.whitenedSpikeTrace(i,:)))==-1);
+    Spikes.Spikes(i).spikeTime = find(diff(Spikes.threshold(i) <= squeeze(Spikes.whitenedSpikeTrace(i,:)))==-1);
     for j=1:size(Spikes.Spikes(i).spikeTime,2)
         st = Spikes.Spikes(i).spikeTime(j) - windowSpike;
         sp = Spikes.Spikes(i).spikeTime(j) + windowSpike;

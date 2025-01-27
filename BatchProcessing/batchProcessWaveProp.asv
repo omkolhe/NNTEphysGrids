@@ -1,0 +1,69 @@
+%% Creating WavesCombined variable
+wavesHit = [];
+wavesMiss = [];
+wavesFA = [];
+wavesHitReward = [];
+wavesMIHit = [];
+wavesMIFA = [];
+
+% Properties - wavePresent, PGD, rho, source, speed, waveDir, wavelength, waveFreq
+waveProperties = {'wavePresent', 'evaluationPoints','PGD', 'rho','source','speed','waveDir','wavelength'};
+
+savepath = uigetdir(path);
+sessionName = [savepath,'/','WavePropCombined.mat'];
+
+%% Getting file
+for fileID = 1:size(M1WavesFiles,1)
+    filename = string(M1WavesFiles{fileID,1});
+    filepath = string(M1WavesFiles{fileID,2});
+    include = M1WavesFiles{fileID,4};
+    if include == 1
+        [wavesHit,wavesMiss,wavesFA,wavesHitReward,wavesMIHit,wavesMIFA] = getWavePropertyBatch(filename,filepath,fileID,waveProperties,wavesHit,wavesMiss,wavesFA,wavesHitReward,wavesMIHit,wavesMIFA );
+    end
+end
+
+%% Saving all variables
+save(sessionName,"wavesHit","wavesMiss","wavesFA","wavesHitReward","wavesMIHit","wavesMIFA","-v7.3"); 
+
+%% Plotting wave raster 
+Fs = 1000;
+trialTime = -1.5:1/Fs:1.5;
+
+W = vertcat(wavesHit.wavePresent);
+figure;
+subplot(2,1,1);
+rasterPlot(W);
+subplot(2,1,2);
+waveDensity = sum(W,1)/size(wavesHit,2);
+bar(waveDensity);hold on;
+[cur, ~] = fit((1:3001)',waveDensity','cubicinterp');
+b = feval(cur,1:3001);
+plot(smooth(b,100,'sgolay',4));
+yline(mean(waveDensity)+1.96*std(waveDensity));
+ylim([0 0.4]);xlim([0 size(W,2)]);
+ylabel('Wave probability');xlabel('Time (in ms)');set(gca,'TickDir','out','fontsize',14'); box off;
+
+%% Plotting PGD 
+PGDHits = vertcat(wavesHit.PGD);
+PGDMiss = vertcat(wavesMiss.PGD);
+figure(); hold on;
+shadedErrorBar( trialTime,PGDHits,{@mean,@(x) std(x)/sqrt(size(x,1))});
+shadedErrorBar( trialTime,PGDMiss,{@mean,@(x) std(x)/sqrt(size(x,1))});
+
+figure,hold on;
+plot( trialTime,smooth(mean(PGDHits,1),100,'sgolay',4),'Color', [0.8500 0.3250 0.0980],'LineWidth',1.5);
+plot( trialTime,smooth(mean(PGDHits,1)-(std(PGDHits,0,1)/sqrt(size(PGDHits,1))),100,'sgolay',4),'Color', [0.8500 0.3250 0.0980 0.4],'LineWidth',0.5);
+plot( trialTime,smooth(mean(PGDHits,1)+(std(PGDHits,0,1)/sqrt(size(PGDHits,1))),100,'sgolay',4),'Color', [0.8500 0.3250 0.0980 0.4],'LineWidth',0.5);
+
+plot( trialTime,smooth(mean(PGDMiss,1),100,'sgolay',4),'Color', [0.7 0.7 0.7],'LineWidth',1.5);
+plot( trialTime,smooth(mean(PGDMiss,1)-(std(PGDMiss,0,1)/sqrt(size(PGDMiss,1))),100,'sgolay',4),'Color', [0.7 0.7 0.7 0.4],'LineWidth',0.5);
+plot( trialTime,smooth(mean(PGDMiss,1)+(std(PGDMiss,0,1)/sqrt(size(PGDMiss,1))),100,'sgolay',4),'Color', [0.7 0.7 0.7 0.4],'LineWidth',0.5);
+ylabel("PGD"); xlabel("Time (s)");
+xline(0,'--r','Cue','LabelVerticalAlignment','top');
+xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
+title('Trial Averaged Phase Gradient  Directionality (PGD)');box off;  legend('Hits','Misses');%,'False Alarms');
+xlim([-0.5 1.5]);set(gca,'TickDir','out','fontsize',14');
+
+
+
+

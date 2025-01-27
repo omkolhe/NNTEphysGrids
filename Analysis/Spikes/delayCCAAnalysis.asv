@@ -1,0 +1,48 @@
+%% Setting parameters for CCA Analysis 
+
+% The units of the arguments are with respect to the binning window used to bin spikes.
+argIn.BinWidth = 1;
+argIn.MaxDelay = 0;  
+argIn.TimeStep = 40;    
+argIn.WindowLength = 80;
+
+argIn.NumWorkers = Inf; % Requires Parallel Processing Toolbox
+
+%% Calculating CCA 
+maxLag = 50; % in ms
+lagStep = 5; % in ms
+
+% Cue Hit
+disp(argIn)
+disp('Calculating CCA for cue Hit')
+i = 1;
+for M2M1Lag = -maxLag:lagStep:maxLag
+    spikes = getCCASpikes(M1Spikes,M2Spikes,IntanBehaviour.cueHitTrace,M2M1Lag);
+    expCond = ones(size(spikes{1,1},3),1);
+    A = ComputeCorrMap(spikes, expCond, argIn);
+    CCADelay.cueHit(i,:,:) = squeeze(A.CorrMap);
+    i=i+1;
+end
+
+% Cue Miss
+disp(argIn)
+disp('Calculating CCA for cue Miss')
+i = 1;
+for M2M1Lag = -maxLag:lagStep:maxLag
+    spikes = getCCASpikes(M1Spikes,M2Spikes,IntanBehaviour.cueMissTrace,M2M1Lag);
+    expCond = ones(size(spikes{1,1},3),1);
+    A = ComputeCorrMap(spikes, expCond, argIn);
+    CCADelay.cueHit(i,:,:) = squeeze(A.CorrMap);
+    i=i+1;
+end
+
+%% Plotting
+CANONICAL_PAIR_IDX = 1;
+mapDim = size(CCADelay.cueHit, 2);
+delays = -maxLag:lagStep:maxLag; % Convert to ms
+t = (1:argIn.TimeStep:argIn.TimeStep*mapDim); % Convert to ms
+
+figure;
+imagesc(t,delays,CCADelay.cueHit(:,:,CANONICAL_PAIR_IDX));
+ax = gca; ax.YDir = 'Normal';
+ylabel('Delay');xlabel('Time')

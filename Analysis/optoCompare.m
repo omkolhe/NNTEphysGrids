@@ -1,10 +1,10 @@
 %% Comaparing Behaviour 
 [p,h] = ranksum(IntanBehaviourBaseline.reactionTime,IntanBehaviourOpto.reactionTime)
 figure,plotBox2(IntanBehaviourBaseline.reactionTime,IntanBehaviourOpto.reactionTime);
-% xL=xlim;
-% yL=ylim;
-% text(0.995*xL(2),0.995*yL(2),['p-val = ' num2str(p)],'HorizontalAlignment','right','VerticalAlignment','top')
-ylabel('Reaction Time (s)'); title('M2 -> M1 Opto');subtitle(['p-val = ' num2str(p)]);
+xL=xlim;
+yL=ylim;
+text(0.995*xL(2),0.995*yL(2),['p-val = ' num2str(p)],'HorizontalAlignment','right','VerticalAlignment','top')
+ylabel('Reaction Time (s)'); title('M2 -> Th Opto');subtitle(['p-val = ' num2str(p)]);
 xtix = {'Baseline','Opto'}; xtixloc = [1 2]; set(gca,'XTickMode','auto','XTickLabel',xtix,'XTick',xtixloc);set(gca,'TickDir','out','fontsize',14');
 set(gca,'TickDir','out','fontsize',14');
 

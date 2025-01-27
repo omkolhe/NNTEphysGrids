@@ -12,9 +12,9 @@ n1 = size(data1,1);
 n2 = size(data2,1);
 % Appending zeros
 if n1>n2
-    data2 = [data2;zeros(n1-n2,1)];
+    data2 = [data2;NaN(n1-n2,1)];
 else
-    data1 = [data1;zeros(n2-n1,1)];
+    data1 = [data1;NaN(n2-n1,1)];
 end 
 
 customBoxplot([data1 data2],'Scatter','on');

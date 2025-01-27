@@ -23,13 +23,13 @@ vx = Waves(trial).vx;
 vy = Waves(trial).vy;
 
 % parameters
-plot_pre_time = 0; pause_length = 0.01; 
+plot_pre_time = 5; pause_length = 0.01; 
 
 % init
 M = load( 'myMap.mat' );
 
 if saveOption == 1
-    fn = 'WaveAnimation64';
+    fn = 'WaveAnimation30chronic2';
     writerobj = VideoWriter([fn '.avi'],"Uncompressed AVI"); % Initialize movie file
     writerobj.FrameRate = 30;
     open(writerobj);
@@ -64,7 +64,7 @@ for jj =waveID %1:length(evaluation_points)
 
     % create plot
     figure; 
-%     title( sprintf( 'trial %d, wave example %d, 0 of %d ms', trial, ctr, size(x_plot,3) ) );
+    title( sprintf( 'trial %d, wave example %d, 0 of %d ms', trial, ctr, size(x_plot,3) ) );
 %     title( sprintf( 'Detected Wave, 0 of %d ms', size(x_plot,3) ) );
     color_range = [ min(reshape(x_plot,[],1)) max(reshape(x_plot,[],1)) ];
 %     color_range = [ -80 80 ];
@@ -84,7 +84,7 @@ for jj =waveID %1:length(evaluation_points)
     cb = colorbar();
     %set( cb, 'location', 'southoutside' )
     set( cb, 'location', 'east' )
-    set( cb, 'position', [0.7    0.325   0.06   0.4] );
+    set( cb, 'position', [0.9    0.325   0.06   0.4] );
     set( get(cb,'ylabel'), 'string', 'Amplitude (in \mu V)' ); set( cb, 'linewidth', 2 )
     set( get(cb,'ylabel'), 'string', 'Phase (in deg)' ); set( cb, 'linewidth', 2 )
     if (saveOption == 1 && jj == waveID)
@@ -110,3 +110,105 @@ for jj =waveID %1:length(evaluation_points)
         disp('Video saved to current directory')
     end
 end
+
+
+% Waves = Wavesall;
+% waveID = 9;
+% trial = 1;
+% saveOption = 0;
+% pad = 0;
+% % x = rad2deg(angle(Waves(trial).p));
+% x = rad2deg(angle(xgp{1,1}(:,:,Wavesall.waveTime(waveID,1)-pad:Wavesall.waveTime(waveID,2)+pad)));
+% % x = abs(behaviourTrace(trial).xf);
+% evaluation_points = Waves(trial).evaluationPoints;
+% source = Waves(trial).source;
+% vx = Waves(trial).vx(Wavesall.waveTime(waveID,1)-pad:Wavesall.waveTime(waveID,2)+pad);
+% vy = Waves(trial).vy(Wavesall.waveTime(waveID,1)-pad:Wavesall.waveTime(waveID,2)+pad);
+% 
+% % parameters
+% plot_pre_time = 0; pause_length = 0.08; 
+% 
+% % init
+% M = load( 'myMap.mat' );
+% 
+% if saveOption == 1
+%     fn = 'WaveAnimation32Chronic';
+%     writerobj = VideoWriter([fn '.avi'],"Uncompressed AVI"); % Initialize movie file
+%     writerobj.FrameRate = 30;
+%     open(writerobj);
+% end
+% 
+% jj =waveID;
+% 
+% st = 1;
+% sp = size(vx,2);
+% 
+% x_plot = x(:,:,st:sp);
+% vx_plot = vx(1,st:sp);
+% vy_plot = vy(1,st:sp);
+% 
+% ts_interp = 0.25;
+% t1 = st:1:sp;
+% t2 = st:ts_interp:sp;
+% xplotnew = [];
+% vxplotnew = [];
+% vyplotnew = [];
+% for iii = 1:size(x_plot,1)
+%     for jjj = 1:size(x_plot,2)
+%         xplotnew(iii,jjj,:) = interp1(t1,squeeze(x_plot(iii,jjj,:)),t2);
+%     end 
+% end
+% vxplotnew = interp1(t1,vx_plot,t2);
+% vyplotnew = interp1(t1,vy_plot,t2);
+% x_plot = xplotnew;
+% vx_plot = vxplotnew;
+% vy_plot = vyplotnew;
+% 
+% % create plot
+% figure; 
+% %     title( sprintf( 'trial %d, wave example %d, 0 of %d ms', trial, ctr, size(x_plot,3) ) );
+% %     title( sprintf( 'Detected Wave, 0 of %d ms', size(x_plot,3) ) );
+% color_range = [ min(reshape(x_plot,[],1)) max(reshape(x_plot,[],1)) ];
+% %     color_range = [ -80 80 ];
+% h = imagesc( inpaint_nans(x_plot(:,:,1),3 )); hold on; axis image;
+% plot( source(jj,1), source(jj,2), '.', 'markersize', 35, 'color', [.7 .7 .7] );
+% h2 = quiver(source(jj,1), source(jj,2),-vx_plot(1),-vy_plot(1));
+% h2.Color = 'Blue';
+% h2.LineWidth = 1.5;
+% h2.ShowArrowHead = 'on';
+% h2.MaxHeadSize = 2;
+% set( gca, 'linewidth', 3, 'xtick', [], 'ytick', [], 'fontname', 'arial', 'fontsize', 16, 'ydir', 'reverse' );
+% %     colormap(jet);
+% colormap( M.myMap ); 
+% box on; xlabel( 'electrodes' ); ylabel( 'electrodes' ); caxis( color_range )
+% 
+% % create colorbar
+% % cb = colorbar();
+% % %set( cb, 'location', 'southoutside' )
+% % set( cb, 'location', 'east' )
+% % set( cb, 'position', [0.85    0.325   0.06   0.4] );
+% % set( get(cb,'ylabel'), 'string', 'Amplitude (in \mu V)' ); set( cb, 'linewidth', 2 )
+% % set( get(cb,'ylabel'), 'string', 'Phase (in deg)' ); set( cb, 'linewidth', 2 )
+% if (saveOption == 1 && jj == waveID)
+%     writeVideo(writerobj,getframe(gcf)); %grabs current fig frame
+% end
+% 
+% % animate plot
+% for kk = 1:size(x_plot,3)
+%     set( h, 'cdata', inpaint_nans(x_plot(:,:,kk),3 ) );
+%     set(h2, 'udata',-vx_plot(1,kk),'vdata',-vy_plot(1,kk));
+% %     set( get(gca,'title'), 'string', ...
+% %         sprintf( 'Detected Wave, %f of %f ms', round(kk*ts_interp,1), round(size(x_plot,3)*ts_interp,1) ) )
+%     pause(pause_length);
+%     if (saveOption == 1 && jj == waveID)
+%         writeVideo(writerobj,getframe(gcf)); %grabs current fig frame
+%     end
+% end
+% 
+% % increment counter
+% ctr = ctr + 1;
+% if (saveOption == 1 && jj == waveID)
+%     close(writerobj)
+%     disp('Video saved to current directory')
+% end
+% 

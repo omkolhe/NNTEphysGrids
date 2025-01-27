@@ -371,9 +371,10 @@ figure,stack_plot(reshape(angle(IntanBehaviour.cueMissTrace(25).xgp),[],3001),0,
 
 figure,stack_plot(reshape(IntanBehaviour.hitTrace(23).xf,[],3001),1,4,1000);
 
-figure,stack_plot(reshape(LFP.xf(:,:,1:10000),[],10000),0,4,1000);
+figure,stack_plot(reshape(LFP.xf(:,:,1:5000),[],5000),1,4,1000);
+figure,stack_plot(reshape(LFP.LFPdatacube(:,:,1:5000),[],5000),1,4,1000);
 
-figure,stack_plot(reshape(IntanBehaviourM2.cueHitTrace(20).xf,[],3001),0,4,1000);
+figure,stack_plot(reshape(IntanBehaviour.cueHitTrace(23).xf,[],3001),0,4,1000);
 
 
 %%

@@ -233,7 +233,7 @@ end
 
 missIndex = removeNaNRows(missIndex');
 
-if missIndex(1) <= parameters.windowBeforePull*parameters.Fs
+while missIndex(1) <= parameters.windowBeforePull*parameters.Fs
     missIndex = missIndex(2:end);
 end
 
@@ -341,7 +341,7 @@ if plotOption == 1
         end
         plot(IntanBehaviour.cueHitTrace(1).time,mean(horzcat(IntanBehaviour.cueHitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
         yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
-        xline(0,'--r','Cue','LabelVerticalAlignment','top');ylim([0 0.1]);
+        xline(0,'--r','Cue','LabelVerticalAlignment','top');
         xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
         ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
         
@@ -366,7 +366,7 @@ if plotOption == 1
     end
     plot(IntanBehaviour.hitTrace(1).time,mean(horzcat(IntanBehaviour.hitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
     yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
-    xline(0,'--r','Reward','LabelVerticalAlignment','top');ylim([0 0.1]);
+    xline(0,'--r','Reward','LabelVerticalAlignment','top');
     ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Hits');box off;
     
     subplot(2,1,2);
@@ -376,7 +376,7 @@ if plotOption == 1
     end
     plot(IntanBehaviour.missTrace(1).time,mean(horzcat(IntanBehaviour.missTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
     yline(IntanBehaviour.threshold,'--.b','Threshold','LabelHorizontalAlignment','left'); 
-    xline(0,'--r','False Alarm','LabelVerticalAlignment','top');ylim([0 0.1]);
+    xline(0,'--r','False Alarm','LabelVerticalAlignment','top');
     ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for False Alarms');box off;
     
     % Plotting Lever traces for MI alligned cue Hit Trails 
@@ -388,7 +388,7 @@ if plotOption == 1
     end
     plot(IntanBehaviour.MIHitTrace(1).time,mean(horzcat(IntanBehaviour.MIHitTrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
     yline(IntanBehaviour.MIcutoffHit,'--.b','MI Threshold','LabelHorizontalAlignment','left'); 
-    xline(0,'--r','MI','LabelVerticalAlignment','top');ylim([0 0.1]);
+    xline(0,'--r','MI','LabelVerticalAlignment','top');
     % xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
     ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for Cue Hits');box off;
     
@@ -399,7 +399,7 @@ if plotOption == 1
     end
     plot(IntanBehaviour.MIFATrace(1).time,mean(horzcat(IntanBehaviour.MIFATrace(1:end).trace),2),'Color',[1 0 0 1],'LineWidth',2);
     yline(IntanBehaviour.MIcutoffFA,'--.b','MI Threshold','LabelHorizontalAlignment','left'); 
-    xline(0,'--r','MI','LabelVerticalAlignment','top');ylim([0 0.1]);
+    xline(0,'--r','MI','LabelVerticalAlignment','top');
     % xline(mean(IntanBehaviour.reactionTime,'all'),'--m','Avg. Reaction Time','LabelVerticalAlignment','top');
     ylabel('Lever deflection (in V)');xlabel('Time (in s)');title('Average Lever Traces for False Alarms');box off;
 end

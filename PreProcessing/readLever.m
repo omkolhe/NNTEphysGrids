@@ -1,4 +1,4 @@
-function [Behaviour] = readLever(parameters,lfpTime,plotOption)
+function [Behaviour] = readLever(enpath,enfile,parameters,lfpTime,plotOption)
 
 % if ~exist('parameters.experiment','var')
 %     parameters.experiment = 'self';
@@ -21,12 +21,7 @@ else
     disp('Intan time data not passed. Function set to training.');
 end
 %% Reading file from arduino 
-[enfile,enpath] = uigetfile('*.csv');
-if isequal(enfile,0)
-   disp('User selected Cancel');
-else
-   disp(['User selected ', fullfile(enpath,enfile)]);
-end
+
 
 resting_position = 284;
 flip = 1;
@@ -241,6 +236,9 @@ if cue == 1
         Behaviour.cueHitTrace(i).i1 = max(find(Behaviour.time < Behaviour.cueHit(i,2)-parameters.windowBeforeCue));
         Behaviour.cueHitTrace(i).i0 = Behaviour.cueHit(i,1);
         Behaviour.cueHitTrace(i).i2 = max(find(Behaviour.time < Behaviour.cueHit(i,2)+parameters.windowAfterCue));
+        if isempty(Behaviour.cueHitTrace(i).i1)
+            continue;
+        end
         Behaviour.cueHitTrace(i).rawtrace = Behaviour.leverTrace(Behaviour.cueHitTrace(i).i1:Behaviour.cueHitTrace(i).i2);
         Behaviour.cueHitTrace(i).rawtime = Behaviour.time(Behaviour.cueHitTrace(i).i1:Behaviour.cueHitTrace(i).i2) - Behaviour.time(Behaviour.cueHitTrace(i).i1);
         Behaviour.cueHitTrace(i).time1 = Behaviour.time(Behaviour.cueHitTrace(i).i1:Behaviour.cueHitTrace(i).i2);
