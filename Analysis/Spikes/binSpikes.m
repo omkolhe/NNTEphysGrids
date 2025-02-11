@@ -24,9 +24,9 @@ end
 
 Spikes.spikes = zeros(Spikes.nSpikes,ind(end),'uint8');
 for i=1:Spikes.nSpikes
-    i
     Spikes.spikes(i,:) = accumarray(ind',Spikes.allSpikes(i,:)')';
 end
 Spikes = rmfield(Spikes,"allSpikes");
+Spikes.biningFs = biningFs;
 
 end

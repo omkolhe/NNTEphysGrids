@@ -1,0 +1,48 @@
+function [neuralDynamics] = calTrajSpeed(neuralDynamics,IntanBehaviour,parameters)
+
+% Calculating neural trajectory speed 
+neuralDynamics.nPCA = size(neuralDynamics.hit.X,1);
+ntime = ((parameters.windowBeforeCue+parameters.windowAfterCue)*parameters.Fs)/size(neuralDynamics.hit.X,2);  
+neuralDynamics.time = ntime:ntime:((parameters.windowBeforeCue+parameters.windowAfterCue)*parameters.Fs);
+
+% preCueIndex = max(find(neuralDynamics.time<parameters.windowBeforeCue*parameters.Fs));
+% cueIndex = preCueIndex+1;
+% RT = (parameters.windowBeforeCue + cell2mat(arrayfun(@(s) s.reactionTime, IntanBehaviour.cueHitTrace, 'UniformOutput', false)))*parameters.Fs;
+% MIIndex = round(RT./ntime);
+
+% neuralDynamics.timeSpeed = neuralDynamics.time(1:end-1);
+%% For hit 
+neuralDynamics.hit.speed.vel = diff(neuralDynamics.hit.X,1,2)/ntime;
+neuralDynamics.hit.speed.speed = squeeze(sqrt(sum(neuralDynamics.hit.speed.vel.^2,1)));
+% pad zeros in front 
+neuralDynamics.hit.speed.speed = [zeros(1,size(neuralDynamics.hit.speed.speed,2));neuralDynamics.hit.speed.speed];
+% neuralDynamics.hit.speed.preCueSpeed = neuralDynamics.hit.speed.speed(1:preCueIndex,:);
+
+%% For miss
+neuralDynamics.miss.speed.vel = diff(neuralDynamics.miss.X,1,2)/ntime;
+neuralDynamics.miss.speed.speed = squeeze(sqrt(sum(neuralDynamics.miss.speed.vel.^2,1)));
+% pad zeros in front 
+neuralDynamics.miss.speed.speed = [zeros(1,size(neuralDynamics.miss.speed.speed,2));neuralDynamics.miss.speed.speed];
+% neuralDynamics.miss.speed.preCueSpeed = neuralDynamics.miss.speed.speed(1:preCueIndex,:);
+
+%% For MIhit 
+neuralDynamics.MIhit.speed.vel = diff(neuralDynamics.MIhit.X,1,2)/ntime;
+neuralDynamics.MIhit.speed.speed = squeeze(sqrt(sum(neuralDynamics.MIhit.speed.vel.^2,1)));
+% pad zeros in front 
+neuralDynamics.MIhit.speed.speed = [zeros(1,size(neuralDynamics.MIhit.speed.speed,2));neuralDynamics.MIhit.speed.speed];
+
+%% For MIFA
+neuralDynamics.MIFA.speed.vel = diff(neuralDynamics.MIFA.X,1,2)/ntime;
+neuralDynamics.MIFA.speed.speed = squeeze(sqrt(sum(neuralDynamics.MIFA.speed.vel.^2,1)));
+% pad zeros in front 
+neuralDynamics.MIhit.speed.speed = [zeros(1,size(neuralDynamics.MIhit.speed.speed,2));neuralDynamics.MIhit.speed.speed];
+
+
+% figure;
+% for i=1:size(neuralDynamics.hit.speed,2)
+%     plot(neuralDynamics.timeSpeed,neuralDynamics.hit.speed(:,i),'Color',[0 0 0 0.1],'LineWidth',1.5);
+%     hold on;
+% end
+% plot(neuralDynamics.timeSpeed,mean(neuralDynamics.hit.speed,2),'Color',[1 0 0 1],'LineWidth',2);
+
+

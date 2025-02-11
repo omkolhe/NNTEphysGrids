@@ -111,9 +111,9 @@ IntanBehaviour = readLeverIntan(parameters,LFP.times,Intan.analog_adc_data,Intan
 IntanBehaviour = addLFPToBehaviour(IntanBehaviour,LFP,parameters);
 
 %% Wave detection in trials
-nShuffle = 100;
+nShuffle = 50;
 threshold = 99.73; % zscore of 3
-fraction = 0.3;
+fraction = 0.1;
 parameters.rhoThres = getRhoThreshold(IntanBehaviour.cueHitTrace,IntanBehaviour.cueMissTrace,parameters,nShuffle,threshold,fraction);
 % parameters.rhoThres = 0.75;
 
@@ -162,12 +162,13 @@ end
 %%
 %% Saving paramters, path, IntanBehaviour to bin file 
 savepath = uigetdir(path);
-sessionName = [savepath,'/','61592eOPNDay7Waves.mat'];
+sessionName = [savepath,'/','61590eOPNDay2Waves.mat'];
 % save(sessionName,"IntanBehaviour","fpath","parameters","-v7.3");
 save(sessionName,"IntanBehaviour","fpath","parameters","Waves","-v7.3"); %,"betaWaves","thetaWaves","gammaWaves",
 
 if parameters.opto == 1
-    [IntanBehaviour,IntanBehaviourOpto, Waves, WavesOpto] = separateOptoTrials(IntanBehaviour,parameters,Waves);
+    [IntanBehaviourBaseline,IntanBehaviourOpto, WavesBaseline, WavesOpto] = separateOptoTrials(IntanBehaviour,parameters,Waves);
+    clear('IntanBehaviour','Waves');
     save(sessionName,"IntanBehaviourBaseline","IntanBehaviourOpto","fpath","parameters","WavesBaseline","WavesOpto","-v7.3");
 end
 

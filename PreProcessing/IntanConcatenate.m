@@ -9,6 +9,7 @@ downsampleRate = 4;
 targetedFs = 5000;
 L = length(directory);
 for idx = 1:L
+    idx
     file = directory(idx).folder;
     path = directory(idx).name;
     Intan = read_Intan_RHD2000_file(file,path); 

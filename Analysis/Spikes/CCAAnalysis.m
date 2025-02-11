@@ -1,12 +1,22 @@
 %% Binning Spikes 
-M1Spikes = binSpikes(M1Spikes,20000,1000);
-M2Spikes = binSpikes(M2Spikes,20000,1000);
+if ~isfield('M1Spikes','spikes')
+    disp('Bining M1 spikes ...')
+    M1Spikes = binSpikes(M1Spikes,20000,1000);
+end
+if ~isfield('M2Spikes','spikes')
+    disp('Bining M2 spikes ...')
+    M2Spikes = binSpikes(M2Spikes,20000,1000);
+end
+
+if ~(M1Spikes.biningFs == M2Spikes.biningFs)
+    disp('Bining Fs for M1 and M2 spikes is different')
+end
 
 %% Setting parameters for CCA Analysis 
 
 % The units of the arguments are with respect to the binning window used to bin spikes.
-argIn.BinWidth = 1;
-argIn.MaxDelay = 50;  
+argIn.BinWidth = 1000*(1/M1Spikes.biningFs);
+argIn.MaxDelay = 0;  
 argIn.TimeStep = 20;    
 argIn.WindowLength = 80;
 argIn.numCanonDim = 5;
@@ -78,7 +88,7 @@ evokedPeriodStart = 1500;
 evokedPeriodStop = 2000;
 startIdx = find(t>=evokedPeriodStart,1);
 stopIdx = find(t>=evokedPeriodStop,1);
-
+CANONICAL_PAIR_IDX = 1;
 figure;
 subplot(2,1,1);
 plot(delays,mean(CCA.cueHit.CorrMap(:,startIdx:stopIdx,CANONICAL_PAIR_IDX),2),'Color', [0 0.1 0.8],'LineWidth',2); hold on;
